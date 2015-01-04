@@ -1,8 +1,8 @@
-require_relative '../../spec_helper.rb'
+#~ require_relative '../../spec_helper.rb'
 
 require 'gosu'
 
-require_relative '../../../gosu/common2/text_renderer.rb'
+require_relative '../text_renderer.rb'
 
 describe TextRenderer do
   context "before being given a Gosu::Window reference" do

@@ -2,12 +2,12 @@
 #~ - @image
 #~ - instead of colored vertices, draws the image between its four vertices
 
-require_relative '../../spec_helper'
+#~ require_relative '../../spec_helper'
 
 require 'gosu'
 
-require_relative '../../../gosu/common2/image_library.rb'
-require_relative '../../../gosu/common2/sprite.rb'
+require_relative '../image_library.rb'
+require_relative '../sprite.rb'
 
 describe Sprite do
   before(:all) do

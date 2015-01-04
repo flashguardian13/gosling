@@ -1,6 +1,6 @@
-require_relative '../../spec_helper'
+#~ require_relative '../../spec_helper'
 
-require_relative '../../../gosu/common2/polygon.rb'
+require_relative '../polygon.rb'
 
 describe Polygon do
   before(:all) do

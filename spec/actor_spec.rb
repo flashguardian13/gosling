@@ -1,8 +1,8 @@
 #~ - collision_test() can tell if it has collided with another shape; obeys hit test rules
 
-require_relative '../../spec_helper'
+#~ require_relative '../../spec_helper'
 
-require_relative '../../../gosu/common2/actor.rb'
+require_relative '../actor.rb'
 
 describe Actor do
   before(:all) do

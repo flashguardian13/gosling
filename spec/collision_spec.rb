@@ -1,15 +1,15 @@
-require_relative '../../spec_helper'
+#~ require_relative '../../spec_helper'
 
 require 'gosu'
 
-require_relative '../../../gosu/common2/collision.rb'
-require_relative '../../../gosu/common2/image_library.rb'
+require_relative '../collision.rb'
+require_relative '../image_library.rb'
 
-require_relative '../../../gosu/common2/actor.rb'
-require_relative '../../../gosu/common2/circle.rb'
-require_relative '../../../gosu/common2/polygon.rb'
-require_relative '../../../gosu/common2/rect.rb'
-require_relative '../../../gosu/common2/sprite.rb'
+require_relative '../actor.rb'
+require_relative '../circle.rb'
+require_relative '../polygon.rb'
+require_relative '../rect.rb'
+require_relative '../sprite.rb'
 
 def clean_shape(shape)
   shape.x = 0

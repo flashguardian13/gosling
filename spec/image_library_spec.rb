@@ -1,8 +1,8 @@
-require_relative '../../spec_helper'
+#~ require_relative '../../spec_helper'
 
 require 'gosu'
 
-require_relative '../../../gosu/common2/image_library.rb'
+require_relative '../image_library.rb'
 
 describe ImageLibrary do
   context "before given a valid Gosu::Window reference" do

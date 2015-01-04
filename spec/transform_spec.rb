@@ -1,6 +1,6 @@
-require_relative '../../spec_helper'
+#~ require_relative '../../spec_helper'
 
-require_relative '../../../gosu/common2/transform.rb'
+require_relative '../transform.rb'
 
 describe Transform do
   before(:all) do

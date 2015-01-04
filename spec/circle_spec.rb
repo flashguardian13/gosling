@@ -1,6 +1,6 @@
-require_relative '../../spec_helper'
+#~ require_relative '../../spec_helper'
 
-require_relative '../../../gosu/common2/circle.rb'
+require_relative '../circle.rb'
 
 describe Circle do
   before(:all) do

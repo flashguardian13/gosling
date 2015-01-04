@@ -1,8 +1,8 @@
 #~ - has exactly four vertices, with sides at right angles (based on x, y, width, height)
 
-require_relative '../../spec_helper'
+#~ require_relative '../../spec_helper'
 
-require_relative '../../../gosu/common2/rect.rb'
+require_relative '../rect.rb'
 
 describe Rect do
   before(:all) do
