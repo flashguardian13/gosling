@@ -1,7 +1,6 @@
 describe Gosling::Sprite do
   before(:all) do
     @window = Gosu::Window.new(640, 480, false)
-    Gosling::ImageLibrary.window = @window
     @local_path = File.dirname(__FILE__)
     @image = Gosling::ImageLibrary.get(File.join(@local_path, 'images/key.png'))
 
