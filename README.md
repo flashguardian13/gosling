@@ -22,10 +22,10 @@ class GameWindow < Gosu::Window
     super(width, height, options)
     self.caption = 'Gosling Demo'
   end
-  
+
   def update
   end
-  
+
   def draw
     @actors.each { |actor| actor.draw }
   end
@@ -46,11 +46,13 @@ window.show
 
 A blank screen isn't much, but it's a start. Let's set the stage with some actors.
 
+### Actors
+
 At its most basic, an Actor is a shape in two-dimensional space. Actors can be rendered to a window. Collision detection can determine if a point intersects an Actor, or if two Actors are overlapping.
 
 There are multiple types of Actors you can use, depending on what sort of shape you need:
 - **Actor**: An invisible, insubstantial actor. Never renders itself. Never collides with anything. Defined by a point in space.
-- **Circle**: Inherits from Actor. Defined by a radius. 
+- **Circle**: Inherits from Actor. Defined by a radius.
 - **Polygon**: Inherits from Actor. Defined by a set of three or more vertices.
 - **Rect**: Inherits from Polygon. Its four vertices are defined by its width and height.
 - **Sprite**: Inherits from Rect. Its width and height are automatically set to the width and height of the `Gosu::Image` it is assigned.
@@ -95,6 +97,8 @@ image = Gosling::ImageLibrary.get('./images/red-meeple.png')
 sprite.set_image(image)
 ```
 
+### Actor Properties
+
 There are a lot you can do with Actors. They can be freely transformed:
 - **translated**: `actor.x`, `actor.y`, `actor.pos`
 - **scaled**: `scale_x`, `scale_y`
@@ -103,6 +107,8 @@ There are a lot you can do with Actors. They can be freely transformed:
 Their centerpoint - the point in space around which the Actor is rotated and scaled - can likewise be altered via `center_x` and `center_y`.
 
 An Actor's color can either be set directly via the Actor's `color` attribute, or individual color components can be modified via `red`, `green`, `blue`, and `alpha`.
+
+### Actor Inheritance
 
 Parent/child relationships can be establed between Actors such that one belongs to the other. Those familiar with ActionScript and similar models should already be familiar with how this works. What makes this model so useful is that a parent's transform is automatically applied to all of its children. Scale or rotate the parent actor, and all of its children are similarly scaled. Child Actors can be nested as deeply as desired, allowing for complex family trees. This allows us to build conglomerate actors that render, hit, and move as one. We can also have all of our game's Actor's be the children of one root Actor, which would then behave like a sort of camera into the 2D world we've created. Move the camera Actor, and all Actors in the world move. We can also use this approach for easy hit-testing and detection of which Actors the mouse is currently over, if any (read on for details).
 
@@ -117,10 +123,10 @@ class GameWindow < Gosu::Window
     self.caption = 'Gosling Demo'
     @camera = Gosling::Actor.new(self)
   end
-  
+
   def update
   end
-  
+
   def draw
     @camera.draw
   end
@@ -136,6 +142,8 @@ window.camera.add_child(triangle)
 window.show
 ```
 
+### Actor Inheritance Modifiers
+
 Actors can be made invisible, which prevents them from being rendered. Separately, they can be made intangible, which prevents them from colliding or responding to hit tests. Separate from these, an Actor's children can collectively be made invisible or intangible. And if a child Actor is designated as a mask, whenever it would hit or collide, it defers the hit/collision to its parent.
 
 The corresponding attributes are:
@@ -145,26 +153,30 @@ The corresponding attributes are:
 - `are_children_tangible`
 - `is_mask`
 
+### Animation
+
 Animation can be called by harnessing our GameWindow's update event, which Gosu will call periodically for us based on the `update_interval` value we specified.
 
 ```
 class GameWindow < Gosu::Window
   ...
-  
+
   def update
     cur_time = Time.now
     elapsed = @prev_time ? cur_time - @prev_time : 60
     @prev_time = cur_time
-    
+
     @camera.x += 10 * elapsed
     @camera.x -= 500 if @camera.x > 500
   end
-  
+
   ...
 end
 ```
 
 Note: Gosling currently uses Ruby's `matrix` class when calculating its transforms. This class is incredibly slow due to the way it handles memory. Animations will become choppy if there is too much action happening on screen. I may explore other, faster alternatives in the future.
+
+### Hit Testing
 
 To do point-based hit testing on actors, you can use the `get_actor_at` or `get_actors_at` methods of `Gosling::Actor`, which will return either the first tangible actor or all tangible actors at that point. If all of your actors are the children of a camera Actor, you need only call this method once on the camera. This is very useful for detecting which Actors the mouse is currently over.
 
