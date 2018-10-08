@@ -1,4 +1,4 @@
-%w(actor circle collision image_library polygon rect sprite text_renderer transform).each do |filename|
+%w(actor circle collision image_library polygon rect sprite text_renderer transform inheritance_error initialization_error).each do |filename|
   require_relative "gosling/#{filename}.rb"
 end
 
