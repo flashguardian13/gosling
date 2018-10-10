@@ -193,3 +193,10 @@ Tests are written in RSpec. To run them:
 ```
 rspec spec
 ```
+
+## TODO
+
+- Make private any methods not intended for use by developers
+- Add documentation to GitHub wiki
+- Use a faster Matrix class for all transforms
+- Update everything to take advantage of latest version of Gosu wherever possible
