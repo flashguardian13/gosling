@@ -19,6 +19,8 @@ module Gosling
       self.height = @image.height
     end
 
+    private
+
     def render(matrix)
       global_vertices = @vertices.map { |v| Transform.transform_point(matrix, v) }
       @image.draw_as_quad(

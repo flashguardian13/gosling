@@ -23,6 +23,8 @@ module Gosling
       rebuild_vertices
     end
 
+    private
+
     def rebuild_vertices
       vertices = [
         Vector[     0,       0, 0],

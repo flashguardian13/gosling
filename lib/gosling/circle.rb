@@ -22,6 +22,12 @@ module Gosling
       Vector[Math.cos(radians) * @radius, Math.sin(radians) * @radius, 0]
     end
 
+    def is_point_in_bounds(point)
+      Collision.is_point_in_shape?(point, self)
+    end
+
+    private
+
     def render(matrix)
       local_vertices = (0...RENDER_VERTEX_COUNT).map do |i|
         get_point_at_angle(Math::PI * 2 * i / RENDER_VERTEX_COUNT)
@@ -39,10 +45,6 @@ module Gosling
         )
         i += 1
       end
-    end
-
-    def is_point_in_bounds(point)
-      Collision.is_point_in_shape?(point, self)
     end
   end
 end

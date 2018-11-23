@@ -139,9 +139,6 @@ module Gosling
       @transform.set_rotation(val)
     end
 
-    def render(matrix)
-    end
-
     def draw(matrix = nil)
       matrix ||= Matrix.identity(3)
       transform = matrix * @transform.to_matrix
@@ -230,6 +227,11 @@ module Gosling
 
     def blue=(val)
       @color.blue = val
+    end
+
+    private
+
+    def render(matrix)
     end
   end
 end

@@ -2,7 +2,6 @@ require 'singleton'
 
 module Gosling
   class Collision
-    # 11.4 - 6.7 (get_separation_axes) - 4.7 (project_onto_axis)
     def self.test(shapeA, shapeB)
       return false if shapeA.instance_of?(Actor) || shapeB.instance_of?(Actor)
 
@@ -68,7 +67,6 @@ module Gosling
       (axis.magnitude > 0) ? axis.normalize : nil
     end
 
-    # 4.8 - 2.6 - 1.6 - .4
     def self.get_separation_axes(shapeA, shapeB)
       unless shapeA.is_a?(Actor) && !shapeA.instance_of?(Actor)
         raise ArgumentError.new("Expected a child of the Actor class, but received #{shapeA.inspect}!")

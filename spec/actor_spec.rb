@@ -1,3 +1,9 @@
+module Gosling
+  class Actor
+    public :render
+  end
+end
+
 describe Gosling::Actor do
   before(:all) do
     @window = Gosu::Window.new(640, 480, false)

@@ -29,6 +29,12 @@ module Gosling
       @vertices.map { |v| Transform.transform_point(tf, v) }
     end
 
+    def is_point_in_bounds(point)
+      Collision.is_point_in_shape?(point, self)
+    end
+
+    private
+
     def render(matrix)
       global_vertices = @vertices.map { |v| Transform.transform_point(matrix, v) }
       i = 2
@@ -43,10 +49,6 @@ module Gosling
         )
         i += 1
       end
-    end
-
-    def is_point_in_bounds(point)
-      Collision.is_point_in_shape?(point, self)
     end
   end
 end
