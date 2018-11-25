@@ -7,9 +7,9 @@ module Snow
       when ::Snow::Mat3
         multiply_mat3(rhs, out)
       when ::Snow::Vec3
+        values = (0..2).map { |i| get_row3(i) ** rhs }
         out ||= Snow::Vec3.new
-        (0..2).each { |i| out[i] = get_row3(i) ** rhs }
-        out
+        out.set(values)
       when Numeric
         scale(rhs, rhs, rhs, out)
       else
