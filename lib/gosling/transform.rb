@@ -1,5 +1,7 @@
 require 'matrix'
 
+require_relative 'utils.rb'
+
 module Gosling
   class FastMatrix
     @@multiply_buffer = []
@@ -109,8 +111,10 @@ module Gosling
 
   class Transform
     def self.rational_sin(r)
+      type_check(r, Numeric)
+
       r = r % (2 * Math::PI)
-      return case r
+      case r
       when 0.0
         0.to_r
       when Math::PI / 2
@@ -125,8 +129,10 @@ module Gosling
     end
 
     def self.rational_cos(r)
+      type_check(r, Numeric)
+
       r = r % (2 * Math::PI)
-      return case r
+      case r
       when 0.0
         1.to_r
       when Math::PI / 2

@@ -1,9 +1,11 @@
 require_relative 'actor.rb'
 require_relative 'collision.rb'
+require_relative 'utils.rb'
 
 module Gosling
   class Polygon < Actor
     def initialize(window)
+      type_check(window, Gosu::Window)
       super(window)
       @vertices = [
         Vector[0, 0, 0],
@@ -18,9 +20,9 @@ module Gosling
     end
 
     def set_vertices(vertices)
-      unless vertices.is_a?(Array) && vertices.length >= 3 && vertices.reject { |v| v.is_a?(Vector) && v.size == 3 }.empty?
-        raise ArgumentError.new("set_vertices() expects an array of at least three 3D Vectors")
-      end
+      type_check(vertices, Array)
+      raise ArgumentError.new("set_vertices() expects an array of at least three 3D Vectors") unless vertices.length >= 3
+      vertices.each { |v| type_check(v, Vector) }
       @vertices.replace(vertices)
     end
 
@@ -36,6 +38,7 @@ module Gosling
     private
 
     def render(matrix)
+      type_check(matrix, Matrix)
       global_vertices = @vertices.map { |v| Transform.transform_point(matrix, v) }
       i = 2
       while i < global_vertices.length
