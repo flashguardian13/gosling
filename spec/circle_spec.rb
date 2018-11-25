@@ -28,15 +28,14 @@ describe Gosling::Circle do
 
     it 'returns a size three vector' do
       result = @circle.get_point_at_angle(Math::PI)
-      expect(result).to be_instance_of(Vector)
-      expect(result.size).to be == 3
+      expect(result).to be_instance_of(Snow::Vec3)
     end
 
     it 'returns a point on this circle in local-space' do
       @circle.radius = 7
 
       angles = (0...16).map { |x| Math::PI * x / 8 }
-      unit_vectors = angles.map { |a| Vector[Math.cos(a), Math.sin(a), 0] }
+      unit_vectors = angles.map { |a| Snow::Vec3[Math.cos(a), Math.sin(a), 0] }
 
       angles.each_index do |i|
         angle = angles[i]

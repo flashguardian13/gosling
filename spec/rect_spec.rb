@@ -30,10 +30,10 @@ describe Gosling::Rect do
 
     it 'updates our vertices' do
       expected_vertices = [
-        Vector[ 0, 0, 0],
-        Vector[11, 0, 0],
-        Vector[11, 1, 0],
-        Vector[ 0, 1, 0]
+        Snow::Vec3[ 0, 0, 0],
+        Snow::Vec3[11, 0, 0],
+        Snow::Vec3[11, 1, 0],
+        Snow::Vec3[ 0, 1, 0]
       ]
 
       rect = Gosling::Rect.new(@window)
@@ -63,10 +63,10 @@ describe Gosling::Rect do
 
     it 'updates our vertices' do
       expected_vertices = [
-        Vector[0,  0, 0],
-        Vector[1,  0, 0],
-        Vector[1, 40, 0],
-        Vector[0, 40, 0]
+        Snow::Vec3[0,  0, 0],
+        Snow::Vec3[1,  0, 0],
+        Snow::Vec3[1, 40, 0],
+        Snow::Vec3[0, 40, 0]
       ]
 
       rect = Gosling::Rect.new(@window)
@@ -77,10 +77,10 @@ describe Gosling::Rect do
 
   it 'does not allow set_vertices to be called directly' do
     vertices = [
-      Vector[0,  0, 0],
-      Vector[1, 10, 0],
-      Vector[2, 20, 0],
-      Vector[3, 40, 0]
+      Snow::Vec3[0,  0, 0],
+      Snow::Vec3[1, 10, 0],
+      Snow::Vec3[2, 20, 0],
+      Snow::Vec3[3, 40, 0]
     ]
     expect { @rect.set_vertices(vertices) }.to raise_error(NoMethodError)
   end

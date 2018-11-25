@@ -61,74 +61,59 @@ module Gosling
     end
 
     def x
-      @transform.translation[0]
+      @transform.translation.x
     end
 
     def x=(val)
-      array = @transform.translation.to_a
-      array[0] = val
-      @transform.set_translation(Vector.elements(array))
+      @transform.translation = val, @transform.translation.y
     end
 
     def y
-      @transform.translation[1]
+      @transform.translation.y
     end
 
     def y=(val)
-      array = @transform.translation.to_a
-      array[1] = val
-      @transform.set_translation(Vector.elements(array))
+      @transform.translation = @transform.translation.x, val
     end
 
     def pos
-      Vector[x, y, 0]
+      @transform.translation
     end
 
     def pos=(val)
-      array = @transform.translation.to_a
-      array[0] = val[0]
-      array[1] = val[1]
-      @transform.set_translation(Vector.elements(array))
+      @transform.translation = val
     end
 
     def center_x
-      @transform.center[0]
+      @transform.center.x
     end
 
     def center_x=(val)
-      array = @transform.center.to_a
-      array[0] = val
-      @transform.set_center(Vector.elements(array))
+      @transform.center = val, @transform.center.y
     end
 
     def center_y
-      @transform.center[1]
+      @transform.center.y
     end
 
     def center_y=(val)
-      array = @transform.center.to_a
-      array[1] = val
-      @transform.set_center(Vector.elements(array))
+      @transform.center = @transform.center.x, val
     end
 
     def scale_x
-      @transform.scale[0]
+      @transform.scale.x
     end
 
     def scale_x=(val)
-      array = @transform.scale.to_a
-      array[0] = val
-      @transform.set_scale(Vector.elements(array))
+      @transform.scale = val, @transform.scale.y
     end
 
     def scale_y
-      @transform.scale[1]
+      @transform.scale.y
     end
 
     def scale_y=(val)
-      array = @transform.scale.to_a
-      array[1] = val
-      @transform.set_scale(Vector.elements(array))
+      @transform.scale = @transform.scale.x, val
     end
 
     def rotation
@@ -136,11 +121,11 @@ module Gosling
     end
 
     def rotation=(val)
-      @transform.set_rotation(val)
+      @transform.rotation = val
     end
 
     def draw(matrix = nil)
-      matrix ||= Matrix.identity(3)
+      matrix ||= Snow::Mat3.new
       transform = matrix * @transform.to_matrix
       render(transform) if @is_visible
       if @are_children_visible
@@ -183,18 +168,19 @@ module Gosling
       actors
     end
 
-    def get_global_transform
-      tf = if parent
-        parent.get_global_transform * @transform.to_matrix
+    def get_global_transform(out = nil)
+      if parent
+        out ||= Snow::Mat3.new
+        @transform.to_matrix.multiply(parent.get_global_transform, out)
+        out
       else
         @transform.to_matrix
       end
-      return tf
     end
 
     def get_global_position
       tf = get_global_transform
-      Transform.transform_point(tf, Vector[@transform.center[0], @transform.center[1], 0])
+      Transform.transform_point(tf, @transform.center)
     end
 
     def alpha

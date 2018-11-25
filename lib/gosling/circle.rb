@@ -19,7 +19,7 @@ module Gosling
 
     def get_point_at_angle(radians)
       raise ArgumentError.new("Expected Numeric, but received #{radians.inspect}!") unless radians.is_a?(Numeric)
-      Vector[Math.cos(radians) * @radius, Math.sin(radians) * @radius, 0]
+      Snow::Vec3[Math.cos(radians) * @radius, Math.sin(radians) * @radius, 0]
     end
 
     def is_point_in_bounds(point)

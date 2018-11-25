@@ -60,16 +60,16 @@ describe Gosling::Collision do
 
     @polygon1 = Gosling::Polygon.new(@window)
     @polygon1.set_vertices([
-      Vector[ 0,  5, 0],
-      Vector[ 5, -5, 0],
-      Vector[-5, -5, 0]
+      Snow::Vec3[ 0,  5, 0],
+      Snow::Vec3[ 5, -5, 0],
+      Snow::Vec3[-5, -5, 0]
     ])
 
     @polygon2 = Gosling::Polygon.new(@window)
     @polygon2.set_vertices([
-      Vector[ 0, -5, 0],
-      Vector[ 5, 5, 0],
-      Vector[-5, 5, 0]
+      Snow::Vec3[ 0, -5, 0],
+      Snow::Vec3[ 5, 5, 0],
+      Snow::Vec3[-5, 5, 0]
     ])
 
     @rect1 = Gosling::Rect.new(@window)
@@ -413,198 +413,197 @@ describe Gosling::Collision do
 
   describe '#is_point_in_shape?' do
     it 'expects a point and an actor' do
-      expect { Gosling::Collision.is_point_in_shape?(Vector[0, 0, 0], @actor1) }.not_to raise_error
+      expect { Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 0, 0], @actor1) }.not_to raise_error
 
-      expect { Gosling::Collision.is_point_in_shape?(@actor1, Vector[0, 0, 0]) }.to raise_error(ArgumentError)
+      expect { Gosling::Collision.is_point_in_shape?(@actor1, Snow::Vec3[0, 0, 0]) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.is_point_in_shape?(@actor1, :foo) }.to raise_error(ArgumentError)
-      expect { Gosling::Collision.is_point_in_shape?(:bar, Vector[0, 0, 0]) }.to raise_error(ArgumentError)
+      expect { Gosling::Collision.is_point_in_shape?(:bar, Snow::Vec3[0, 0, 0]) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.is_point_in_shape?() }.to raise_error(ArgumentError)
     end
 
     context 'point vs. actor' do
       it 'never collides' do
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, 0, 0], @actor1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 0, 0], @actor1)).to be false
       end
     end
 
     context 'point vs. circle' do
       it 'returns true if point is in shape' do
         clean_shape(@circle1)
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, 0, 0], @circle1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[4, 0, 0], @circle1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-4, 0, 0], @circle1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, 4, 0], @circle1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, -4, 0], @circle1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[5, 0, 0], @circle1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-5, 0, 0], @circle1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, 5, 0], @circle1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, -5, 0], @circle1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 0, 0], @circle1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[4, 0, 0], @circle1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-4, 0, 0], @circle1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 4, 0], @circle1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -4, 0], @circle1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[5, 0, 0], @circle1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-5, 0, 0], @circle1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 5, 0], @circle1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -5, 0], @circle1)).to be true
       end
 
       it 'returns false if point is not in shape' do
         clean_shape(@circle1)
-        expect(Gosling::Collision.is_point_in_shape?(Vector[6, 0, 0], @circle1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-6, 0, 0], @circle1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, 6, 0], @circle1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, -6, 0], @circle1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[4, 4, 0], @circle1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-4, 4, 0], @circle1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-4, -4, 0], @circle1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[4, -4, 0], @circle1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[6, 0, 0], @circle1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-6, 0, 0], @circle1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 6, 0], @circle1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -6, 0], @circle1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[4, 4, 0], @circle1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-4, 4, 0], @circle1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-4, -4, 0], @circle1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[4, -4, 0], @circle1)).to be false
       end
     end
 
     context 'point vs. polygon' do
       it 'returns true if point is in shape' do
         clean_shape(@polygon1)
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, 0, 0], @polygon1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, 4, 0], @polygon1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, -4, 0], @polygon1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[4, -4, 0], @polygon1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-4, -4, 0], @polygon1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, 5, 0], @polygon1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, -5, 0], @polygon1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[5, -5, 0], @polygon1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-5, -5, 0], @polygon1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 0, 0], @polygon1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 4, 0], @polygon1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -4, 0], @polygon1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[4, -4, 0], @polygon1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-4, -4, 0], @polygon1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 5, 0], @polygon1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -5, 0], @polygon1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[5, -5, 0], @polygon1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-5, -5, 0], @polygon1)).to be true
       end
 
       it 'returns false if point is not in shape' do
         clean_shape(@polygon1)
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, 6, 0], @polygon1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, -6, 0], @polygon1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[6, -6, 0], @polygon1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-6, -6, 0], @polygon1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[4, 4, 0], @polygon1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-4, 4, 0], @polygon1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 6, 0], @polygon1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -6, 0], @polygon1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[6, -6, 0], @polygon1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-6, -6, 0], @polygon1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[4, 4, 0], @polygon1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-4, 4, 0], @polygon1)).to be false
       end
     end
 
     context 'point vs. rect' do
       it 'returns true if point is in shape' do
         clean_rect(@rect1)
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, 0, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-4, -4, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, -4, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[4, -4, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[4, 0, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[4, 4, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, 4, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-4, 4, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-4, 0, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-5, -5, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, -5, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[5, -5, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[5, 0, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[5, 5, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, 5, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-5, 5, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-5, 0, 0], @rect1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 0, 0], @rect1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-4, -4, 0], @rect1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -4, 0], @rect1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[4, -4, 0], @rect1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[4, 0, 0], @rect1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[4, 4, 0], @rect1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 4, 0], @rect1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-4, 4, 0], @rect1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-4, 0, 0], @rect1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-5, -5, 0], @rect1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -5, 0], @rect1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[5, -5, 0], @rect1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[5, 0, 0], @rect1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[5, 5, 0], @rect1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 5, 0], @rect1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-5, 5, 0], @rect1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-5, 0, 0], @rect1)).to be true
       end
 
       it 'returns false if point is not in shape' do
         clean_rect(@rect1)
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-6, -6, 0], @rect1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, -6, 0], @rect1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[6, -6, 0], @rect1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[6, 0, 0], @rect1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[6, 6, 0], @rect1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, 6, 0], @rect1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-6, 6, 0], @rect1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-6, 0, 0], @rect1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-6, -6, 0], @rect1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -6, 0], @rect1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[6, -6, 0], @rect1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[6, 0, 0], @rect1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[6, 6, 0], @rect1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 6, 0], @rect1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-6, 6, 0], @rect1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-6, 0, 0], @rect1)).to be false
       end
     end
 
     context 'point vs. sprite' do
       it 'returns true if point is in shape' do
         clean_sprite(@sprite1)
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, 0, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-7, -7, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, -7, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[7, -7, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[7, 0, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[7, 7, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, 7, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-7, 7, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-7, 0, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-8, -8, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, -8, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[8, -8, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[8, 0, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[8, 8, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, 8, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-8, 8, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-8, 0, 0], @sprite1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 0, 0], @sprite1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-7, -7, 0], @sprite1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -7, 0], @sprite1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[7, -7, 0], @sprite1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[7, 0, 0], @sprite1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[7, 7, 0], @sprite1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 7, 0], @sprite1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-7, 7, 0], @sprite1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-7, 0, 0], @sprite1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-8, -8, 0], @sprite1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -8, 0], @sprite1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[8, -8, 0], @sprite1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[8, 0, 0], @sprite1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[8, 8, 0], @sprite1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 8, 0], @sprite1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-8, 8, 0], @sprite1)).to be true
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-8, 0, 0], @sprite1)).to be true
       end
 
       it 'returns false if point is not in shape' do
         clean_sprite(@sprite1)
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-9, -9, 0], @sprite1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, -9, 0], @sprite1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[9, -9, 0], @sprite1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[9, 0, 0], @sprite1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[9, 9, 0], @sprite1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[0, 9, 0], @sprite1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-9, 9, 0], @sprite1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Vector[-9, 0, 0], @sprite1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-9, -9, 0], @sprite1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -9, 0], @sprite1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[9, -9, 0], @sprite1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[9, 0, 0], @sprite1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[9, 9, 0], @sprite1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 9, 0], @sprite1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-9, 9, 0], @sprite1)).to be false
+        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-9, 0, 0], @sprite1)).to be false
       end
     end
   end
 
   describe '#get_normal' do
     it 'expects a 3d vector' do
-      expect { Gosling::Collision.get_normal(Vector[1, 0, 0]) }.not_to raise_error
-      expect { Gosling::Collision.get_normal(Vector[1, 0, 1, 0]) }.to raise_error(ArgumentError)
-      expect { Gosling::Collision.get_normal(Vector[1, 0]) }.to raise_error(ArgumentError)
+      expect { Gosling::Collision.get_normal(Snow::Vec3[1, 0, 0]) }.not_to raise_error
+      expect { Gosling::Collision.get_normal(Snow::Vec3[1, 0, 1, 0]) }.to raise_error(ArgumentError)
+      expect { Gosling::Collision.get_normal(Snow::Vec3[1, 0]) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.get_normal(:foo) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.get_normal(nil) }.to raise_error(ArgumentError)
     end
 
     it 'returns a 3d vector' do
-      result = Gosling::Collision.get_normal(Vector[1, 0, 0])
-      expect(result).to be_instance_of(Vector)
-      expect(result.size).to be == 3
+      result = Gosling::Collision.get_normal(Snow::Vec3[1, 0, 0])
+      expect(result).to be_instance_of(Snow::Vec3)
     end
 
     it 'z value of returned vector is always 0' do
       [
-        Vector[1, 1, 0],
-        Vector[-1, -1, -1],
-        Vector[-22, -22, 0],
-        Vector[-11, 13, 34],
-        Vector[37, -4, -15],
-        Vector[34, 39, -16],
-        Vector[-48, 23, -32],
-        Vector[24, -39, 42],
-        Vector[49, 44, -15],
-        Vector[27, 23, 42],
-        Vector[33, -25, -20],
-        Vector[-46, -18, 48],
+        Snow::Vec3[1, 1, 0],
+        Snow::Vec3[-1, -1, -1],
+        Snow::Vec3[-22, -22, 0],
+        Snow::Vec3[-11, 13, 34],
+        Snow::Vec3[37, -4, -15],
+        Snow::Vec3[34, 39, -16],
+        Snow::Vec3[-48, 23, -32],
+        Snow::Vec3[24, -39, 42],
+        Snow::Vec3[49, 44, -15],
+        Snow::Vec3[27, 23, 42],
+        Snow::Vec3[33, -25, -20],
+        Snow::Vec3[-46, -18, 48],
       ].each do |v|
         expect(Gosling::Collision.get_normal(v)[2]).to be == 0
       end
     end
 
     it 'raises an error when given a zero length vector' do
-      expect { Gosling::Collision.get_normal(Vector[0, 0, 0]) }.to raise_error(ArgumentError)
+      expect { Gosling::Collision.get_normal(Snow::Vec3[0, 0, 0]) }.to raise_error(ArgumentError)
     end
 
     it 'returns a vector that is +/- 90 degrees from the original' do
       [
-        Vector[1, 1, 0],
-        Vector[-1, -1, -1],
-        Vector[-22, -22, 0],
-        Vector[-11, 13, 34],
-        Vector[37, -4, -15],
-        Vector[34, 39, -16],
-        Vector[-48, 23, -32],
-        Vector[24, -39, 42],
-        Vector[49, 44, -15],
-        Vector[27, 23, 42],
-        Vector[33, -25, -20],
-        Vector[-46, -18, 48],
+        Snow::Vec3[1, 1, 0],
+        Snow::Vec3[-1, -1, -1],
+        Snow::Vec3[-22, -22, 0],
+        Snow::Vec3[-11, 13, 34],
+        Snow::Vec3[37, -4, -15],
+        Snow::Vec3[34, 39, -16],
+        Snow::Vec3[-48, 23, -32],
+        Snow::Vec3[24, -39, 42],
+        Snow::Vec3[49, 44, -15],
+        Snow::Vec3[27, 23, 42],
+        Snow::Vec3[33, -25, -20],
+        Snow::Vec3[-46, -18, 48],
       ].each do |v|
         norm_v = Gosling::Collision.get_normal(v)
-        radians = Math.acos(v.inner_product(norm_v) / (v.magnitude * norm_v.magnitude))
+        radians = Math.acos(v.dot_product(norm_v) / (v.magnitude * norm_v.magnitude))
         expect(radians.abs).to be == Math::PI / 2
       end
     end
@@ -613,18 +612,18 @@ describe Gosling::Collision do
   describe '#get_polygon_separation_axes' do
     it 'expects an array of length 3 vectors' do
       good_vector_array = [
-        Vector[3, 1, 0],
-        Vector[4, 2, 0],
-        Vector[5, 3, 0],
-        Vector[1, 4, 0],
-        Vector[2, 5, 0]
+        Snow::Vec3[3, 1, 0],
+        Snow::Vec3[4, 2, 0],
+        Snow::Vec3[5, 3, 0],
+        Snow::Vec3[1, 4, 0],
+        Snow::Vec3[2, 5, 0]
       ]
       bad_vector_array = [
-        Vector[9, 11],
-        Vector[7, 12, 0],
-        Vector[5, 13, 1, 0],
-        Vector[3, 14],
-        Vector[1, 15]
+        Snow::Vec2[9, 11],
+        Snow::Vec3[7, 12, 0],
+        Snow::Vec4[5, 13, 1, 0],
+        Snow::Vec2[3, 14],
+        Snow::Vec2[1, 15]
       ]
       p = Gosling::Polygon.new(@window)
       expect { Gosling::Collision.get_polygon_separation_axes(good_vector_array) }.not_to raise_error
@@ -636,24 +635,24 @@ describe Gosling::Collision do
 
     it 'returns an array of 3d vectors' do
       vertices = [
-        Vector[3, 1, 0],
-        Vector[4, 2, 0],
-        Vector[5, 3, 0],
-        Vector[1, 4, 0],
-        Vector[2, 5, 0]
+        Snow::Vec3[3, 1, 0],
+        Snow::Vec3[4, 2, 0],
+        Snow::Vec3[5, 3, 0],
+        Snow::Vec3[1, 4, 0],
+        Snow::Vec3[2, 5, 0]
       ]
       result = Gosling::Collision.get_polygon_separation_axes(vertices)
       expect(result).to be_instance_of(Array)
-      expect(result.reject { |v| v.is_a?(Vector) && v.size == 3 }).to be_empty
+      expect(result.reject { |v| v.is_a?(Snow::Vec3) }).to be_empty
     end
 
     it 'skips length zero sides' do
       vertices = [
-        Vector[1, 1, 0],
-        Vector[1, 1, 0],
-        Vector[1, 2, 0],
-        Vector[2, 2, 0],
-        Vector[2, 2, 0]
+        Snow::Vec3[1, 1, 0],
+        Snow::Vec3[1, 1, 0],
+        Snow::Vec3[1, 2, 0],
+        Snow::Vec3[2, 2, 0],
+        Snow::Vec3[2, 2, 0]
       ]
       result = Gosling::Collision.get_polygon_separation_axes(vertices)
       expect(result.length).to be == 3
@@ -661,19 +660,19 @@ describe Gosling::Collision do
 
     it 'returns correct values' do
       vertices = [
-        Vector[ 2,  1, 0],
-        Vector[ 1, -1, 0],
-        Vector[ 0, -2, 0],
-        Vector[-1, -1, 0],
-        Vector[-1,  2, 0]
+        Snow::Vec3[ 2,  1, 0],
+        Snow::Vec3[ 1, -1, 0],
+        Snow::Vec3[ 0, -2, 0],
+        Snow::Vec3[-1, -1, 0],
+        Snow::Vec3[-1,  2, 0]
       ]
       result = Gosling::Collision.get_polygon_separation_axes(vertices)
       expect(result.length).to be == 5
-      expect(result[0]).to be == Vector[ 2, -1, 0].normalize
-      expect(result[1]).to be == Vector[ 1, -1, 0].normalize
-      expect(result[2]).to be == Vector[-1, -1, 0].normalize
-      expect(result[3]).to be == Vector[-3,  0, 0].normalize
-      expect(result[4]).to be == Vector[ 1,  3, 0].normalize
+      expect(result[0]).to be == Snow::Vec3[ 2, -1, 0].normalize
+      expect(result[1]).to be == Snow::Vec3[ 1, -1, 0].normalize
+      expect(result[2]).to be == Snow::Vec3[-1, -1, 0].normalize
+      expect(result[3]).to be == Snow::Vec3[-3,  0, 0].normalize
+      expect(result[4]).to be == Snow::Vec3[ 1,  3, 0].normalize
     end
   end
 
@@ -700,8 +699,7 @@ describe Gosling::Collision do
       @circle2.y = -5
 
       result = Gosling::Collision.get_circle_separation_axis(@circle1, @circle2)
-      expect(result).to be_instance_of(Vector)
-      expect(result.size).to be == 3
+      expect(result).to be_instance_of(Snow::Vec3)
     end
 
     it "returns nil if distance beween shape centers is 0" do
@@ -727,7 +725,7 @@ describe Gosling::Collision do
       @circle2.y = -5
 
       result = Gosling::Collision.get_circle_separation_axis(@circle1, @circle2)
-      expect(result).to be == Vector[1, 1, 0].normalize
+      expect(result).to be == Snow::Vec3[1, 1, 0].normalize
     end
   end
 
@@ -750,19 +748,22 @@ describe Gosling::Collision do
     it 'returns an array of 3d vectors' do
       result = Gosling::Collision.get_separation_axes(@polygon1, @polygon2)
       expect(result).to be_instance_of(Array)
-      expect(result.reject { |v| v.is_a?(Vector) && v.size == 3 }).to be_empty
+      expect(result.reject { |v| v.is_a?(Snow::Vec3) }).to be_empty
     end
 
     it 'returns only unit vectors' do
       result = Gosling::Collision.get_separation_axes(@polygon1, @circle1)
       expect(result).to be_instance_of(Array)
-      expect(result.reject { |v| v.is_a?(Vector) && v.magnitude == 1 }).to be_empty
+      result.each do |v|
+        expect(v).to be_instance_of(Snow::Vec3)
+        expect(v.magnitude).to be_between(0.99999999, 1.00000001)
+      end
     end
 
     it 'returns only right-facing (positive x direction) vectors' do
       result = Gosling::Collision.get_separation_axes(@rect2, @polygon1)
       expect(result).to be_instance_of(Array)
-      expect(result.reject { |v| v.is_a?(Vector) && v[0] >= 0 }).to be_empty
+      expect(result.reject { |v| v.is_a?(Snow::Vec3) && v[0] >= 0 }).to be_empty
     end
 
     it 'returns only unique vectors' do
@@ -774,7 +775,7 @@ describe Gosling::Collision do
     it 'is commutative' do
       result1 = Gosling::Collision.get_separation_axes(@rect2, @polygon2)
       result2 = Gosling::Collision.get_separation_axes(@polygon2, @rect2)
-      expect(result1.to_set).to be == result2.to_set
+      expect(result1.map { |x| x.to_s }.sort).to be == result2.map { |x| x.to_s }.sort
     end
 
     it 'respects centering' do
@@ -786,9 +787,9 @@ describe Gosling::Collision do
 
       result = Gosling::Collision.get_separation_axes(@polygon1, @circle1)
       expect(result).to be == [
-        Vector[10, 5, 0].normalize,
-        Vector[0, -10, 0].normalize,
-        Vector[10, -5, 0].normalize
+        Snow::Vec3[10, 5, 0].normalize,
+        Snow::Vec3[0, -10, 0].normalize,
+        Snow::Vec3[10, -5, 0].normalize
       ]
     end
 
@@ -801,9 +802,9 @@ describe Gosling::Collision do
 
       result = Gosling::Collision.get_separation_axes(@polygon1, @circle1)
       expect(result).to be == [
-        Vector[20, 15, 0].normalize,
-        Vector[0, -30, 0].normalize,
-        Vector[20, -15, 0].normalize
+        Snow::Vec3[20, 15, 0].normalize,
+        Snow::Vec3[0, -30, 0].normalize,
+        Snow::Vec3[20, -15, 0].normalize
       ]
     end
 
@@ -815,9 +816,9 @@ describe Gosling::Collision do
       clean_shape(@circle1)
 
       expect(result).to be == [
-        Vector[5, -10, 0].normalize,
-        Vector[10, 0, 0].normalize,
-        Vector[5, 10, 0].normalize
+        Snow::Vec3[5, -10, 0].normalize,
+        Snow::Vec3[10, 0, 0].normalize,
+        Snow::Vec3[5, 10, 0].normalize
       ]
     end
 
@@ -830,10 +831,10 @@ describe Gosling::Collision do
 
       result = Gosling::Collision.get_separation_axes(@polygon1, @circle1)
       expect(result).to be == [
-        Vector[10, 5, 0].normalize,
-        Vector[0, -10, 0].normalize,
-        Vector[10, -5, 0].normalize,
-        Vector[50, -10, 0].normalize
+        Snow::Vec3[10, 5, 0].normalize,
+        Snow::Vec3[0, -10, 0].normalize,
+        Snow::Vec3[10, -5, 0].normalize,
+        Snow::Vec3[50, -10, 0].normalize
       ]
     end
 
@@ -908,7 +909,7 @@ describe Gosling::Collision do
 
   describe '#project_onto_axis' do
     it 'expects a shape and a 3d unit vector' do
-      axis = Vector[1, 1, 0]
+      axis = Snow::Vec3[1, 1, 0]
 
       expect { Gosling::Collision.project_onto_axis(@sprite1, axis) }.not_to raise_error
       expect { Gosling::Collision.project_onto_axis(@rect1, axis) }.not_to raise_error
@@ -916,15 +917,15 @@ describe Gosling::Collision do
       expect { Gosling::Collision.project_onto_axis(@polygon1, axis) }.not_to raise_error
 
       expect { Gosling::Collision.project_onto_axis(:foo, axis) }.to raise_error(ArgumentError)
-      expect { Gosling::Collision.project_onto_axis(@sprite1, Vector[1, 1, 0, 2]) }.to raise_error(ExceptionForMatrix::ErrDimensionMismatch)
-      expect { Gosling::Collision.project_onto_axis(@rect1, Vector[1, 1]) }.to raise_error(ExceptionForMatrix::ErrDimensionMismatch)
+      expect { Gosling::Collision.project_onto_axis(@sprite1, Snow::Vec4[1, 1, 0, 2]) }.to raise_error(ArgumentError)
+      expect { Gosling::Collision.project_onto_axis(@rect1, Snow::Vec2[1, 1]) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.project_onto_axis(@polygon1, :foo) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.project_onto_axis(@circle1, @circle1, axis) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.project_onto_axis() }.to raise_error(ArgumentError)
     end
 
     it 'returns an array of two numbers' do
-      axis = Vector[1, 1, 0]
+      axis = Snow::Vec3[1, 1, 0]
       result = Gosling::Collision.project_onto_axis(@polygon1, axis)
       expect(result).to be_instance_of(Array)
       expect(result.length).to be == 2
@@ -938,7 +939,7 @@ describe Gosling::Collision do
         @circle1.y = 0
         @circle1.radius = 5
 
-        axis = Vector[-1, 1, 0].normalize
+        axis = Snow::Vec3[-1, 1, 0].normalize
         result = Gosling::Collision.project_onto_axis(@circle1, axis)
         expect(result).to be == [-5, 5]
 
@@ -947,7 +948,7 @@ describe Gosling::Collision do
         @circle1.y = 0
         @circle1.radius = 5
 
-        axis = Vector[1, 0, 0].normalize
+        axis = Snow::Vec3[1, 0, 0].normalize
         result = Gosling::Collision.project_onto_axis(@circle1, axis)
         expect(result).to be == [0, 10]
       end
@@ -957,11 +958,11 @@ describe Gosling::Collision do
         @circle1.center_x = 3
         @circle1.center_y = 6
 
-        axis = Vector[1, 0, 0].normalize
+        axis = Snow::Vec3[1, 0, 0].normalize
         result = Gosling::Collision.project_onto_axis(@circle1, axis)
         expect(result).to be == [-8, 2]
 
-        axis = Vector[0, 1, 0].normalize
+        axis = Snow::Vec3[0, 1, 0].normalize
         result = Gosling::Collision.project_onto_axis(@circle1, axis)
         expect(result).to be == [-11, -1]
       end
@@ -971,11 +972,11 @@ describe Gosling::Collision do
         @circle1.scale_x = 2
         @circle1.scale_y = 0.5
 
-        axis = Vector[1, 0, 0].normalize
+        axis = Snow::Vec3[1, 0, 0].normalize
         result = Gosling::Collision.project_onto_axis(@circle1, axis)
         expect(result).to be == [-10, 10]
 
-        axis = Vector[0, 1, 0].normalize
+        axis = Snow::Vec3[0, 1, 0].normalize
         result = Gosling::Collision.project_onto_axis(@circle1, axis)
         expect(result).to be == [-2.5, 2.5]
       end
@@ -984,7 +985,7 @@ describe Gosling::Collision do
         clean_shape(@circle1)
         @circle1.rotation = Math::PI
 
-        axis = Vector[1, 0, 0].normalize
+        axis = Snow::Vec3[1, 0, 0].normalize
         result = Gosling::Collision.project_onto_axis(@circle1, axis)
         expect(result).to be == [-5, 5]
       end
@@ -994,11 +995,11 @@ describe Gosling::Collision do
         @circle1.x = -12
         @circle1.y = 23
 
-        axis = Vector[1, 0, 0].normalize
+        axis = Snow::Vec3[1, 0, 0].normalize
         result = Gosling::Collision.project_onto_axis(@circle1, axis)
         expect(result).to be == [-17, -7]
 
-        axis = Vector[0, 1, 0].normalize
+        axis = Snow::Vec3[0, 1, 0].normalize
         result = Gosling::Collision.project_onto_axis(@circle1, axis)
         expect(result).to be == [18, 28]
       end
@@ -1010,17 +1011,17 @@ describe Gosling::Collision do
 
         create_inheritance_chain([@center_actor, @scale_actor, @rotate_actor, @translate_actor, circle])
 
-        axis = Vector[1, 0, 0].normalize
+        axis = Snow::Vec3[1, 0, 0].normalize
         result = Gosling::Collision.project_onto_axis(circle, axis)
         expect(result).to be == [-936.0, -866.0]
 
-        axis = Vector[0, 1, 0].normalize
+        axis = Snow::Vec3[0, 1, 0].normalize
         result = Gosling::Collision.project_onto_axis(circle, axis)
         expect(result).to be == [290.0, 340.0]
 
-        axis = Vector[1, 1, 0].normalize
+        axis = Snow::Vec3[1, 1, 0].normalize
         result = Gosling::Collision.project_onto_axis(circle, axis)
-        expect(result).to be == [-443.13439655375436, -385.5947509968793]
+        expect(result).to be == [-443.1343965537543, -385.5947509968793]
 
         break_inheritance_chain([@center_actor, @scale_actor, @rotate_actor, @translate_actor, circle])
       end
@@ -1028,21 +1029,21 @@ describe Gosling::Collision do
 
     context 'with a polygon' do
       it 'returns expected values' do
-        axis = Vector[1, 0, 0].normalize
+        axis = Snow::Vec3[1, 0, 0].normalize
         clean_shape(@polygon2)
         @polygon2.x = 0
         @polygon2.y = 0
         result = Gosling::Collision.project_onto_axis(@polygon2, axis)
         expect(result).to be == [-5, 5]
 
-        axis = Vector[0, 1, 0].normalize
+        axis = Snow::Vec3[0, 1, 0].normalize
         clean_shape(@polygon1)
         @polygon1.x = 0
         @polygon1.y = 5
         result = Gosling::Collision.project_onto_axis(@polygon1, axis)
         expect(result).to be == [0, 10]
 
-        axis = Vector[1, -1, 0].normalize
+        axis = Snow::Vec3[1, -1, 0].normalize
         clean_shape(@polygon1)
         @polygon1.x = 0
         @polygon1.y = 0
@@ -1056,11 +1057,11 @@ describe Gosling::Collision do
         @polygon1.center_x = 5
         @polygon1.center_y = -1
 
-        axis = Vector[1, 0, 0].normalize
+        axis = Snow::Vec3[1, 0, 0].normalize
         result = Gosling::Collision.project_onto_axis(@polygon1, axis)
         expect(result).to be == [-10, 0]
 
-        axis = Vector[0, 1, 0].normalize
+        axis = Snow::Vec3[0, 1, 0].normalize
         result = Gosling::Collision.project_onto_axis(@polygon1, axis)
         expect(result).to be == [-4, 6]
       end
@@ -1070,11 +1071,11 @@ describe Gosling::Collision do
         @polygon1.scale_x = 3
         @polygon1.scale_y = 2
 
-        axis = Vector[1, 0, 0].normalize
+        axis = Snow::Vec3[1, 0, 0].normalize
         result = Gosling::Collision.project_onto_axis(@polygon1, axis)
         expect(result).to be == [-15, 15]
 
-        axis = Vector[0, 1, 0].normalize
+        axis = Snow::Vec3[0, 1, 0].normalize
         result = Gosling::Collision.project_onto_axis(@polygon1, axis)
         expect(result).to be == [-10, 10]
       end
@@ -1083,11 +1084,11 @@ describe Gosling::Collision do
         clean_shape(@polygon1)
         @polygon1.rotation = Math::PI / 4
 
-        axis = Vector[1, 0, 0].normalize
+        axis = Snow::Vec3[1, 0, 0].normalize
         result = Gosling::Collision.project_onto_axis(@polygon1, axis)
         expect(result).to be == [-7.0710678118654755, 3.5355339059327373]
 
-        axis = Vector[0, 1, 0].normalize
+        axis = Snow::Vec3[0, 1, 0].normalize
         result = Gosling::Collision.project_onto_axis(@polygon1, axis)
         expect(result).to be == [-7.0710678118654755, 3.5355339059327378]
       end
@@ -1097,11 +1098,11 @@ describe Gosling::Collision do
         @polygon1.x = -7
         @polygon1.y = 13
 
-        axis = Vector[1, 0, 0].normalize
+        axis = Snow::Vec3[1, 0, 0].normalize
         result = Gosling::Collision.project_onto_axis(@polygon1, axis)
         expect(result).to be == [-12, -2]
 
-        axis = Vector[0, 1, 0].normalize
+        axis = Snow::Vec3[0, 1, 0].normalize
         result = Gosling::Collision.project_onto_axis(@polygon1, axis)
         expect(result).to be == [8, 18]
       end
@@ -1113,15 +1114,15 @@ describe Gosling::Collision do
 
         create_inheritance_chain([@center_actor, @scale_actor, @rotate_actor, @translate_actor, polygon])
 
-        axis = Vector[1, 0, 0].normalize
+        axis = Snow::Vec3[1, 0, 0].normalize
         result = Gosling::Collision.project_onto_axis(polygon, axis)
         expect(result).to be == [-918.5, -883.5]
 
-        axis = Vector[0, 1, 0].normalize
+        axis = Snow::Vec3[0, 1, 0].normalize
         result = Gosling::Collision.project_onto_axis(polygon, axis)
         expect(result).to be == [302.5, 327.5]
 
-        axis = Vector[1, 1, 0].normalize
+        axis = Snow::Vec3[1, 1, 0].normalize
         result = Gosling::Collision.project_onto_axis(polygon, axis)
         expect(result).to be == [-426.7389424460814, -393.1513703397204]
 

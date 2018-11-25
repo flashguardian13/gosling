@@ -27,10 +27,10 @@ module Gosling
 
     def rebuild_vertices
       vertices = [
-        Vector[     0,       0, 0],
-        Vector[@width,       0, 0],
-        Vector[@width, @height, 0],
-        Vector[     0, @height, 0],
+        Snow::Vec3[     0,       0, 0],
+        Snow::Vec3[@width,       0, 0],
+        Snow::Vec3[@width, @height, 0],
+        Snow::Vec3[     0, @height, 0],
       ]
       set_vertices(vertices)
     end

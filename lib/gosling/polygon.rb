@@ -8,10 +8,10 @@ module Gosling
       type_check(window, Gosu::Window)
       super(window)
       @vertices = [
-        Vector[0, 0, 0],
-        Vector[1, 0, 0],
-        Vector[1, 1, 0],
-        Vector[0, 1, 0]
+        Snow::Vec3[0, 0, 0],
+        Snow::Vec3[1, 0, 0],
+        Snow::Vec3[1, 1, 0],
+        Snow::Vec3[0, 1, 0]
       ]
     end
 
@@ -22,7 +22,7 @@ module Gosling
     def set_vertices(vertices)
       type_check(vertices, Array)
       raise ArgumentError.new("set_vertices() expects an array of at least three 3D Vectors") unless vertices.length >= 3
-      vertices.each { |v| type_check(v, Vector) }
+      vertices.each { |v| type_check(v, Snow::Vec3) }
       @vertices.replace(vertices)
     end
 
@@ -38,7 +38,7 @@ module Gosling
     private
 
     def render(matrix)
-      type_check(matrix, Matrix)
+      type_check(matrix, Snow::Mat3)
       global_vertices = @vertices.map { |v| Transform.transform_point(matrix, v) }
       i = 2
       while i < global_vertices.length

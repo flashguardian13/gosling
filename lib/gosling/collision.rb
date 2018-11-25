@@ -21,7 +21,7 @@ module Gosling
     end
 
     def self.is_point_in_shape?(point, shape)
-      type_check(point, Vector)
+      type_check(point, Snow::Vec3)
       type_check(shape, Actor)
 
       return false if shape.instance_of?(Actor)
@@ -36,7 +36,7 @@ module Gosling
 
       separation_axes.each do |axis|
         shape_projection = project_onto_axis(shape, axis)
-        point_projection = point.inner_product(axis)
+        point_projection = point.dot_product(axis)
         return false unless shape_projection.min <= point_projection && point_projection <= shape_projection.max
       end
 
@@ -44,15 +44,14 @@ module Gosling
     end
 
     def self.get_normal(vector)
-      type_check(vector, Vector)
-      raise ArgumentError.new("Cannot determine normal of zero-length vector") if vector.magnitude == 0
-
-      Vector[-vector[1], vector[0], 0]
+      type_check(vector, Snow::Vec3)
+      raise ArgumentError.new("Cannot determine normal of zero-length vector") if vector.magnitude_squared == 0
+      Snow::Vec3[-vector[1], vector[0], 0]
     end
 
     def self.get_polygon_separation_axes(vertices)
       type_check(vertices, Array)
-      vertices.each { |v| type_check(v, Vector) }
+      vertices.each { |v| type_check(v, Snow::Vec3) }
 
       axes = (0...vertices.length).map do |i|
         axis = vertices[(i + 1) % vertices.length] - vertices[i]
@@ -98,18 +97,18 @@ module Gosling
 
     def self.project_onto_axis(shape, axis)
       type_check(shape, Actor)
-      type_check(axis, Vector)
+      type_check(axis, Snow::Vec3)
 
       global_vertices = if shape.instance_of?(Circle)
         global_tf = shape.get_global_transform
-        local_axis = global_tf.inverse * Vector[axis[0], axis[1], 0]
+        local_axis = global_tf.inverse * Snow::Vec3[axis[0], axis[1], 0]
         v = shape.get_point_at_angle(Math.atan2(local_axis[1], local_axis[0]))
         [v, v * -1].map { |vertex| Transform.transform_point(global_tf, vertex) }
       else
         shape.get_global_vertices
       end
 
-      projections = global_vertices.map { |vertex| vertex.inner_product(axis) }.sort
+      projections = global_vertices.map { |vertex| vertex.dot_product(axis) }.sort
       [projections.first, projections.last]
     end
 
