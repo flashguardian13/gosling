@@ -4,6 +4,8 @@ require_relative 'utils.rb'
 
 module Gosling
   class Collision
+    include Singleton
+
     def self.test(shapeA, shapeB)
       return false if shapeA.instance_of?(Actor) || shapeB.instance_of?(Actor)
 
@@ -42,6 +44,8 @@ module Gosling
 
       return true
     end
+
+    private
 
     def self.get_normal(vector)
       type_check(vector, Snow::Vec3)
