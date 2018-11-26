@@ -148,10 +148,6 @@ module Gosling
       @matrix.multiply!(@rotate_mat)
       @matrix.multiply!(@translate_mat)
 
-      #~ @matrix = @translate_mat * @rotate_mat * @scale_mat * @center_mat
-
-      #~ @matrix = FastMatrix.combine_matrices(@translate_mat, @rotate_mat, @scale_mat, @center_mat).to_matrix
-
       @is_dirty = false
       @matrix
     end
@@ -160,7 +156,8 @@ module Gosling
       type_check(mat, Snow::Mat3)
       type_check(v, Snow::Vec3)
       result = mat * Snow::Vec3[v[0], v[1], 1.to_r]
-      Snow::Vec3[result[0], result[1], 0.to_r]
+      result[2] = 0.to_r
+      result
     end
 
     def transform_point(v)
@@ -175,7 +172,8 @@ module Gosling
         raise "Unable to invert matrix: #{mat}!"
       end
       result = mat.inverse * Snow::Vec3[v[0], v[1], 1.to_r]
-      Snow::Vec3[result[0], result[1], 0.to_r]
+      result[2] = 0.to_r
+      result
     end
 
     def untransform_point(v)
@@ -189,11 +187,6 @@ module Gosling
       @center_mat ||= Snow::Mat3.new
       @center_mat[2] = -@center.x
       @center_mat[5] = -@center.y
-      #~ @center_mat = Snow::Mat3[
-                      #~ 1.to_r, 0.to_r, -@center[0].to_r,
-                      #~ 0.to_r, 1.to_r, -@center[1].to_r,
-                      #~ 0.to_r, 0.to_r, 1.to_r
-                    #~ ]
       @center_is_dirty = false
     end
 
@@ -202,11 +195,6 @@ module Gosling
       @scale_mat ||= Snow::Mat3.new
       @scale_mat[0] = @scale[0].to_r
       @scale_mat[4] = @scale[1].to_r
-      #~ @scale_mat = Snow::Mat3[
-                      #~ @scale[0].to_r, 0.to_r,         0.to_r,
-                      #~ 0.to_r,         @scale[1].to_r, 0.to_r,
-                      #~ 0.to_r,         0.to_r,         1.to_r
-                    #~ ]
       @scale_is_dirty = false
     end
 
@@ -217,11 +205,6 @@ module Gosling
       @rotate_mat[1] = Transform.rational_sin(@rotation)
       @rotate_mat[3] = -Transform.rational_sin(@rotation)
       @rotate_mat[4] = Transform.rational_cos(@rotation)
-      #~ @rotate_mat = Snow::Mat3[
-                      #~ Transform.rational_cos(@rotation),  Transform.rational_sin(@rotation), 0.to_r,
-                      #~ -Transform.rational_sin(@rotation), Transform.rational_cos(@rotation), 0.to_r,
-                      #~ 0.to_r,                             0.to_r,                            1.to_r
-                    #~ ]
       @rotate_is_dirty = false
     end
 
@@ -230,11 +213,6 @@ module Gosling
       @translate_mat ||= Snow::Mat3.new
       @translate_mat[2] = @translation.x
       @translate_mat[5] = @translation.y
-      #~ @translate_mat = Snow::Mat3[
-                          #~ 1.to_r, 0.to_r, @translation[0].to_r,
-                          #~ 0.to_r, 1.to_r, @translation[1].to_r,
-                          #~ 0.to_r, 0.to_r, 1.to_r
-                        #~ ]
       @translate_is_dirty = false
     end
   end
