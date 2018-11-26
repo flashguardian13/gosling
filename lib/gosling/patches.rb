@@ -2,6 +2,9 @@ require 'snow-math'
 
 module Snow
   class Mat3
+    ##
+    # Monkey-patch fix for Mat3 * Vec3
+    #
     def multiply(rhs, out = nil)
       case rhs
       when ::Snow::Mat3
@@ -18,6 +21,9 @@ module Snow
     end
     alias_method :*, :multiply
 
+    ##
+    # Monkey-patch fix for #multiply! type-switching
+    #
     def multiply!(rhs)
       multiply rhs, case rhs
                     when ::Snow::Mat3, Numeric then self
@@ -26,6 +32,9 @@ module Snow
                     end
     end
 
+    ##
+    # Returns true if this Mat3 is an identity matrix.
+    #
     def identity?
       [1, 2, 3, 5, 6, 7].all? { |i| self[i] == 0 } && [0, 4, 8].all? { |i| self[i] == 1 }
     end

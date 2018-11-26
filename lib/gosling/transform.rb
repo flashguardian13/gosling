@@ -4,7 +4,14 @@ require_relative 'patches.rb'
 require_relative 'utils.rb'
 
 module Gosling
+  ##
+  # A helper class for performing vector transforms in 2D space. Relies heavily on the Vec3 and Mat3 classes of the
+  # SnowMath gem to remain performant.
+  #
   class Transform
+    ##
+    # Wraps Math.sin to produce rationals instead of floats. Common values are returned quickly from a lookup table.
+    #
     def self.rational_sin(r)
       type_check(r, Numeric)
 
@@ -23,6 +30,9 @@ module Gosling
       end
     end
 
+    ##
+    # Wraps Math.cos to produce rationals instead of floats. Common values are returned quickly from a lookup table.
+    #
     def self.rational_cos(r)
       type_check(r, Numeric)
 
@@ -43,6 +53,8 @@ module Gosling
 
     attr_reader :rotation
 
+    ##
+    # Creates a new transform object with no transformations (identity matrix).
     def initialize
       @center = Snow::Vec3[0.to_r, 0.to_r, 1.to_r]
       @scale = Snow::Vec2[1.to_r, 1.to_r]
@@ -50,6 +62,10 @@ module Gosling
       reset
     end
 
+    ##
+    # Resets center and translation to [0, 0], scale to [1, 1], and rotation to 0, restoring this transformation to the identity
+    # matrix.
+    #
     def reset
       self.center = 0.to_r, 0.to_r
       self.scale = 1.to_r, 1.to_r
@@ -57,18 +73,51 @@ module Gosling
       self.translation = 0.to_r, 0.to_r
     end
 
+    ##
+    # Returns a duplicate of the center Vec3 (@center is read-only).
+    #
     def center
       @center.dup
     end
 
+    ##
+    # Returns a duplicate of the scale Vec2 (@scale is read-only).
+    #
     def scale
       @scale.dup
     end
 
+    ##
+    # Returns a duplicate of the translation Vec3 (@translation is read-only).
+    #
     def translation
       @translation.dup
     end
 
+    ##
+    # Sets this transform's centerpoint. All other transforms are performed relative to this central point.
+    #
+    # The default centerpoint is [0, 0], which is the same as no transform. For a square defined by the vertices
+    # [[0, 0], [10, 0], [10, 10], [0, 10]], this would translate to that square's upper left corner. In this case, when scaled
+    # larger or smaller, only the square's right and bottom edges would expand or  contract, and when rotated it
+    # would spin around its upper left corner. For most applications, this is probably not what we want.
+    #
+    # By setting the centerpoint to something other than the origin, we can change the scaling and rotation to
+    # something that makes more sense. For the square defined above, we could set center to be the actual center of
+    # the square: [5, 5]. By doing so, scaling the square would cause it to expand evenly on all sides, and rotating it
+    # would cause it to spin about its center like a four-cornered wheel.
+    #
+    # You can set the centerpoint to be any point in local space, inside or even outside of the shape in question.
+    #
+    # If passed more than two numeric arguments, only the first two are used.
+    #
+    # Usage:
+    # - transform.center = x, y
+    # - transform.center = [x, y]
+    # - transform.center = Snow::Vec2[x, y]
+    # - transform.center = Snow::Vec3[x, y, z]
+    # - transform.center = Snow::Vec4[x, y, z, c]
+    #
     def center=(args)
       case args[0]
       when Array
@@ -88,6 +137,19 @@ module Gosling
     end
     alias :set_center :center=
 
+    ##
+    # Sets this transform's x/y scaling. A scale value of [1, 1] results in no scaling. Larger values make a shape bigger,
+    # while smaller values will make it smaller. Great for shrinking/growing animations, or to zoom the camera in/out.
+    #
+    # If passed more than two numeric arguments, only the first two are used.
+    #
+    # Usage:
+    # - transform.scale = x, y
+    # - transform.scale = [x, y]
+    # - transform.scale = Snow::Vec2[x, y]
+    # - transform.scale = Snow::Vec3[x, y, z]
+    # - transform.scale = Snow::Vec4[x, y, z, c]
+    #
     def scale=(args)
       case args[0]
       when Array
@@ -107,6 +169,13 @@ module Gosling
     end
     alias :set_scale :scale=
 
+    ##
+    # Sets this transform's rotation in radians. A value of 0 results in no rotation. Great for spinning animations, or
+    # rotating the player's camera view.
+    #
+    # Usage:
+    # - transform.rotation = radians
+    #
     def rotation=(radians)
       type_check(radians, Numeric)
       @rotation = radians
@@ -114,6 +183,19 @@ module Gosling
     end
     alias :set_rotation :rotation=
 
+    ##
+    # Sets this transform's x/y translation in radians. A value of [0, 0] results in no translation. Great for moving
+    # actors across the screen or scrolling the camera.
+    #
+    # If passed more than two numeric arguments, only the first two are used.
+    #
+    # Usage:
+    # - transform.translation = x, y
+    # - transform.translation = [x, y]
+    # - transform.translation = Snow::Vec2[x, y]
+    # - transform.translation = Snow::Vec3[x, y, z]
+    # - transform.translation = Snow::Vec4[x, y, z, c]
+    #
     def translation=(args)
       case args[0]
       when Array
@@ -133,6 +215,13 @@ module Gosling
     end
     alias :set_translation :translation=
 
+    ##
+    # Returns a Snow::Mat3 which combines our current center, scale, rotation, and translation into a single transform
+    # matrix. When a point in space is multiplied by this transform, the centering, scaling, rotation, and translation
+    # will all be applied to that point.
+    #
+    # This Snow::Mat3 is cached and will only be recalculated as needed.
+    #
     def to_matrix
       return @matrix unless @is_dirty || @matrix.nil?
 
@@ -152,6 +241,10 @@ module Gosling
       @matrix
     end
 
+    ##
+    # Transforms a Vec3 using the provided Mat3 transform and returns the result as a new Vec3. This is the
+    # opposite of Transform.untransform_point.
+    #
     def self.transform_point(mat, v)
       type_check(mat, Snow::Mat3)
       type_check(v, Snow::Vec3)
@@ -160,10 +253,18 @@ module Gosling
       result
     end
 
+    ##
+    # Applies all of our transformations to the point, returning the resulting point as a new Vec3. This is the opposite
+    # of Transform#untransform_point.
+    #
     def transform_point(v)
       Transform.transform_point(to_matrix, v)
     end
 
+    ##
+    # Transforms a Vec3 using the inverse of the provided Mat3 transform and returns the result as a new Vec3. This
+    # is the opposite of Transform.transform_point.
+    #
     def self.untransform_point(mat, v)
       type_check(mat, Snow::Mat3)
       type_check(v, Snow::Vec3)
@@ -176,6 +277,10 @@ module Gosling
       result
     end
 
+    ##
+    # Applies the inverse of all of our transformations to the point, returning the resulting point as a new Vec3. This
+    # is the opposite of Transform#transform_point.
+    #
     def untransform_point(v)
       Transform.untransform_point(to_matrix, v)
     end

@@ -3,9 +3,29 @@ require 'singleton'
 require_relative 'utils.rb'
 
 module Gosling
+  ##
+  # Very basic 2D collision detection. It is naive to where actors were during the last physics step or how fast they are
+  # moving. But it does a fine job of detecting collisions between actors in their present state.
+  #
+  # Keep in mind that Actors and their subclasses each have their own unique shapes. Actors, by themselves, have no
+  # shape and will never collide with anything. To see collisions in action, you'll need to use Circle, Polygon, or
+  # something else that has an actual shape.
+  #
+
   class Collision
     include Singleton
 
+    ##
+    # Tests two Actors or child classes to see whether they overlap. Actors, having no shape, never overlap. Child
+    # classes use appropriate algorithms based on their shape.
+    #
+    # Arguments:
+    # - shapeA: an Actor
+    # - shapeB: another Actor
+    #
+    # Returns:
+    # - true if the actors' shapes overlap, false otherwise
+    #
     def self.test(shapeA, shapeB)
       return false if shapeA.instance_of?(Actor) || shapeB.instance_of?(Actor)
 
@@ -22,6 +42,16 @@ module Gosling
       return true
     end
 
+    ##
+    # Tests a point in space to see whether it is inside the actor's shape or not.
+    #
+    # Arguments:
+    # - point: a Snow::Vec3
+    # - shape: an Actor
+    #
+    # Returns:
+    # - true if the point is inside of the actor's shape, false otherwise
+    #
     def self.is_point_in_shape?(point, shape)
       type_check(point, Snow::Vec3)
       type_check(shape, Actor)
