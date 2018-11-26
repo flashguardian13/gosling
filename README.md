@@ -1,6 +1,6 @@
 # Gosling
 
-Provides some common 2d application functionality using Gosu gem and Ruby's Vector/Matrix classes.
+Provides some common 2d application functionality using Gosu gem and nilium's [snow-math](https://github.com/nilium/ruby-snowmath) gem.
 
 ## Installation
 
@@ -9,6 +9,10 @@ gem install gosling
 ```
 
 ## Example Usage
+
+Check out the example game that ships with the gem. You'll find it in `examples/shooter`. That should give you a pretty good idea of where to start and how to do things. You can even use it as a skeleton from which to create your own game or app.
+
+## Tutorial
 
 First, you'll want to be familiar with Gosu, because this gem relies on Gosu pretty heavily. Start [here](https://github.com/gosu/gosu) if you're unfamiliar.
 
@@ -184,7 +188,7 @@ To test whether two Actors have collided or are overlapping, pass those two Acto
 
 ## What Gosling Isn't
 
-It is not fast. It is not 3D. It is not a physics engine. But there's no reason you couldn't use it to develop some simple games, or a calendar, or to-do list app.
+It is not 3D. It is not a physics engine. And it's not meant to be blazingly fast, but I want to ensure that it's at least reasonably performant for most 2D game applications and animations. Thanks to user nilium's [snow-math](https://github.com/nilium/ruby-snowmath) gem, the vast majority of the mathematical heavy-lifting is done on the C-side rather than the Ruby side, so at present it's pretty smooth.
 
 ## Testing
 
@@ -194,9 +198,17 @@ Tests are written in RSpec. To run them:
 rspec spec
 ```
 
+## Changelog
+
+Version 2.0.0 - released November 25, 2018
+- Switched from Ruby's standard Matrix/Vector classes to nilium's [snow-math](https://github.com/nilium/ruby-snowmath)! Frame rates are now +much+ better when lots of Actors are on-screen! The downside is that any apps which used previous versions will need to change all their uses of Matrix to Snow::Mat3 and Vector to Snow::Vec3. Personally, I found the conversion pretty straightforward, but if anyone complains about the lack of backwards-compatibility, there's a small possibility that I could go back and fix it. No promises. I'd really like to encourage everyone to switch out for the faster, more memory-efficient snow-math classes.
+- Added RDoc documentation via comments.
+- Added a really basic example game to demonstrate a typical game build.
+- More robust argument type-checking. (Sorry to all you ducks, but you're gonna need to show some ID.)
+- Various optimizations and bugfixes.
+
 ## TODO
 
-- Make private any methods not intended for use by developers
-- Add documentation to GitHub wiki
-- Use a faster Matrix class for all transforms
 - Update everything to take advantage of latest version of Gosu wherever possible
+- Update everything to take advantage of full snow-math functionality
+- A shinier example game, maybe?

@@ -6,7 +6,7 @@ require 'gosling/version'
 Gem::Specification.new do |spec|
   spec.name        = 'gosling'
   spec.version     = Gosling::VERSION
-  spec.date        = '2018-10-07'
+  spec.date        = "2018-11-25"
   spec.summary     = "Ruby 2D app creation"
   spec.description = "A lightweight library for creating 2D apps in Ruby."
   spec.authors     = ['Ben Amos']
@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency 'gosu', '~> 0.14'
+  spec.add_dependency 'snow-math', '~> 1.7'
 
   spec.add_development_dependency 'rspec', '~> 3.5'
 end

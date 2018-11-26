@@ -1,3 +1,9 @@
+module Gosling
+  class Actor
+    public :render
+  end
+end
+
 describe Gosling::Actor do
   before(:all) do
     @window = Gosu::Window.new(640, 480, false)
@@ -186,14 +192,14 @@ describe Gosling::Actor do
 
   describe '#render' do
     it 'the method exists' do
-      expect { @read_only_actor.render(Matrix.identity(3)) }.not_to raise_error
+      expect { @read_only_actor.render(Snow::Mat3.new) }.not_to raise_error
     end
   end
 
   describe '#draw' do
     before(:all) do
       @draw_actor = Gosling::Actor.new(@window)
-      @mat = Matrix.identity(3)
+      @mat = Snow::Mat3.new
     end
 
     context 'when visible' do
@@ -237,15 +243,15 @@ describe Gosling::Actor do
       end
 
       it 'passes its children a comprehensive transformation matrix' do
-        parameter_mat = Matrix[
-          [1, 0, 10],
-          [0, 1, 20],
-          [0, 0,  1]
+        parameter_mat = Snow::Mat3[
+          1, 0, 10,
+          0, 1, 20,
+          0, 0,  1
         ]
-        self_mat = Matrix[
-          [2, 0, 0],
-          [0, 3, 0],
-          [0, 0, 1]
+        self_mat = Snow::Mat3[
+          2, 0, 0,
+          0, 3, 0,
+          0, 0, 1
         ]
         result_mat = parameter_mat * self_mat
 
@@ -264,7 +270,7 @@ describe Gosling::Actor do
 
   describe '#is_point_in_bounds' do
     it 'returns false' do
-      expect(@read_only_actor.is_point_in_bounds(Vector[0,0,1])).to be false
+      expect(@read_only_actor.is_point_in_bounds(Snow::Vec3[0,0,1])).to be false
     end
   end
 
@@ -277,7 +283,7 @@ describe Gosling::Actor do
       it 'returns nil even if hit' do
         @parent.is_tangible = false
         allow(@parent).to receive(:is_point_in_bounds).and_return(true)
-        expect(@parent.get_actor_at(Vector[0,0,1])).to be == nil
+        expect(@parent.get_actor_at(Snow::Vec3[0,0,1])).to be == nil
         @parent.is_tangible = true
       end
     end
@@ -285,12 +291,12 @@ describe Gosling::Actor do
     context 'with no children' do
       it 'returns itself if the point is within its bounds' do
         allow(@parent).to receive(:is_point_in_bounds).and_return(true)
-        expect(@parent.get_actor_at(Vector[0,0,1])).to be == @parent
+        expect(@parent.get_actor_at(Snow::Vec3[0,0,1])).to be == @parent
       end
 
       it 'returns nil if point is not within its bounds' do
         allow(@parent).to receive(:is_point_in_bounds).and_return(false)
-        expect(@parent.get_actor_at(Vector[0,0,1])).to be == nil
+        expect(@parent.get_actor_at(Snow::Vec3[0,0,1])).to be == nil
       end
     end
 
@@ -309,8 +315,8 @@ describe Gosling::Actor do
           allow(@child1).to receive(:is_point_in_bounds).and_return(true)
           allow(@child2).to receive(:is_point_in_bounds).and_return(true)
 
-          expect(@parent.get_actor_at(Vector[0,0,1])).to be == nil
-          expect(@parent.get_actor_at(Vector[0,0,1])).to be == @parent
+          expect(@parent.get_actor_at(Snow::Vec3[0,0,1])).to be == nil
+          expect(@parent.get_actor_at(Snow::Vec3[0,0,1])).to be == @parent
           @parent.are_children_tangible = true
         end
       end
@@ -320,7 +326,7 @@ describe Gosling::Actor do
         allow(@child1).to receive(:is_point_in_bounds).and_return(false, false, true,  true)
         allow(@child2).to receive(:is_point_in_bounds).and_return(true)
 
-        4.times { expect(@parent.get_actor_at(Vector[0,0,1])).to be == @child2 }
+        4.times { expect(@parent.get_actor_at(Snow::Vec3[0,0,1])).to be == @child2 }
       end
 
       it "returns the first child if the second was not hit" do
@@ -328,7 +334,7 @@ describe Gosling::Actor do
         allow(@child1).to receive(:is_point_in_bounds).and_return(true)
         allow(@child2).to receive(:is_point_in_bounds).and_return(false)
 
-        2.times { expect(@parent.get_actor_at(Vector[0,0,1])).to be == @child1 }
+        2.times { expect(@parent.get_actor_at(Snow::Vec3[0,0,1])).to be == @child1 }
       end
 
       it "returns itself if neither child was hit" do
@@ -336,7 +342,7 @@ describe Gosling::Actor do
         allow(@child1).to receive(:is_point_in_bounds).and_return(false)
         allow(@child2).to receive(:is_point_in_bounds).and_return(false)
 
-        expect(@parent.get_actor_at(Vector[0,0,1])).to be == @parent
+        expect(@parent.get_actor_at(Snow::Vec3[0,0,1])).to be == @parent
       end
 
       it 'returns nil if point is not within it or its children' do
@@ -344,7 +350,7 @@ describe Gosling::Actor do
         allow(@child1).to receive(:is_point_in_bounds).and_return(false)
         allow(@child2).to receive(:is_point_in_bounds).and_return(false)
 
-        expect(@parent.get_actor_at(Vector[0,0,1])).to be == nil
+        expect(@parent.get_actor_at(Snow::Vec3[0,0,1])).to be == nil
       end
 
       context 'with a mask child' do
@@ -354,7 +360,7 @@ describe Gosling::Actor do
           allow(@child1).to receive(:is_point_in_bounds).and_return(true)
           allow(@child2).to receive(:is_point_in_bounds).and_return(false)
 
-          expect(@parent.get_actor_at(Vector[0,0,1])).to be == @parent
+          expect(@parent.get_actor_at(Snow::Vec3[0,0,1])).to be == @parent
           @child1.is_mask = false
         end
       end
@@ -374,7 +380,7 @@ describe Gosling::Actor do
       it 'returns an empty array even if hit' do
         @parent.is_tangible = false
         allow(@parent).to receive(:is_point_in_bounds).and_return(true)
-        expect(@parent.get_actors_at(Vector[0,0,1])).to be_empty
+        expect(@parent.get_actors_at(Snow::Vec3[0,0,1])).to be_empty
         @parent.is_tangible = true
       end
     end
@@ -382,12 +388,12 @@ describe Gosling::Actor do
     context 'with no children' do
       it 'returns an array containing itself if the point is within its bounds' do
         allow(@parent).to receive(:is_point_in_bounds).and_return(true)
-        expect(@parent.get_actors_at(Vector[0,0,1])).to be == [@parent]
+        expect(@parent.get_actors_at(Snow::Vec3[0,0,1])).to be == [@parent]
       end
 
       it 'returns an empty array if point is not within its bounds' do
         allow(@parent).to receive(:is_point_in_bounds).and_return(false)
-        expect(@parent.get_actors_at(Vector[0,0,1])).to be_empty
+        expect(@parent.get_actors_at(Snow::Vec3[0,0,1])).to be_empty
       end
     end
 
@@ -406,8 +412,8 @@ describe Gosling::Actor do
           allow(@child1).to receive(:is_point_in_bounds).and_return(true)
           allow(@child2).to receive(:is_point_in_bounds).and_return(true, false)
 
-          expect(@parent.get_actors_at(Vector[0,0,1])).to be == []
-          expect(@parent.get_actors_at(Vector[0,0,1])).to be == [@parent]
+          expect(@parent.get_actors_at(Snow::Vec3[0,0,1])).to be == []
+          expect(@parent.get_actors_at(Snow::Vec3[0,0,1])).to be == [@parent]
           @parent.are_children_tangible = true
         end
       end
@@ -417,14 +423,14 @@ describe Gosling::Actor do
         allow(@child1).to receive(:is_point_in_bounds).and_return(false, false, true,  true, false, false, true,  true)
         allow(@child2).to receive(:is_point_in_bounds).and_return(false, false, false, false, true,  true, true,  true)
 
-        expect(@parent.get_actors_at(Vector[0,0,1])).to be == []
-        expect(@parent.get_actors_at(Vector[0,0,1])).to be == [@parent]
-        expect(@parent.get_actors_at(Vector[0,0,1])).to be == [@child1]
-        expect(@parent.get_actors_at(Vector[0,0,1])).to be == [@child1, @parent]
-        expect(@parent.get_actors_at(Vector[0,0,1])).to be == [@child2]
-        expect(@parent.get_actors_at(Vector[0,0,1])).to be == [@child2, @parent]
-        expect(@parent.get_actors_at(Vector[0,0,1])).to be == [@child2, @child1]
-        expect(@parent.get_actors_at(Vector[0,0,1])).to be == [@child2, @child1, @parent]
+        expect(@parent.get_actors_at(Snow::Vec3[0,0,1])).to be == []
+        expect(@parent.get_actors_at(Snow::Vec3[0,0,1])).to be == [@parent]
+        expect(@parent.get_actors_at(Snow::Vec3[0,0,1])).to be == [@child1]
+        expect(@parent.get_actors_at(Snow::Vec3[0,0,1])).to be == [@child1, @parent]
+        expect(@parent.get_actors_at(Snow::Vec3[0,0,1])).to be == [@child2]
+        expect(@parent.get_actors_at(Snow::Vec3[0,0,1])).to be == [@child2, @parent]
+        expect(@parent.get_actors_at(Snow::Vec3[0,0,1])).to be == [@child2, @child1]
+        expect(@parent.get_actors_at(Snow::Vec3[0,0,1])).to be == [@child2, @child1, @parent]
       end
 
       context 'with a mask child' do
@@ -437,7 +443,7 @@ describe Gosling::Actor do
           allow(@child1).to receive(:is_point_in_bounds).and_return(true)
           allow(@child2).to receive(:is_point_in_bounds).and_return(false)
 
-          expect(@parent.get_actors_at(Vector[0,0,1])).to be == [@parent]
+          expect(@parent.get_actors_at(Snow::Vec3[0,0,1])).to be == [@parent]
         end
 
         it 'returns the parent only once if both children are masks and are hit' do
@@ -446,7 +452,7 @@ describe Gosling::Actor do
           allow(@child1).to receive(:is_point_in_bounds).and_return(true)
           allow(@child2).to receive(:is_point_in_bounds).and_return(true)
 
-          expect(@parent.get_actors_at(Vector[0,0,1])).to be == [@parent]
+          expect(@parent.get_actors_at(Snow::Vec3[0,0,1])).to be == [@parent]
           @child2.is_mask = false
         end
 
@@ -455,7 +461,7 @@ describe Gosling::Actor do
           allow(@child1).to receive(:is_point_in_bounds).and_return(true)
           allow(@child2).to receive(:is_point_in_bounds).and_return(false)
 
-          expect(@parent.get_actors_at(Vector[0,0,1])).to be == [@parent]
+          expect(@parent.get_actors_at(Snow::Vec3[0,0,1])).to be == [@parent]
         end
 
         after(:all) do
@@ -472,9 +478,7 @@ describe Gosling::Actor do
   describe '#get_global_transform' do
     it 'returns a 3x3 matrix' do
       result = @parent.get_global_transform
-      expect(result).to be_instance_of(Matrix)
-      expect(result.row_size).to be == 3
-      expect(result.column_size).to be == 3
+      expect(result).to be_instance_of(Snow::Mat3)
     end
 
     it 'is a composite of its own transform plus all of its ancestors' do
@@ -498,7 +502,7 @@ describe Gosling::Actor do
       rotated_view.add_child(translated_view)
       translated_view.add_child(@parent)
 
-      expected = Matrix.identity(3) * centered_view.transform.to_matrix * scaled_view.transform.to_matrix * rotated_view.transform.to_matrix * translated_view.transform.to_matrix * @parent.transform.to_matrix
+      expected = @parent.transform.to_matrix * translated_view.transform.to_matrix * rotated_view.transform.to_matrix * scaled_view.transform.to_matrix * centered_view.transform.to_matrix
 
       result = @parent.get_global_transform
       expect(result).to be == expected
@@ -510,8 +514,7 @@ describe Gosling::Actor do
   describe '#get_global_position' do
     it 'returns a 3d vector' do
       result = @parent.get_global_position
-      expect(result).to be_instance_of(Vector)
-      expect(result.size).to be == 3
+      expect(result).to be_instance_of(Snow::Vec3)
     end
 
     context 'with a long ancestry' do
@@ -555,7 +558,7 @@ describe Gosling::Actor do
 
       it 'respects all ancestors' do
         result = @parent.get_global_position
-        expect(result).to be == Vector[(0 + 10) * 3 - 10, (0 - 50) * -2 - 2, 0]
+        expect(result).to be == Snow::Vec3[(0 + 10) * 3 - 10, (0 - 50) * -2 - 2, 0]
       end
 
       after do

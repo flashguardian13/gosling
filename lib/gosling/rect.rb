@@ -1,9 +1,16 @@
 require_relative 'polygon.rb'
 
 module Gosling
+  ##
+  # A Rect is a Polygon with exactly four vertices, defined by a width and height, with sides at right angles to one
+  # another. The width and height can be modified at runtime; all vertices will be updated automatically.
+  #
   class Rect < Polygon
     attr_reader :width, :height
 
+    ##
+    # Creates a new Rect with a width and height of 1.
+    #
     def initialize(window)
       super(window)
       @width = 1
@@ -23,12 +30,14 @@ module Gosling
       rebuild_vertices
     end
 
+    private
+
     def rebuild_vertices
       vertices = [
-        Vector[     0,       0, 0],
-        Vector[@width,       0, 0],
-        Vector[@width, @height, 0],
-        Vector[     0, @height, 0],
+        Snow::Vec3[     0,       0, 0],
+        Snow::Vec3[@width,       0, 0],
+        Snow::Vec3[@width, @height, 0],
+        Snow::Vec3[     0, @height, 0],
       ]
       set_vertices(vertices)
     end

@@ -1,35 +1,67 @@
 require_relative 'actor.rb'
 require_relative 'collision.rb'
+require_relative 'utils.rb'
 
 module Gosling
+  ##
+  # A Polygon is an Actor with a shape defined by three or more vertices. Can be used to make triangles, hexagons, or
+  # any other unusual geometry not covered by the other Actors. For circles, you should use Circle. For squares or
+  # rectangles, see Rect.
+  #
   class Polygon < Actor
+    ##
+    # Creates a new, square Polygon with a width and height of 1.
+    #
     def initialize(window)
+      type_check(window, Gosu::Window)
       super(window)
       @vertices = [
-        Vector[0, 0, 0],
-        Vector[1, 0, 0],
-        Vector[1, 1, 0],
-        Vector[0, 1, 0]
+        Snow::Vec3[0, 0, 0],
+        Snow::Vec3[1, 0, 0],
+        Snow::Vec3[1, 1, 0],
+        Snow::Vec3[0, 1, 0]
       ]
     end
 
+    ##
+    # Returns a copy of this Polygon's vertices (@vertices is read-only).
+    #
     def get_vertices
       @vertices.dup
     end
 
+    ##
+    # Sets this polygon's vertices. Requires three or more Snow::Vec3.
+    #
+    # Usage:
+    # - polygon.set_vertices([Snow::Vec3[-1, 0, 0], Snow::Vec3[0, -1, 0], Snow::Vec3[1, 1, 0]])
+    #
     def set_vertices(vertices)
-      unless vertices.is_a?(Array) && vertices.length >= 3 && vertices.reject { |v| v.is_a?(Vector) && v.size == 3 }.empty?
-        raise ArgumentError.new("set_vertices() expects an array of at least three 3D Vectors")
-      end
+      type_check(vertices, Array)
+      raise ArgumentError.new("set_vertices() expects an array of at least three 3D Vectors") unless vertices.length >= 3
+      vertices.each { |v| type_check(v, Snow::Vec3) }
       @vertices.replace(vertices)
     end
 
+    ##
+    # Returns an array containing all of our local vertices transformed to global-space. (See Actor#get_global_transform.)
+    #
     def get_global_vertices
       tf = get_global_transform
       @vertices.map { |v| Transform.transform_point(tf, v) }
     end
 
+    ##
+    # Returns true if the point is inside of this Polygon, false otherwise.
+    #
+    def is_point_in_bounds(point)
+      Collision.is_point_in_shape?(point, self)
+    end
+
+    private
+
     def render(matrix)
+      type_check(matrix, Snow::Mat3)
       global_vertices = @vertices.map { |v| Transform.transform_point(matrix, v) }
       i = 2
       while i < global_vertices.length
@@ -43,10 +75,6 @@ module Gosling
         )
         i += 1
       end
-    end
-
-    def is_point_in_bounds(point)
-      Collision.is_point_in_shape?(point, self)
     end
   end
 end

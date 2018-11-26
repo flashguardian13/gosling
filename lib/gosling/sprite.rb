@@ -1,6 +1,12 @@
 require_relative 'rect.rb'
 
 module Gosling
+  ##
+  # This type of Actor accepts a Gosu::Image to be rendered in place of the standard flat-colored shape. It behaves very
+  # much like a Rect, except its width and height are automatically set to the width and height of the image given to it
+  # and cannot be modified otherwise. The image can be changed at runtime. Changing this actor's color or alpha
+  # applies tinting and transparency to the image rendered.
+  #
   class Sprite < Rect
     def initialize(window)
       super(window)
@@ -8,16 +14,24 @@ module Gosling
       @color = Gosu::Color.rgba(255, 255, 255, 255)
     end
 
+    ##
+    # Returns the image currently assigned to this Sprite.
+    #
     def get_image
       @image
     end
 
+    ##
+    # Assigns the image to this Sprite, setting its width and height to match the image's.
+    #
     def set_image(image)
       raise ArgumentError.new("Expected Image, but received #{image.inspect}!") unless image.is_a?(Gosu::Image)
       @image = image
       self.width = @image.width
       self.height = @image.height
     end
+
+    private
 
     def render(matrix)
       global_vertices = @vertices.map { |v| Transform.transform_point(matrix, v) }

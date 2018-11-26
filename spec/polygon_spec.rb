@@ -7,7 +7,7 @@ describe Gosling::Polygon do
   describe '#get_vertices' do
     it 'returns a list of three or more vertices' do
       expect(@polygon.get_vertices).to be_instance_of(Array)
-      expect(@polygon.get_vertices[0]).to be_instance_of(Vector)
+      expect(@polygon.get_vertices[0]).to be_instance_of(Snow::Vec3)
       expect(@polygon.get_vertices.length).to be >= 3
     end
   end
@@ -15,10 +15,10 @@ describe Gosling::Polygon do
   describe '#set_vertices' do
     it 'assigns new vertices' do
       vertices = [
-        Vector[ 1,  0, 1],
-        Vector[ 0,  1, 1],
-        Vector[-1,  0, 1],
-        Vector[ 0, -1, 1],
+        Snow::Vec3[ 1,  0, 1],
+        Snow::Vec3[ 0,  1, 1],
+        Snow::Vec3[-1,  0, 1],
+        Snow::Vec3[ 0, -1, 1],
       ]
 
       polygon = Gosling::Polygon.new(@window)
@@ -45,8 +45,8 @@ describe Gosling::Polygon do
 
     it 'raises an error if the parameter array is too short' do
       vertices = [
-        Vector[ 1,  0, 1],
-        Vector[ 0,  1, 1]
+        Snow::Vec3[ 1,  0, 1],
+        Snow::Vec3[ 0,  1, 1]
       ]
 
       polygon = Gosling::Polygon.new(@window)
@@ -55,10 +55,10 @@ describe Gosling::Polygon do
 
     it 'raises an error if any vertices in the parameter array are not length 3' do
       vertices = [
-        Vector[ 1,  0],
-        Vector[ 0,  1],
-        Vector[-1,  0],
-        Vector[ 0, -1],
+        Snow::Vec3[ 1,  0, 1],
+        Snow::Vec3[ 0,  1, 0],
+        Snow::Vec2[-1,  0],
+        Snow::Vec3[ 0, -1, 3],
       ]
 
       polygon = Gosling::Polygon.new(@window)
@@ -70,17 +70,17 @@ describe Gosling::Polygon do
     before(:all) do
       @global_polygon = Gosling::Polygon.new(@window)
       @global_polygon.set_vertices([
-        Vector[1, 1, 0],
-        Vector[0, -1, 0],
-        Vector[-1, -1, 0],
-        Vector[-1, 2, 0]
+        Snow::Vec3[1, 1, 0],
+        Snow::Vec3[0, -1, 0],
+        Snow::Vec3[-1, -1, 0],
+        Snow::Vec3[-1, 2, 0]
       ])
     end
 
     it 'returns a list of three or more vertices' do
       result = @global_polygon.get_global_vertices
       expect(result).to be_instance_of(Array)
-      expect(result[0]).to be_instance_of(Vector)
+      expect(result[0]).to be_instance_of(Snow::Vec3)
       expect(result.length).to be >= 3
     end
 
@@ -95,10 +95,10 @@ describe Gosling::Polygon do
 
       vertices = @global_polygon.get_global_vertices
       expect(vertices).to be == [
-        Vector[-9, -1, 0],
-        Vector[-10, -3, 0],
-        Vector[-11, -3, 0],
-        Vector[-11, 0, 0]
+        Snow::Vec3[-9, -1, 0],
+        Snow::Vec3[-10, -3, 0],
+        Snow::Vec3[-11, -3, 0],
+        Snow::Vec3[-11, 0, 0]
       ]
     end
 
@@ -113,10 +113,10 @@ describe Gosling::Polygon do
 
       vertices = @global_polygon.get_global_vertices
       expect(vertices).to be == [
-        Vector[3, 2, 0],
-        Vector[0, -2, 0],
-        Vector[-3, -2, 0],
-        Vector[-3, 4, 0]
+        Snow::Vec3[3, 2, 0],
+        Snow::Vec3[0, -2, 0],
+        Snow::Vec3[-3, -2, 0],
+        Snow::Vec3[-3, 4, 0]
       ]
     end
 
@@ -131,10 +131,10 @@ describe Gosling::Polygon do
 
       vertices = @global_polygon.get_global_vertices
       expect(vertices).to be == [
-        Vector[1, -1, 0],
-        Vector[-1, 0, 0],
-        Vector[-1, 1, 0],
-        Vector[2, 1, 0]
+        Snow::Vec3[1, -1, 0],
+        Snow::Vec3[-1, 0, 0],
+        Snow::Vec3[-1, 1, 0],
+        Snow::Vec3[2, 1, 0]
       ]
     end
 
@@ -149,10 +149,10 @@ describe Gosling::Polygon do
 
       vertices = @global_polygon.get_global_vertices
       expect(vertices).to be == [
-        Vector[-49, 11, 0],
-        Vector[-50, 9, 0],
-        Vector[-51, 9, 0],
-        Vector[-51, 12, 0]
+        Snow::Vec3[-49, 11, 0],
+        Snow::Vec3[-50, 9, 0],
+        Snow::Vec3[-51, 9, 0],
+        Snow::Vec3[-51, 12, 0]
       ]
     end
 
@@ -198,10 +198,10 @@ describe Gosling::Polygon do
       it 'respects all ancestors' do
         vertices = @global_polygon.get_global_vertices
         expect(vertices).to be == [
-          Vector[(1 + 10) * 3 - 10, (1 - 50) * -2 - 2, 0],
-          Vector[(-1 + 10) * 3 - 10, (0 - 50) * -2 - 2, 0],
-          Vector[(-1 + 10) * 3 - 10, (-1 - 50) * -2 - 2, 0],
-          Vector[(2 + 10) * 3 - 10, (-1 - 50) * -2 - 2, 0]
+          Snow::Vec3[(1 + 10) * 3 - 10, (1 - 50) * -2 - 2, 0],
+          Snow::Vec3[(-1 + 10) * 3 - 10, (0 - 50) * -2 - 2, 0],
+          Snow::Vec3[(-1 + 10) * 3 - 10, (-1 - 50) * -2 - 2, 0],
+          Snow::Vec3[(2 + 10) * 3 - 10, (-1 - 50) * -2 - 2, 0]
         ]
       end
 

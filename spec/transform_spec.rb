@@ -4,50 +4,49 @@ describe Gosling::Transform do
   end
 
   it 'has a center' do
-    expect(@read_only_tf.center).to be_instance_of(Vector)
+    expect(@read_only_tf.center).to be_instance_of(Snow::Vec3)
   end
 
   it 'has a scale' do
-    expect(@read_only_tf.scale).to be_instance_of(Vector)
+    expect(@read_only_tf.scale).to be_instance_of(Snow::Vec2)
   end
 
   it 'has a rotation' do
-    expect(@read_only_tf.rotation).to be_instance_of(Fixnum)
+    expect(@read_only_tf.rotation).to be_kind_of(Numeric)
   end
 
   it 'has a translation' do
-    expect(@read_only_tf.translation).to be_instance_of(Vector)
+    expect(@read_only_tf.translation).to be_instance_of(Snow::Vec3)
   end
 
-  describe '#set_center' do
+  describe '#center=' do
     it 'accepts a size 3 vector' do
       tf = Gosling::Transform.new
-      expect { tf.set_center(Vector[0,0,0]) }.not_to raise_error
-      expect { tf.set_center(Vector[0,0,0,0]) }.to raise_error(ArgumentError)
-      expect { tf.set_center(Vector[0,0]) }.to raise_error(ArgumentError)
-      expect { tf.set_center(:foo) }.to raise_error(ArgumentError)
+      expect { tf.center = Snow::Vec3[0, 0, 0] }.not_to raise_error
+      expect { tf.center = [0, 0, 0] }.not_to raise_error
+      expect { tf.center = :foo }.to raise_error(ArgumentError)
     end
 
     it 'sets the center transform' do
-      v = Vector[10.to_r, 20.to_r, 0.to_r]
+      v = Snow::Vec3[10.to_r, 20.to_r, 1.to_r]
       tf = Gosling::Transform.new
-      tf.set_center(v)
+      tf.center = v
       expect(tf.center).to be == v
     end
 
-    it 'does not alter the z value, which should always be 0' do
+    it 'does not alter the z value, which should always be 1' do
       tf = Gosling::Transform.new
       [
-        Vector[1, 1, 1],
-        Vector[1, 1, 13],
-        Vector[1, 1, 7],
-        Vector[1, 1, 29373],
-        Vector[1, 1, -1],
-        Vector[1, 1, 0],
-        Vector[1, 1, -328.7],
+        Snow::Vec3[1, 1, 1],
+        Snow::Vec3[1, 1, 13],
+        Snow::Vec3[1, 1, 7],
+        Snow::Vec3[1, 1, 29373],
+        Snow::Vec3[1, 1, -1],
+        Snow::Vec3[1, 1, 0],
+        Snow::Vec3[1, 1, -328.7],
       ].each do |v|
-        tf.set_center(v)
-        expect(tf.center[2]).to be == 0
+        tf.center = v
+        expect(tf.center[2]).to be == 1
       end
     end
   end
@@ -55,16 +54,14 @@ describe Gosling::Transform do
   describe '#set_scale' do
     it 'accepts a size 2 vector' do
       tf = Gosling::Transform.new
-      expect { tf.set_scale(Vector[1,1]) }.not_to raise_error
-      expect { tf.set_scale(Vector[1,1,1]) }.to raise_error(ArgumentError)
-      expect { tf.set_scale(Vector[1]) }.to raise_error(ArgumentError)
-      expect { tf.set_scale(:foo) }.to raise_error(ArgumentError)
+      expect { tf.scale = Snow::Vec2[1, 1] }.not_to raise_error
+      expect { tf.scale = :foo }.to raise_error(ArgumentError)
     end
 
     it 'sets the scale transform' do
-      v = Vector[2.to_r, 0.5.to_r]
+      v = Snow::Vec2[2.to_r, 0.5.to_r]
       tf = Gosling::Transform.new
-      tf.set_scale(v)
+      tf.scale = v
       expect(tf.scale).to be == v
     end
   end
@@ -73,7 +70,7 @@ describe Gosling::Transform do
     it 'sets the rotation transform' do
       r = Math::PI / 2
       tf = Gosling::Transform.new
-      tf.set_rotation(r)
+      tf.rotation = r
       expect(tf.rotation).to be == r
     end
   end
@@ -81,146 +78,141 @@ describe Gosling::Transform do
   describe '#set_translation' do
     it 'accepts a size 3 vector' do
       tf = Gosling::Transform.new
-      expect { tf.set_translation(Vector[0,0,0]) }.not_to raise_error
-      expect { tf.set_translation(Vector[0,0,0,0]) }.to raise_error(ArgumentError)
-      expect { tf.set_translation(Vector[0,0]) }.to raise_error(ArgumentError)
-      expect { tf.set_translation(:foo) }.to raise_error(ArgumentError)
+      expect { tf.translation = Snow::Vec3[0, 0, 0] }.not_to raise_error
+      expect { tf.translation = :foo }.to raise_error(ArgumentError)
     end
 
     it 'sets the translation transform' do
-      v = Vector[1024.to_r, 768.to_r, 0.to_r]
+      v = Snow::Vec3[1024.to_r, 768.to_r, 1.to_r]
       tf = Gosling::Transform.new
-      tf.set_translation(v)
+      tf.translation = v
       expect(tf.translation).to be == v
     end
 
-    it 'does not alter the z value, which should always be 0' do
+    it 'does not alter the z value, which should always be 1' do
       tf = Gosling::Transform.new
       [
-        Vector[1, 1, 1],
-        Vector[1, 1, 13],
-        Vector[1, 1, 7],
-        Vector[1, 1, 29373],
-        Vector[1, 1, -1],
-        Vector[1, 1, 0],
-        Vector[1, 1, -328.7],
+        Snow::Vec3[1, 1, 1],
+        Snow::Vec3[1, 1, 13],
+        Snow::Vec3[1, 1, 7],
+        Snow::Vec3[1, 1, 29373],
+        Snow::Vec3[1, 1, -1],
+        Snow::Vec3[1, 1, 0],
+        Snow::Vec3[1, 1, -328.7],
       ].each do |v|
-        tf.set_translation(v)
-        expect(tf.translation[2]).to be == 0
+        tf.translation = v
+        expect(tf.translation[2]).to be == 1
       end
     end
   end
 
   describe '#to_matrix' do
     it 'returns a matrix' do
-      expect(@read_only_tf.to_matrix).to be_instance_of(Matrix)
+      expect(@read_only_tf.to_matrix).to be_instance_of(Snow::Mat3)
     end
   end
 
   it 'centers correctly' do
     tf = Gosling::Transform.new
-    tf.set_center(Vector[10.to_r, 20.to_r, 0.to_r])
-    expected_matrix = Matrix[
-      [1, 0, -10],
-      [0, 1, -20],
-      [0, 0,   1]
-    ]
+    tf.center = Snow::Vec3[10.to_r, 20.to_r, 0.to_r]
+    expected_matrix = Snow::Mat3[
+                        1, 0, -10,
+                        0, 1, -20,
+                        0, 0,   1
+                      ]
     expect(tf.to_matrix).to be == expected_matrix
   end
 
   it 'scales correctly' do
     tf = Gosling::Transform.new
-    tf.set_scale(Vector[2.to_r, 0.5.to_r])
-    expected_matrix = Matrix[
-      [2,   0, 0],
-      [0, 0.5, 0],
-      [0,   0, 1]
-    ]
+    tf.scale = Snow::Vec2[2.to_r, 0.5.to_r]
+    expected_matrix = Snow::Mat3[
+                        2,   0, 0,
+                        0, 0.5, 0,
+                        0,   0, 1
+                      ]
     expect(tf.to_matrix).to be == expected_matrix
   end
 
   it 'rotates correctly' do
     tf = Gosling::Transform.new
-    tf.set_rotation(Math::PI / 2)
-    expected_matrix = Matrix[
-      [ 0, 1, 0],
-      [-1, 0, 0],
-      [ 0, 0, 1]
-    ]
+    tf.rotation = Math::PI / 2
+    expected_matrix = Snow::Mat3[
+                         0, 1, 0,
+                        -1, 0, 0,
+                         0, 0, 1
+                      ]
     expect(tf.to_matrix).to be == expected_matrix
   end
 
   it 'translates correctly' do
     tf = Gosling::Transform.new
-    tf.set_translation(Vector[1024.to_r, 768.to_r, 0.to_r])
-    expected_matrix = Matrix[
-      [1, 0, 1024],
-      [0, 1,  768],
-      [0, 0,    1]
-    ]
+    tf.translation = Snow::Vec3[1024.to_r, 768.to_r, 0.to_r]
+    expected_matrix = Snow::Mat3[
+                        1, 0, 1024,
+                        0, 1,  768,
+                        0, 0,    1
+                      ]
     expect(tf.to_matrix).to be == expected_matrix
   end
 
   it 'applies all transforms in the correct order' do
     tf = Gosling::Transform.new
-    tf.set_center(Vector[10.to_r, 20.to_r, 0.to_r])
-    tf.set_scale(Vector[2.to_r, 0.5.to_r])
-    tf.set_rotation(Math::PI / 2)
-    tf.set_translation(Vector[1024.to_r, 768.to_r, 0.to_r])
+    tf.center = Snow::Vec3[10.to_r, 20.to_r, 0.to_r]
+    tf.scale = Snow::Vec2[2.to_r, 0.5.to_r]
+    tf.rotation = Math::PI / 2
+    tf.translation = Snow::Vec3[1024.to_r, 768.to_r, 0.to_r]
 
-    expected_matrix = Matrix[
-      [0.0, 0.5, 1014.0],
-      [-2.0, 0.0, 788.0],
-      [0.0, 0.0, 1.0]
-    ]
+    expected_matrix = Snow::Mat3[
+                        0.0, 0.5, 1014.0,
+                        -2.0, 0.0, 788.0,
+                        0.0, 0.0, 1.0
+                      ]
     expect(tf.to_matrix).to be == expected_matrix
 
-    v = Vector[0.to_r, -50.to_r, 1.to_r]
-    v_transformed = Vector[989.to_r, 788.to_r, 1.to_r]
+    v = Snow::Vec3[0.to_r, -50.to_r, 1.to_r]
+    v_transformed = Snow::Vec3[989.to_r, 788.to_r, 1.to_r]
     expect(tf.to_matrix * v).to be == v_transformed
 
-    v = Vector[100.to_r, -50.to_r, 1.to_r]
-    v_transformed = Vector[989.to_r, 588.to_r, 1.to_r]
+    v = Snow::Vec3[100.to_r, -50.to_r, 1.to_r]
+    v_transformed = Snow::Vec3[989.to_r, 588.to_r, 1.to_r]
     expect(tf.to_matrix * v).to be == v_transformed
 
-    v = Vector[100.to_r, 50.to_r, 1.to_r]
-    v_transformed = Vector[1039.to_r, 588.to_r, 1.to_r]
+    v = Snow::Vec3[100.to_r, 50.to_r, 1.to_r]
+    v_transformed = Snow::Vec3[1039.to_r, 588.to_r, 1.to_r]
     expect(tf.to_matrix * v).to be == v_transformed
 
-    v = Vector[0.to_r, 50.to_r, 1.to_r]
-    v_transformed = Vector[1039.to_r, 788.to_r, 1.to_r]
+    v = Snow::Vec3[0.to_r, 50.to_r, 1.to_r]
+    v_transformed = Snow::Vec3[1039.to_r, 788.to_r, 1.to_r]
     expect(tf.to_matrix * v).to be == v_transformed
   end
 
   describe '#transform_point' do
     it 'expects a length 3 vector' do
-      expect { @read_only_tf.transform_point(Vector[1, 0, 1]) }.not_to raise_error
-      expect { @read_only_tf.transform_point(Vector[1, 0, 1, 1]) }.to raise_error(ArgumentError)
-      expect { @read_only_tf.transform_point(Vector[1, 0]) }.to raise_error(ArgumentError)
+      expect { @read_only_tf.transform_point(Snow::Vec3[1, 0, 1]) }.not_to raise_error
       expect { @read_only_tf.transform_point(:foo) }.to raise_error(ArgumentError)
       expect { @read_only_tf.transform_point(nil) }.to raise_error(ArgumentError)
     end
 
     it 'returns a length 3 vector' do
-      result = @read_only_tf.transform_point(Vector[1, 0, 1])
-      expect(result).to be_instance_of(Vector)
-      expect(result.size).to be == 3
+      result = @read_only_tf.transform_point(Snow::Vec3[1, 0, 1])
+      expect(result).to be_instance_of(Snow::Vec3)
     end
 
     it 'always returns a z value of 0' do
       [
-        Vector[1, 1, 1],
-        Vector[-1, -1, -1],
-        Vector[-22, -22, 0],
-        Vector[-11, 13, 34],
-        Vector[37, -4, -15],
-        Vector[34, 39, -16],
-        Vector[-48, 23, -32],
-        Vector[24, -39, 42],
-        Vector[49, 44, -15],
-        Vector[27, 23, 42],
-        Vector[33, -25, -20],
-        Vector[-46, -18, 48],
+        Snow::Vec3[1, 1, 1],
+        Snow::Vec3[-1, -1, -1],
+        Snow::Vec3[-22, -22, 0],
+        Snow::Vec3[-11, 13, 34],
+        Snow::Vec3[37, -4, -15],
+        Snow::Vec3[34, 39, -16],
+        Snow::Vec3[-48, 23, -32],
+        Snow::Vec3[24, -39, 42],
+        Snow::Vec3[49, 44, -15],
+        Snow::Vec3[27, 23, 42],
+        Snow::Vec3[33, -25, -20],
+        Snow::Vec3[-46, -18, 48],
       ].each do |v|
         expect(@read_only_tf.transform_point(v)[2]).to be == 0
       end
@@ -228,10 +220,10 @@ describe Gosling::Transform do
 
     it 'transforms the point correctly' do
       tf = Gosling::Transform.new
-      tf.set_center(Vector[5.to_r, 20.to_r, 0.to_r])
-      tf.set_scale(Vector[2.to_r, 0.5.to_r])
-      tf.set_rotation(Math::PI / 2)
-      tf.set_translation(Vector[1024.to_r, 768.to_r, 0.to_r])
+      tf.center = Snow::Vec3[5.to_r, 20.to_r, 0.to_r]
+      tf.scale = Snow::Vec2[2.to_r, 0.5.to_r]
+      tf.rotation = Math::PI / 2
+      tf.translation = Snow::Vec3[1024.to_r, 768.to_r, 0.to_r]
 
       [
         [0, 0],
@@ -241,40 +233,37 @@ describe Gosling::Transform do
         [5, 20]
       ].each do |pt|
         x, y = pt
-        expect(tf.transform_point(Vector[x, y, 0])).to be == Vector[(y - 20) * 0.5 + 1024, (x - 5) * -2 + 768, 0]
+        expect(tf.transform_point(Snow::Vec3[x, y, 0])).to be == Snow::Vec3[(y - 20) * 0.5 + 1024, (x - 5) * -2 + 768, 0]
       end
     end
   end
 
   describe '#untransform_point' do
     it 'expects a length 3 vector' do
-      expect { @read_only_tf.untransform_point(Vector[1, 0, 1]) }.not_to raise_error
-      expect { @read_only_tf.untransform_point(Vector[1, 0, 1, 1]) }.to raise_error(ArgumentError)
-      expect { @read_only_tf.untransform_point(Vector[1, 0]) }.to raise_error(ArgumentError)
+      expect { @read_only_tf.untransform_point(Snow::Vec3[1, 0, 1]) }.not_to raise_error
       expect { @read_only_tf.untransform_point(:foo) }.to raise_error(ArgumentError)
       expect { @read_only_tf.untransform_point(nil) }.to raise_error(ArgumentError)
     end
 
     it 'returns a length 3 vector' do
-      result = @read_only_tf.untransform_point(Vector[1, 0, 1])
-      expect(result).to be_instance_of(Vector)
-      expect(result.size).to be == 3
+      result = @read_only_tf.untransform_point(Snow::Vec3[1, 0, 1])
+      expect(result).to be_instance_of(Snow::Vec3)
     end
 
     it 'always returns a z value of 0' do
       [
-        Vector[1, 1, 1],
-        Vector[-1, -1, -1],
-        Vector[-22, -22, 0],
-        Vector[-11, 13, 34],
-        Vector[37, -4, -15],
-        Vector[34, 39, -16],
-        Vector[-48, 23, -32],
-        Vector[24, -39, 42],
-        Vector[49, 44, -15],
-        Vector[27, 23, 42],
-        Vector[33, -25, -20],
-        Vector[-46, -18, 48],
+        Snow::Vec3[1, 1, 1],
+        Snow::Vec3[-1, -1, -1],
+        Snow::Vec3[-22, -22, 0],
+        Snow::Vec3[-11, 13, 34],
+        Snow::Vec3[37, -4, -15],
+        Snow::Vec3[34, 39, -16],
+        Snow::Vec3[-48, 23, -32],
+        Snow::Vec3[24, -39, 42],
+        Snow::Vec3[49, 44, -15],
+        Snow::Vec3[27, 23, 42],
+        Snow::Vec3[33, -25, -20],
+        Snow::Vec3[-46, -18, 48],
       ].each do |v|
         expect(@read_only_tf.untransform_point(v)[2]).to be == 0
       end
@@ -282,10 +271,10 @@ describe Gosling::Transform do
 
     it 'untransforms the point correctly' do
       tf = Gosling::Transform.new
-      tf.set_center(Vector[5.to_r, 20.to_r, 0.to_r])
-      tf.set_scale(Vector[2.to_r, 0.5.to_r])
-      tf.set_rotation(Math::PI / 2)
-      tf.set_translation(Vector[1024.to_r, 768.to_r, 0.to_r])
+      tf.center = Snow::Vec3[5.to_r, 20.to_r, 0.to_r]
+      tf.scale = Snow::Vec2[2.to_r, 0.5.to_r]
+      tf.rotation = Math::PI / 2
+      tf.translation = Snow::Vec3[1024.to_r, 768.to_r, 0.to_r]
 
       [
         [1014, 778],
@@ -295,30 +284,30 @@ describe Gosling::Transform do
         [768, 1024]
       ].each do |pt|
         x, y = pt
-        expect(tf.untransform_point(Vector[x, y, 0])).to be == Vector[(y - 768) * -0.5 + 5, (x - 1024) * 2 + 20, 0]
+        expect(tf.untransform_point(Snow::Vec3[x, y, 0])).to be == Snow::Vec3[(y - 768) * -0.5 + 5, (x - 1024) * 2 + 20, 0]
       end
     end
 
     it 'undoes the results of transform_point' do
       tf = Gosling::Transform.new
-      tf.set_center(Vector[5.to_r, 20.to_r, 0.to_r])
-      tf.set_scale(Vector[2.to_r, 0.5.to_r])
-      tf.set_rotation(Math::PI / 2)
-      tf.set_translation(Vector[1024.to_r, 768.to_r, 0.to_r])
+      tf.center = Snow::Vec3[5.to_r, 20.to_r, 0.to_r]
+      tf.scale = Snow::Vec2[2.to_r, 0.5.to_r]
+      tf.rotation = Math::PI / 2
+      tf.translation = Snow::Vec3[1024.to_r, 768.to_r, 0.to_r]
 
       [
-        Vector[1, 1, 0],
-        Vector[-1, -1, 0],
-        Vector[-22, -22, 0],
-        Vector[-11, 13, 0],
-        Vector[37, -4, 0],
-        Vector[34, 39, 0],
-        Vector[-48, 23, 0],
-        Vector[24, -39, 0],
-        Vector[49, 44, 0],
-        Vector[27, 23, 0],
-        Vector[33, -25, 0],
-        Vector[-46, -18, 0],
+        Snow::Vec3[1, 1, 0],
+        Snow::Vec3[-1, -1, 0],
+        Snow::Vec3[-22, -22, 0],
+        Snow::Vec3[-11, 13, 0],
+        Snow::Vec3[37, -4, 0],
+        Snow::Vec3[34, 39, 0],
+        Snow::Vec3[-48, 23, 0],
+        Snow::Vec3[24, -39, 0],
+        Snow::Vec3[49, 44, 0],
+        Snow::Vec3[27, 23, 0],
+        Snow::Vec3[33, -25, 0],
+        Snow::Vec3[-46, -18, 0],
       ].each do |v|
         expect(tf.untransform_point(tf.transform_point(v))).to be == v
         expect(tf.transform_point(tf.untransform_point(v))).to be == v
