@@ -24,17 +24,6 @@ module Gosling
       "#<#{self.class}:#{self.object_id}>"
     end
 
-    def parent=(parent)
-      return if parent == @parent
-      unless parent
-        raise Gosling::InheritanceError.new("You should use Actor.remove_child() instead of setting the parent directly.") if @parent.has_child?(self)
-      end
-      @parent = parent
-      if @parent
-        raise Gosling::InheritanceError.new("You should use Actor.add_child() instead of setting the parent directly.") unless @parent.has_child?(self)
-      end
-    end
-
     def add_child(child)
       return if @children.include?(child)
       raise Gosling::InheritanceError.new("An Actor cannot be made a child of itself.") if child == self
@@ -215,9 +204,20 @@ module Gosling
       @color.blue = val
     end
 
-    private
+    protected
 
     def render(matrix)
+    end
+
+    def parent=(parent)
+      return if parent == @parent
+      unless parent
+        raise Gosling::InheritanceError.new("You should use Actor.remove_child() instead of setting the parent directly.") if @parent.has_child?(self)
+      end
+      @parent = parent
+      if @parent
+        raise Gosling::InheritanceError.new("You should use Actor.add_child() instead of setting the parent directly.") unless @parent.has_child?(self)
+      end
     end
   end
 end
