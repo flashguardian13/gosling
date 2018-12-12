@@ -253,7 +253,7 @@ describe Gosling::Actor do
           0, 3, 0,
           0, 0, 1
         ]
-        result_mat = parameter_mat * self_mat
+        result_mat = self_mat * parameter_mat
 
         allow(@draw_actor.transform).to receive(:to_matrix).and_return(self_mat)
 

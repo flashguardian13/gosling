@@ -250,7 +250,7 @@ module Gosling
     #
     def draw(matrix = nil)
       matrix ||= Snow::Mat3.new
-      transform = matrix * @transform.to_matrix
+      transform = @transform.to_matrix * matrix
       render(transform) if @is_visible
       if @are_children_visible
         @children.each { |child| child.draw(transform) }
