@@ -33,6 +33,8 @@ describe Gosling::Sprite do
     it 'automatically updates our width and height' do
       expect(@image_sprite.width).to be == @image.width
       expect(@image_sprite.height).to be == @image.height
+      expect(@image_sprite.width).to be_kind_of(Numeric)
+      expect(@image_sprite.height).to be_kind_of(Numeric)
     end
   end
 
