@@ -20,7 +20,7 @@ describe Gosling::Actor do
   end
 
   it 'has a transform' do
-    expect(@read_only_actor.transform).to be_instance_of(Gosling::Transform)
+    expect(@read_only_actor.transform).to be_instance_of(Gosling::Transformable)
   end
 
   it 'can have a parent' do

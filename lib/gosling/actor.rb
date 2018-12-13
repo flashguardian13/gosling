@@ -1,4 +1,4 @@
-require_relative 'transform.rb'
+require_relative 'transformable.rb'
 
 require 'gosu'
 
@@ -69,7 +69,7 @@ module Gosling
     #
     def initialize(window)
       @window = window
-      @transform = Transform.new
+      @transform = Transformable.new
       @parent = nil
       @children = []
       @is_visible = true
@@ -127,112 +127,112 @@ module Gosling
     end
 
     ##
-    # Wrapper method. Returns this Actor's x position in relative space. See Transform#translation.
+    # Wrapper method. Returns this Actor's x position in relative space. See Transformable#translation.
     #
     def x
       @transform.translation.x
     end
 
     ##
-    # Wrapper method. Sets this Actor's x position in relative space. See Transform#translation.
+    # Wrapper method. Sets this Actor's x position in relative space. See Transformable#translation.
     #
     def x=(val)
       @transform.translation = val, @transform.translation.y
     end
 
     ##
-    # Wrapper method. Returns this Actor's y position in relative space. See Transform#translation.
+    # Wrapper method. Returns this Actor's y position in relative space. See Transformable#translation.
     #
     def y
       @transform.translation.y
     end
 
     ##
-    # Wrapper method. Sets this Actor's y position in relative space. See Transform#translation.
+    # Wrapper method. Sets this Actor's y position in relative space. See Transformable#translation.
     #
     def y=(val)
       @transform.translation = @transform.translation.x, val
     end
 
     ##
-    # Wrapper method. Returns this Actor's position in relative space as a Snow::Vec3. See Transform#translation.
+    # Wrapper method. Returns this Actor's position in relative space as a Snow::Vec3. See Transformable#translation.
     #
     def pos
       @transform.translation
     end
 
     ##
-    # Wrapper method. Sets this Actor's position in relative space. See Transform#translation.
+    # Wrapper method. Sets this Actor's position in relative space. See Transformable#translation.
     #
     def pos=(val)
       @transform.translation = val
     end
 
     ##
-    # Wrapper method. Returns the x component of the centerpoint of this Actor. See Transform#center.
+    # Wrapper method. Returns the x component of the centerpoint of this Actor. See Transformable#center.
     #
     def center_x
       @transform.center.x
     end
 
     ##
-    # Wrapper method. Sets the x component of the centerpoint of this Actor. See Transform#center.
+    # Wrapper method. Sets the x component of the centerpoint of this Actor. See Transformable#center.
     #
     def center_x=(val)
       @transform.center = val, @transform.center.y
     end
 
     ##
-    # Wrapper method. Returns the y component of the centerpoint of this Actor. See Transform#center.
+    # Wrapper method. Returns the y component of the centerpoint of this Actor. See Transformable#center.
     #
     def center_y
       @transform.center.y
     end
 
     ##
-    # Wrapper method. Sets the y component of the centerpoint of this Actor. See Transform#center.
+    # Wrapper method. Sets the y component of the centerpoint of this Actor. See Transformable#center.
     #
     def center_y=(val)
       @transform.center = @transform.center.x, val
     end
 
     ##
-    # Wrapper method. Returns the x component of the scaling of this Actor. See Transform#scale.
+    # Wrapper method. Returns the x component of the scaling of this Actor. See Transformable#scale.
     #
     def scale_x
       @transform.scale.x
     end
 
     ##
-    # Wrapper method. Sets the x component of the scaling of this Actor. See Transform#scale.
+    # Wrapper method. Sets the x component of the scaling of this Actor. See Transformable#scale.
     #
     def scale_x=(val)
       @transform.scale = val, @transform.scale.y
     end
 
     ##
-    # Wrapper method. Returns the y component of the scaling of this Actor. See Transform#scale.
+    # Wrapper method. Returns the y component of the scaling of this Actor. See Transformable#scale.
     #
     def scale_y
       @transform.scale.y
     end
 
     ##
-    # Wrapper method. Sets the y component of the scaling of this Actor. See Transform#scale.
+    # Wrapper method. Sets the y component of the scaling of this Actor. See Transformable#scale.
     #
     def scale_y=(val)
       @transform.scale = @transform.scale.x, val
     end
 
     ##
-    # Wrapper method. Returns this Actor's rotation in radians. See Transform#rotation.
+    # Wrapper method. Returns this Actor's rotation in radians. See Transformable#rotation.
     #
     def rotation
       @transform.rotation
     end
 
     ##
-    # Wrapper method. Sets this Actor's rotation in radians. See Transform#rotation.
+    # Wrapper method. Sets this Actor's rotation in radians. See Transformable#rotation.
     #
     def rotation=(val)
       @transform.rotation = val
@@ -330,11 +330,11 @@ module Gosling
 
     ##
     # Returns the global x/y position of this actor (where it is relative to its root ancestor). This value is calculated
-    # using the Actor's center (see Transform#center).
+    # using the Actor's center (see Transformable#center).
     #
     def get_global_position
       tf = get_global_transform
-      Transform.transform_point(tf, @transform.center)
+      Transformable.transform_point(tf, @transform.center)
     end
 
     ##

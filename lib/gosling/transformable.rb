@@ -8,7 +8,7 @@ module Gosling
   # A helper class for performing vector transforms in 2D space. Relies heavily on the Vec3 and Mat3 classes of the
   # SnowMath gem to remain performant.
   #
-  class Transform
+  class Transformable
     ##
     # Wraps Math.sin to produce rationals instead of floats. Common values are returned quickly from a lookup table.
     #
@@ -243,7 +243,7 @@ module Gosling
 
     ##
     # Transforms a Vec3 using the provided Mat3 transform and returns the result as a new Vec3. This is the
-    # opposite of Transform.untransform_point.
+    # opposite of Transformable.untransform_point.
     #
     def self.transform_point(mat, v)
       type_check(mat, Snow::Mat3)
@@ -255,15 +255,15 @@ module Gosling
 
     ##
     # Applies all of our transformations to the point, returning the resulting point as a new Vec3. This is the opposite
-    # of Transform#untransform_point.
+    # of Transformable#untransform_point.
     #
     def transform_point(v)
-      Transform.transform_point(to_matrix, v)
+      Transformable.transform_point(to_matrix, v)
     end
 
     ##
     # Transforms a Vec3 using the inverse of the provided Mat3 transform and returns the result as a new Vec3. This
-    # is the opposite of Transform.transform_point.
+    # is the opposite of Transformable.transform_point.
     #
     def self.untransform_point(mat, v)
       type_check(mat, Snow::Mat3)
@@ -279,10 +279,10 @@ module Gosling
 
     ##
     # Applies the inverse of all of our transformations to the point, returning the resulting point as a new Vec3. This
-    # is the opposite of Transform#transform_point.
+    # is the opposite of Transformable#transform_point.
     #
     def untransform_point(v)
-      Transform.untransform_point(to_matrix, v)
+      Transformable.untransform_point(to_matrix, v)
     end
 
     private
@@ -306,10 +306,10 @@ module Gosling
     def update_rotate_matrix
       return unless @rotate_is_dirty || @rotate_mat.nil?
       @rotate_mat ||= Snow::Mat3.new
-      @rotate_mat[0] = Transform.rational_cos(@rotation)
-      @rotate_mat[1] = Transform.rational_sin(@rotation)
-      @rotate_mat[3] = -Transform.rational_sin(@rotation)
-      @rotate_mat[4] = Transform.rational_cos(@rotation)
+      @rotate_mat[0] = Transformable.rational_cos(@rotation)
+      @rotate_mat[1] = Transformable.rational_sin(@rotation)
+      @rotate_mat[3] = -Transformable.rational_sin(@rotation)
+      @rotate_mat[4] = Transformable.rational_cos(@rotation)
       @rotate_is_dirty = false
     end
 

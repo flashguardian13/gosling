@@ -4,7 +4,7 @@ require_relative 'collision.rb'
 module Gosling
   ##
   # Represents an Actor with a circular shape, defined by a mutable radius. The circle is rendered relative to the
-  # Circle's center (see Transform#center).
+  # Circle's center (see Transformable#center).
   #
   class Circle < Actor
     ##
@@ -52,7 +52,7 @@ module Gosling
       local_vertices = (0...RENDER_VERTEX_COUNT).map do |i|
         get_point_at_angle(Math::PI * 2 * i / RENDER_VERTEX_COUNT)
       end
-      global_vertices = local_vertices.map { |v| Transform.transform_point(matrix, v) }
+      global_vertices = local_vertices.map { |v| Transformable.transform_point(matrix, v) }
       i = 2
       while i < global_vertices.length
         v0 = global_vertices[0]
