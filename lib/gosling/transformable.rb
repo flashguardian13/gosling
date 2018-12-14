@@ -8,7 +8,7 @@ module Gosling
   # A helper class for performing vector transforms in 2D space. Relies heavily on the Vec3 and Mat3 classes of the
   # SnowMath gem to remain performant.
   #
-  class Transformable
+  module Transformable
     ##
     # Wraps Math.sin to produce rationals instead of floats. Common values are returned quickly from a lookup table.
     #
@@ -54,7 +54,8 @@ module Gosling
     attr_reader :rotation
 
     ##
-    # Creates a new transform object with no transformations (identity matrix).
+    # Initializes this Transformable to have no transformations (identity matrix).
+    #
     def initialize
       @center = Snow::Vec3[0.to_r, 0.to_r, 1.to_r]
       @scale = Snow::Vec2[1.to_r, 1.to_r]
@@ -81,6 +82,20 @@ module Gosling
     end
 
     ##
+    # Returns the x component of the centerpoint of this Transformable. See Transformable#center.
+    #
+    def center_x
+      @center.x
+    end
+
+    ##
+    # Returns the y component of the centerpoint of this Transformable. See Transformable#center.
+    #
+    def center_y
+      @center.y
+    end
+
+    ##
     # Returns a duplicate of the scale Vec2 (@scale is read-only).
     #
     def scale
@@ -88,10 +103,39 @@ module Gosling
     end
 
     ##
+    # Returns the x component of the scaling of this Transformable. See Transformable#scale.
+    #
+    def scale_x
+      @scale.x
+    end
+
+    ##
+    # Returns the y component of the scaling of this Transformable. See Transformable#scale.
+    #
+    def scale_y
+      @scale.y
+    end
+
+    ##
     # Returns a duplicate of the translation Vec3 (@translation is read-only).
     #
     def translation
       @translation.dup
+    end
+    alias :pos :translation
+
+    ##
+    # Returns this Transformable's x position in relative space. See Transformable#translation.
+    #
+    def x
+      @translation.x
+    end
+
+    ##
+    # Returns this Transformable's y position in relative space. See Transformable#translation.
+    #
+    def y
+      @translation.y
     end
 
     ##
@@ -138,6 +182,24 @@ module Gosling
     alias :set_center :center=
 
     ##
+    # Sets the x component of the centerpoint of this Transformable. See Transformable#center.
+    #
+    def center_x=(val)
+      type_check(val, Numeric)
+      @center.x = val
+      @center_is_dirty = @is_dirty = true
+    end
+
+    ##
+    # Sets the y component of the centerpoint of this Transformable. See Transformable#center.
+    #
+    def center_y=(val)
+      type_check(val, Numeric)
+      @center.y = val
+      @center_is_dirty = @is_dirty = true
+    end
+
+    ##
     # Sets this transform's x/y scaling. A scale value of [1, 1] results in no scaling. Larger values make a shape bigger,
     # while smaller values will make it smaller. Great for shrinking/growing animations, or to zoom the camera in/out.
     #
@@ -168,6 +230,24 @@ module Gosling
       @scale_is_dirty = @is_dirty = true
     end
     alias :set_scale :scale=
+
+    ##
+    # Wrapper method. Sets the x component of the scaling of this Actor. See Transformable#scale.
+    #
+    def scale_x=(val)
+      type_check(val, Numeric)
+      @scale.x = val
+      @scale_is_dirty = @is_dirty = true
+    end
+
+    ##
+    # Wrapper method. Sets the y component of the scaling of this Actor. See Transformable#scale.
+    #
+    def scale_y=(val)
+      type_check(val, Numeric)
+      @scale.y = val
+      @scale_is_dirty = @is_dirty = true
+    end
 
     ##
     # Sets this transform's rotation in radians. A value of 0 results in no rotation. Great for spinning animations, or
@@ -214,6 +294,25 @@ module Gosling
       @translate_is_dirty = @is_dirty = true
     end
     alias :set_translation :translation=
+    alias :pos= :translation=
+
+    ##
+    # Sets this Transformable's x position in relative space. See Transformable#translation.
+    #
+    def x=(val)
+      type_check(val, Numeric)
+      @translation.x = val
+      @translate_is_dirty = @is_dirty = true
+    end
+
+    ##
+    # Sets this Transformable's y position in relative space. See Transformable#translation.
+    #
+    def y=(val)
+      type_check(val, Numeric)
+      @translation.y = val
+      @translate_is_dirty = @is_dirty = true
+    end
 
     ##
     # Returns a Snow::Mat3 which combines our current center, scale, rotation, and translation into a single transform

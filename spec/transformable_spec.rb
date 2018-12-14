@@ -1,6 +1,10 @@
+class TransformableThing
+  include Gosling::Transformable
+end
+
 describe Gosling::Transformable do
   before(:all) do
-    @read_only_tf = Gosling::Transformable.new
+    @read_only_tf = TransformableThing.new
   end
 
   it 'has a center' do
@@ -19,9 +23,54 @@ describe Gosling::Transformable do
     expect(@read_only_tf.translation).to be_instance_of(Snow::Vec3)
   end
 
+  it 'has methods for getting its x/y position' do
+    expect(@read_only_tf.x).to be_kind_of(Numeric)
+    expect(@read_only_tf.y).to be_kind_of(Numeric)
+  end
+
+  it 'has methods for setting its x/y position' do
+    @read_only_tf.x = 13
+    @read_only_tf.y = -7
+    expect(@read_only_tf.x).to be == 13
+    expect(@read_only_tf.y).to be == -7
+  end
+
+  it 'has methods for getting its x/y centerpoint' do
+    expect(@read_only_tf.center_x).to be_kind_of(Numeric)
+    expect(@read_only_tf.center_y).to be_kind_of(Numeric)
+  end
+
+  it 'has methods for setting its x/y centerpoint' do
+    @read_only_tf.center_x = 5
+    @read_only_tf.center_y = 15
+    expect(@read_only_tf.center_x).to be == 5
+    expect(@read_only_tf.center_y).to be == 15
+  end
+
+  it 'has methods for getting its x/y scaling' do
+    expect(@read_only_tf.scale_x).to be_kind_of(Numeric)
+    expect(@read_only_tf.scale_y).to be_kind_of(Numeric)
+  end
+
+  it 'has methods for setting its x/y scaling' do
+    @read_only_tf.scale_x = 2
+    @read_only_tf.scale_y = 3
+    expect(@read_only_tf.scale_x).to be == 2
+    expect(@read_only_tf.scale_y).to be == 3
+  end
+
+  it 'has a method for getting its rotation' do
+    expect(@read_only_tf.rotation).to be_kind_of(Numeric)
+  end
+
+  it 'has a method for setting its rotation' do
+    @read_only_tf.rotation = Math::PI
+    expect(@read_only_tf.rotation).to be == Math::PI
+  end
+
   describe '#center=' do
     it 'accepts a size 3 vector' do
-      tf = Gosling::Transformable.new
+      tf = TransformableThing.new
       expect { tf.center = Snow::Vec3[0, 0, 0] }.not_to raise_error
       expect { tf.center = [0, 0, 0] }.not_to raise_error
       expect { tf.center = :foo }.to raise_error(ArgumentError)
@@ -29,13 +78,13 @@ describe Gosling::Transformable do
 
     it 'sets the center transform' do
       v = Snow::Vec3[10.to_r, 20.to_r, 1.to_r]
-      tf = Gosling::Transformable.new
+      tf = TransformableThing.new
       tf.center = v
       expect(tf.center).to be == v
     end
 
     it 'does not alter the z value, which should always be 1' do
-      tf = Gosling::Transformable.new
+      tf = TransformableThing.new
       [
         Snow::Vec3[1, 1, 1],
         Snow::Vec3[1, 1, 13],
@@ -53,14 +102,14 @@ describe Gosling::Transformable do
 
   describe '#set_scale' do
     it 'accepts a size 2 vector' do
-      tf = Gosling::Transformable.new
+      tf = TransformableThing.new
       expect { tf.scale = Snow::Vec2[1, 1] }.not_to raise_error
       expect { tf.scale = :foo }.to raise_error(ArgumentError)
     end
 
     it 'sets the scale transform' do
       v = Snow::Vec2[2.to_r, 0.5.to_r]
-      tf = Gosling::Transformable.new
+      tf = TransformableThing.new
       tf.scale = v
       expect(tf.scale).to be == v
     end
@@ -69,7 +118,7 @@ describe Gosling::Transformable do
   describe '#set_rotation' do
     it 'sets the rotation transform' do
       r = Math::PI / 2
-      tf = Gosling::Transformable.new
+      tf = TransformableThing.new
       tf.rotation = r
       expect(tf.rotation).to be == r
     end
@@ -77,20 +126,20 @@ describe Gosling::Transformable do
 
   describe '#set_translation' do
     it 'accepts a size 3 vector' do
-      tf = Gosling::Transformable.new
+      tf = TransformableThing.new
       expect { tf.translation = Snow::Vec3[0, 0, 0] }.not_to raise_error
       expect { tf.translation = :foo }.to raise_error(ArgumentError)
     end
 
     it 'sets the translation transform' do
       v = Snow::Vec3[1024.to_r, 768.to_r, 1.to_r]
-      tf = Gosling::Transformable.new
+      tf = TransformableThing.new
       tf.translation = v
       expect(tf.translation).to be == v
     end
 
     it 'does not alter the z value, which should always be 1' do
-      tf = Gosling::Transformable.new
+      tf = TransformableThing.new
       [
         Snow::Vec3[1, 1, 1],
         Snow::Vec3[1, 1, 13],
@@ -113,7 +162,7 @@ describe Gosling::Transformable do
   end
 
   it 'centers correctly' do
-    tf = Gosling::Transformable.new
+    tf = TransformableThing.new
     tf.center = Snow::Vec3[10.to_r, 20.to_r, 0.to_r]
     expected_matrix = Snow::Mat3[
                         1, 0, -10,
@@ -124,7 +173,7 @@ describe Gosling::Transformable do
   end
 
   it 'scales correctly' do
-    tf = Gosling::Transformable.new
+    tf = TransformableThing.new
     tf.scale = Snow::Vec2[2.to_r, 0.5.to_r]
     expected_matrix = Snow::Mat3[
                         2,   0, 0,
@@ -135,7 +184,7 @@ describe Gosling::Transformable do
   end
 
   it 'rotates correctly' do
-    tf = Gosling::Transformable.new
+    tf = TransformableThing.new
     tf.rotation = Math::PI / 2
     expected_matrix = Snow::Mat3[
                          0, 1, 0,
@@ -146,7 +195,7 @@ describe Gosling::Transformable do
   end
 
   it 'translates correctly' do
-    tf = Gosling::Transformable.new
+    tf = TransformableThing.new
     tf.translation = Snow::Vec3[1024.to_r, 768.to_r, 0.to_r]
     expected_matrix = Snow::Mat3[
                         1, 0, 1024,
@@ -157,7 +206,7 @@ describe Gosling::Transformable do
   end
 
   it 'applies all transforms in the correct order' do
-    tf = Gosling::Transformable.new
+    tf = TransformableThing.new
     tf.center = Snow::Vec3[10.to_r, 20.to_r, 0.to_r]
     tf.scale = Snow::Vec2[2.to_r, 0.5.to_r]
     tf.rotation = Math::PI / 2
@@ -219,7 +268,7 @@ describe Gosling::Transformable do
     end
 
     it 'transforms the point correctly' do
-      tf = Gosling::Transformable.new
+      tf = TransformableThing.new
       tf.center = Snow::Vec3[5.to_r, 20.to_r, 0.to_r]
       tf.scale = Snow::Vec2[2.to_r, 0.5.to_r]
       tf.rotation = Math::PI / 2
@@ -270,7 +319,7 @@ describe Gosling::Transformable do
     end
 
     it 'untransforms the point correctly' do
-      tf = Gosling::Transformable.new
+      tf = TransformableThing.new
       tf.center = Snow::Vec3[5.to_r, 20.to_r, 0.to_r]
       tf.scale = Snow::Vec2[2.to_r, 0.5.to_r]
       tf.rotation = Math::PI / 2
@@ -289,7 +338,7 @@ describe Gosling::Transformable do
     end
 
     it 'undoes the results of transform_point' do
-      tf = Gosling::Transformable.new
+      tf = TransformableThing.new
       tf.center = Snow::Vec3[5.to_r, 20.to_r, 0.to_r]
       tf.scale = Snow::Vec2[2.to_r, 0.5.to_r]
       tf.rotation = Math::PI / 2
