@@ -20,7 +20,7 @@ describe Gosling::Actor do
   end
 
   it 'has a transform' do
-    expect(@read_only_actor.transform).to be_instance_of(Gosling::Transform)
+    expect(@read_only_actor).to be_kind_of(Gosling::Transformable)
   end
 
   it 'can have a parent' do
@@ -103,51 +103,6 @@ describe Gosling::Actor do
         expect(@child.parent).to be == parent2
       end
     end
-  end
-
-  it 'has shortcut methods for getting its x/y position' do
-    expect(@read_only_actor.x).to be_kind_of(Numeric)
-    expect(@read_only_actor.y).to be_kind_of(Numeric)
-  end
-
-  it 'has shortcut methods for setting its x/y position' do
-    @read_only_actor.x = 13
-    @read_only_actor.y = -7
-    expect(@read_only_actor.x).to be == 13
-    expect(@read_only_actor.y).to be == -7
-  end
-
-  it 'has shortcut methods for getting its x/y centerpoint' do
-    expect(@read_only_actor.center_x).to be_kind_of(Numeric)
-    expect(@read_only_actor.center_y).to be_kind_of(Numeric)
-  end
-
-  it 'has shortcut methods for setting its x/y centerpoint' do
-    @read_only_actor.center_x = 5
-    @read_only_actor.center_y = 15
-    expect(@read_only_actor.center_x).to be == 5
-    expect(@read_only_actor.center_y).to be == 15
-  end
-
-  it 'has shortcut methods for getting its x/y scaling' do
-    expect(@read_only_actor.scale_x).to be_kind_of(Numeric)
-    expect(@read_only_actor.scale_y).to be_kind_of(Numeric)
-  end
-
-  it 'has shortcut methods for setting its x/y scaling' do
-    @read_only_actor.scale_x = 2
-    @read_only_actor.scale_y = 3
-    expect(@read_only_actor.scale_x).to be == 2
-    expect(@read_only_actor.scale_y).to be == 3
-  end
-
-  it 'has a shortcut method for getting its rotation' do
-    expect(@read_only_actor.rotation).to be_kind_of(Numeric)
-  end
-
-  it 'has a shortcut method for setting its rotation' do
-    @read_only_actor.rotation = Math::PI
-    expect(@read_only_actor.rotation).to be == Math::PI
   end
 
   it 'has a visibility flag' do
@@ -253,9 +208,9 @@ describe Gosling::Actor do
           0, 3, 0,
           0, 0, 1
         ]
-        result_mat = parameter_mat * self_mat
+        result_mat = self_mat * parameter_mat
 
-        allow(@draw_actor.transform).to receive(:to_matrix).and_return(self_mat)
+        allow(@draw_actor).to receive(:to_matrix).and_return(self_mat)
 
         expect(@child1).to receive(:draw).with(result_mat).once
         expect(@child2).to receive(:draw).with(result_mat).once
@@ -502,7 +457,7 @@ describe Gosling::Actor do
       rotated_view.add_child(translated_view)
       translated_view.add_child(@parent)
 
-      expected = @parent.transform.to_matrix * translated_view.transform.to_matrix * rotated_view.transform.to_matrix * scaled_view.transform.to_matrix * centered_view.transform.to_matrix
+      expected = @parent.to_matrix * translated_view.to_matrix * rotated_view.to_matrix * scaled_view.to_matrix * centered_view.to_matrix
 
       result = @parent.get_global_transform
       expect(result).to be == expected

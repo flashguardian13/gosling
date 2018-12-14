@@ -48,7 +48,7 @@ module Gosling
     #
     def get_global_vertices
       tf = get_global_transform
-      @vertices.map { |v| Transform.transform_point(tf, v) }
+      @vertices.map { |v| Transformable.transform_point(tf, v) }
     end
 
     ##
@@ -62,7 +62,7 @@ module Gosling
 
     def render(matrix)
       type_check(matrix, Snow::Mat3)
-      global_vertices = @vertices.map { |v| Transform.transform_point(matrix, v) }
+      global_vertices = @vertices.map { |v| Transformable.transform_point(matrix, v) }
       i = 2
       while i < global_vertices.length
         v0 = global_vertices[0]

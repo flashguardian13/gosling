@@ -1,4 +1,4 @@
-require_relative 'transform.rb'
+require_relative 'transformable.rb'
 
 require 'gosu'
 
@@ -26,7 +26,9 @@ module Gosling
   # The behavior of inheritance can modified by setting various properties. Read on for more details.
   #
   class Actor
-    attr_reader :transform, :parent, :children, :window
+    include Transformable
+
+    attr_reader :parent, :children, :window
 
     ##
     # If set to true, this Actor will be drawn to screen. If false, it will be skipped. The default is true.
@@ -68,8 +70,8 @@ module Gosling
     # a Gosu::Window to be used when rendering.
     #
     def initialize(window)
+      super()
       @window = window
-      @transform = Transform.new
       @parent = nil
       @children = []
       @is_visible = true
@@ -127,118 +129,6 @@ module Gosling
     end
 
     ##
-    # Wrapper method. Returns this Actor's x position in relative space. See Transform#translation.
-    #
-    def x
-      @transform.translation.x
-    end
-
-    ##
-    # Wrapper method. Sets this Actor's x position in relative space. See Transform#translation.
-    #
-    def x=(val)
-      @transform.translation = val, @transform.translation.y
-    end
-
-    ##
-    # Wrapper method. Returns this Actor's y position in relative space. See Transform#translation.
-    #
-    def y
-      @transform.translation.y
-    end
-
-    ##
-    # Wrapper method. Sets this Actor's y position in relative space. See Transform#translation.
-    #
-    def y=(val)
-      @transform.translation = @transform.translation.x, val
-    end
-
-    ##
-    # Wrapper method. Returns this Actor's position in relative space as a Snow::Vec3. See Transform#translation.
-    #
-    def pos
-      @transform.translation
-    end
-
-    ##
-    # Wrapper method. Sets this Actor's position in relative space. See Transform#translation.
-    #
-    def pos=(val)
-      @transform.translation = val
-    end
-
-    ##
-    # Wrapper method. Returns the x component of the centerpoint of this Actor. See Transform#center.
-    #
-    def center_x
-      @transform.center.x
-    end
-
-    ##
-    # Wrapper method. Sets the x component of the centerpoint of this Actor. See Transform#center.
-    #
-    def center_x=(val)
-      @transform.center = val, @transform.center.y
-    end
-
-    ##
-    # Wrapper method. Returns the y component of the centerpoint of this Actor. See Transform#center.
-    #
-    def center_y
-      @transform.center.y
-    end
-
-    ##
-    # Wrapper method. Sets the y component of the centerpoint of this Actor. See Transform#center.
-    #
-    def center_y=(val)
-      @transform.center = @transform.center.x, val
-    end
-
-    ##
-    # Wrapper method. Returns the x component of the scaling of this Actor. See Transform#scale.
-    #
-    def scale_x
-      @transform.scale.x
-    end
-
-    ##
-    # Wrapper method. Sets the x component of the scaling of this Actor. See Transform#scale.
-    #
-    def scale_x=(val)
-      @transform.scale = val, @transform.scale.y
-    end
-
-    ##
-    # Wrapper method. Returns the y component of the scaling of this Actor. See Transform#scale.
-    #
-    def scale_y
-      @transform.scale.y
-    end
-
-    ##
-    # Wrapper method. Sets the y component of the scaling of this Actor. See Transform#scale.
-    #
-    def scale_y=(val)
-      @transform.scale = @transform.scale.x, val
-    end
-
-    ##
-    # Wrapper method. Returns this Actor's rotation in radians. See Transform#rotation.
-    #
-    def rotation
-      @transform.rotation
-    end
-
-    ##
-    # Wrapper method. Sets this Actor's rotation in radians. See Transform#rotation.
-    #
-    def rotation=(val)
-      @transform.rotation = val
-    end
-
-    ##
     # Calls #render on this Actor, drawing it to the screen if #is_visible is set to true (the default).
     #
     # The Actor's transforms, if any, will be applied prior to rendering. If an optional Snow::Mat3 matrix transform is
@@ -250,7 +140,7 @@ module Gosling
     #
     def draw(matrix = nil)
       matrix ||= Snow::Mat3.new
-      transform = matrix * @transform.to_matrix
+      transform = to_matrix * matrix
       render(transform) if @is_visible
       if @are_children_visible
         @children.each { |child| child.draw(transform) }
@@ -321,20 +211,20 @@ module Gosling
     def get_global_transform(out = nil)
       if parent
         out ||= Snow::Mat3.new
-        @transform.to_matrix.multiply(parent.get_global_transform, out)
+        to_matrix.multiply(parent.get_global_transform, out)
         out
       else
-        @transform.to_matrix
+        to_matrix
       end
     end
 
     ##
     # Returns the global x/y position of this actor (where it is relative to its root ancestor). This value is calculated
-    # using the Actor's center (see Transform#center).
+    # using the Actor's center (see Transformable#center).
     #
     def get_global_position
       tf = get_global_transform
-      Transform.transform_point(tf, @transform.center)
+      Transformable.transform_point(tf, center)
     end
 
     ##
