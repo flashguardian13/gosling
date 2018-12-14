@@ -78,7 +78,7 @@ module Gosling
     # Returns a duplicate of the center Vec3 (@center is read-only).
     #
     def center
-      @center.dup
+      @center.dup.freeze
     end
 
     ##
@@ -99,7 +99,7 @@ module Gosling
     # Returns a duplicate of the scale Vec2 (@scale is read-only).
     #
     def scale
-      @scale.dup
+      @scale.dup.freeze
     end
 
     ##
@@ -120,7 +120,7 @@ module Gosling
     # Returns a duplicate of the translation Vec3 (@translation is read-only).
     #
     def translation
-      @translation.dup
+      @translation.dup.freeze
     end
     alias :pos :translation
 
