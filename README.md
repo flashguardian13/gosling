@@ -2,6 +2,8 @@
 
 Provides some common 2d application functionality using Gosu gem and nilium's [snow-math](https://github.com/nilium/ruby-snowmath) gem.
 
+If you discover a bug, please take a look at the dev branch to see if there's a fix before creating a new issue.
+
 ## Installation
 
 ```
