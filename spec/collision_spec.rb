@@ -1427,11 +1427,13 @@ describe Gosling::Collision do
 
         axis = Snow::Vec3[0, 1, 0].normalize
         result = Gosling::Collision.project_onto_axis(circle, axis)
-        expect(result).to be == [290.0, 340.0]
+        expect(result[0]).to be_within(FLOAT_TOLERANCE).of(290.0)
+        expect(result[1]).to be_within(FLOAT_TOLERANCE).of(340.0)
 
         axis = Snow::Vec3[1, 1, 0].normalize
         result = Gosling::Collision.project_onto_axis(circle, axis)
-        expect(result).to be == [-443.1343965537543, -385.5947509968793]
+        expect(result[0]).to be_within(FLOAT_TOLERANCE).of(-443.1343965537543)
+        expect(result[1]).to be_within(FLOAT_TOLERANCE).of(-385.5947509968793)
 
         break_inheritance_chain([@center_actor, @scale_actor, @rotate_actor, @translate_actor, circle])
       end
@@ -1530,11 +1532,13 @@ describe Gosling::Collision do
 
         axis = Snow::Vec3[0, 1, 0].normalize
         result = Gosling::Collision.project_onto_axis(polygon, axis)
-        expect(result).to be == [302.5, 327.5]
+        expect(result[0]).to be_within(FLOAT_TOLERANCE).of(302.5)
+        expect(result[1]).to be_within(FLOAT_TOLERANCE).of(327.5)
 
         axis = Snow::Vec3[1, 1, 0].normalize
         result = Gosling::Collision.project_onto_axis(polygon, axis)
-        expect(result).to be == [-426.7389424460814, -393.1513703397204]
+        expect(result[0]).to be_within(FLOAT_TOLERANCE).of(-426.7389424460814)
+        expect(result[1]).to be_within(FLOAT_TOLERANCE).of(-393.1513703397204)
 
         break_inheritance_chain([@center_actor, @scale_actor, @rotate_actor, @translate_actor, polygon])
       end

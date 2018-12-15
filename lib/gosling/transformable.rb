@@ -9,48 +9,6 @@ module Gosling
   # SnowMath gem to remain performant.
   #
   module Transformable
-    ##
-    # Wraps Math.sin to produce rationals instead of floats. Common values are returned quickly from a lookup table.
-    #
-    def self.rational_sin(r)
-      type_check(r, Numeric)
-
-      r = r % (2 * Math::PI)
-      case r
-      when 0.0
-        0.to_r
-      when Math::PI / 2
-        1.to_r
-      when Math::PI
-        0.to_r
-      when Math::PI * 3 / 2
-        -1.to_r
-      else
-        Math.sin(r).to_r
-      end
-    end
-
-    ##
-    # Wraps Math.cos to produce rationals instead of floats. Common values are returned quickly from a lookup table.
-    #
-    def self.rational_cos(r)
-      type_check(r, Numeric)
-
-      r = r % (2 * Math::PI)
-      case r
-      when 0.0
-        1.to_r
-      when Math::PI / 2
-        0.to_r
-      when Math::PI
-        -1.to_r
-      when Math::PI * 3 / 2
-        0.to_r
-      else
-        Math.cos(r).to_r
-      end
-    end
-
     attr_reader :rotation
 
     ##
@@ -397,18 +355,17 @@ module Gosling
     def update_scale_matrix
       return unless @scale_is_dirty || @scale_mat.nil?
       @scale_mat ||= Snow::Mat3.new
-      @scale_mat[0] = @scale[0].to_r
-      @scale_mat[4] = @scale[1].to_r
+      @scale_mat[0] = @scale[0]
+      @scale_mat[4] = @scale[1]
       @scale_is_dirty = false
     end
 
     def update_rotate_matrix
       return unless @rotate_is_dirty || @rotate_mat.nil?
       @rotate_mat ||= Snow::Mat3.new
-      @rotate_mat[0] = Transformable.rational_cos(@rotation)
-      @rotate_mat[1] = Transformable.rational_sin(@rotation)
-      @rotate_mat[3] = -Transformable.rational_sin(@rotation)
-      @rotate_mat[4] = Transformable.rational_cos(@rotation)
+      @rotate_mat[4] = @rotate_mat[0] = Math.cos(@rotation)
+      @rotate_mat[1] = Math.sin(@rotation)
+      @rotate_mat[3] = -@rotate_mat[1]
       @rotate_is_dirty = false
     end
 
