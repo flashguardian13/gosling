@@ -31,16 +31,34 @@ module Gosling
     end
 
     ##
-    # Sets this polygon's vertices. Requires three or more Snow::Vec3.
+    # Sets this polygon's vertices. Requires three or more Snow::Vec2, Vec3, Vec4, or Arrays containing 2 or more
+    # numbers.
     #
     # Usage:
     # - polygon.set_vertices([Snow::Vec3[-1, 0, 0], Snow::Vec3[0, -1, 0], Snow::Vec3[1, 1, 0]])
     #
     def set_vertices(vertices)
       type_check(vertices, Array)
-      raise ArgumentError.new("set_vertices() expects an array of at least three 3D Vectors") unless vertices.length >= 3
-      vertices.each { |v| type_check(v, Snow::Vec3) }
-      @vertices.replace(vertices)
+      raise ArgumentError.new("set_vertices() expects an array of at least three 2D vectors") unless vertices.length >= 3
+      vertices.each do |v|
+        types_check(v, Snow::Vec2, Snow::Vec3, Snow::Vec4, Array)
+        if v.is_a?(Array)
+          raise ArgumentError.new("set_vertices() expects an array of at least three 2D vectors") unless v.length >= 2
+          v.each { |n| type_check(n, Numeric) }
+        end
+      end
+
+      if @vertices.length < vertices.length
+        @vertices.concat(Array.new(vertices.length - @vertices.length) { Snow::Vec3.new })
+      elsif @vertices.length > vertices.length
+        @vertices.pop(@vertices.length - vertices.length)
+      end
+
+      vertices.each_index do |i|
+        @vertices[i].x = vertices[i][0]
+        @vertices[i].y = vertices[i][1]
+        @vertices[i].z = 0
+      end
     end
 
     ##
