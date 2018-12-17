@@ -34,9 +34,10 @@ module Gosling
     ##
     # Returns the angle's corresponding unit vector times this circle's radius.
     #
-    def get_point_at_angle(radians)
+    def get_point_at_angle(radians, out = nil)
       raise ArgumentError.new("Expected Numeric, but received #{radians.inspect}!") unless radians.is_a?(Numeric)
-      Snow::Vec3[Math.cos(radians) * @radius, Math.sin(radians) * @radius, 0]
+      out ||= Snow::Vec3.new
+      out.set(Math.cos(radians) * @radius, Math.sin(radians) * @radius, 0)
     end
 
     ##
