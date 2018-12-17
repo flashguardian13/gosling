@@ -1,33 +1,29 @@
 require 'set'
 
+def clean_actor(actor)
+  actor.x = 0
+  actor.y = 0
+  actor.scale_x = 1
+  actor.scale_y = 1
+  actor.rotation = 0
+end
+
 def clean_shape(shape)
-  shape.x = 0
-  shape.y = 0
+  clean_actor(shape)
   shape.center_x = 0
   shape.center_y = 0
-  shape.scale_x = 1
-  shape.scale_y = 1
-  shape.rotation = 0
 end
 
 def clean_rect(rect)
-  rect.x = 0
-  rect.y = 0
+  clean_actor(rect)
   rect.center_x = 5
   rect.center_y = 5
-  rect.scale_x = 1
-  rect.scale_y = 1
-  rect.rotation = 0
 end
 
 def clean_sprite(sprite)
-  sprite.x = 0
-  sprite.y = 0
+  clean_actor(sprite)
   sprite.center_x = 8
   sprite.center_y = 8
-  sprite.scale_x = 1
-  sprite.scale_y = 1
-  sprite.rotation = 0
 end
 
 def create_inheritance_chain(ancestry)
@@ -113,711 +109,432 @@ describe Gosling::Collision do
     @translate_actor.y = 256
   end
 
-  describe '#test' do
-    context 'any actor vs. itself' do
-      it 'never collides' do
-        [@actor1, @circle1, @polygon1, @rect1, @sprite1].each do |actor|
-          expect(Gosling::Collision.test(actor, actor)).to be false
-        end
-      end
-    end
-
-    context 'actor vs. actor' do
-      it 'never collides' do
-        expect(Gosling::Collision.test(@actor1, @actor2)).to be false
-      end
-    end
-
-    context 'actor vs. circle' do
-      it 'never collides' do
-        expect(Gosling::Collision.test(@actor1, @circle1)).to be false
-      end
-    end
-
-    context 'actor vs. polygon' do
-      it 'never collides' do
-        expect(Gosling::Collision.test(@actor1, @polygon1)).to be false
-      end
-    end
-
-    context 'actor vs. rect' do
-      it 'never collides' do
-        expect(Gosling::Collision.test(@actor1, @rect1)).to be false
-      end
-    end
-
-    context 'actor vs. sprite' do
-      it 'never collides' do
-        expect(Gosling::Collision.test(@actor1, @sprite1)).to be false
-      end
-    end
-
-    context 'circle vs. circle' do
-      it 'collides if the shapes are close enough' do
-        clean_shape(@circle1)
-        @circle1.x = 0
-        @circle1.y = 0
-
-        clean_shape(@circle2)
-        @circle2.x = 5
-        @circle2.y = 5
-
-        expect(Gosling::Collision.test(@circle1, @circle2)).to be true
-      end
-
-      it 'does not collide if the shapes are far apart' do
-        clean_shape(@circle1)
-        @circle1.x = 0
-        @circle1.y = 0
-
-        clean_shape(@circle2)
-        @circle2.x = 10
-        @circle2.y = 5
-
-        expect(Gosling::Collision.test(@circle1, @circle2)).to be false
-      end
-    end
-
-    context 'circle vs. polygon' do
-      it 'collides if the shapes are close enough' do
-        clean_shape(@circle1)
-        @circle1.x = 0
-        @circle1.y = 0
-
-        clean_shape(@polygon1)
-        @polygon1.x = 5
-        @polygon1.y = 5
-
-        expect(Gosling::Collision.test(@circle1, @polygon1)).to be true
-      end
-
-      it 'does not collide if the shapes are far apart' do
-        clean_shape(@circle1)
-        @circle1.x = 0
-        @circle1.y = 0
-
-        clean_shape(@polygon1)
-        @polygon1.x = 10
-        @polygon1.y = 10
-
-        expect(Gosling::Collision.test(@circle1, @polygon1)).to be false
-      end
-    end
-
-    context 'circle vs. rect' do
-      it 'collides if the shapes are close enough' do
-        clean_shape(@circle1)
-        @circle1.x = 0
-        @circle1.y = 0
-
-        clean_rect(@rect1)
-        @rect1.x = 5
-        @rect1.y = 5
-
-        expect(Gosling::Collision.test(@circle1, @rect1)).to be true
-      end
-
-      it 'does not collide if the shapes are far apart' do
-        clean_shape(@circle1)
-        @circle1.x = 0
-        @circle1.y = 0
-
-        clean_rect(@rect1)
-        @rect1.x = 10
-        @rect1.y = 10
-
-        expect(Gosling::Collision.test(@circle1, @rect1)).to be false
-      end
-    end
-
-    context 'circle vs. sprite' do
-      it 'collides if the shapes are close enough' do
-        clean_shape(@circle1)
-        @circle1.x = 0
-        @circle1.y = 0
-
-        clean_sprite(@sprite1)
-        @sprite1.x = 8
-        @sprite1.y = 8
-
-        expect(Gosling::Collision.test(@circle1, @sprite1)).to be true
-      end
-
-      it 'does not collide if the shapes are far apart' do
-        clean_shape(@circle1)
-        @circle1.x = 0
-        @circle1.y = 0
-
-        clean_sprite(@sprite1)
-        @sprite1.x = 16
-        @sprite1.y = 16
-
-        expect(Gosling::Collision.test(@circle1, @sprite1)).to be false
-      end
-    end
-
-    context 'polygon vs. polygon' do
-      it 'collides if the shapes are close enough' do
-        clean_shape(@polygon1)
-        @polygon1.x = 0
-        @polygon1.y = 0
-
-        clean_shape(@polygon2)
-        @polygon2.x = 0
-        @polygon2.y = 5
-
-        expect(Gosling::Collision.test(@polygon1, @polygon2)).to be true
-      end
-
-      it 'does not collide if the shapes are far apart' do
-        clean_shape(@polygon1)
-        @polygon1.x = 0
-        @polygon1.y = 0
-
-        clean_shape(@polygon2)
-        @polygon2.x = 5
-        @polygon2.y = 5
-
-        expect(Gosling::Collision.test(@polygon1, @polygon2)).to be false
-      end
-    end
-
-    context 'polygon vs. rect' do
-      it 'collides if the shapes are close enough' do
-        clean_shape(@polygon1)
-        @polygon1.x = 0
-        @polygon1.y = 0
-
-        clean_rect(@rect1)
-        @rect1.x = 5
-        @rect1.y = 5
-
-        expect(Gosling::Collision.test(@polygon1, @rect1)).to be true
-      end
-
-      it 'does not collide if the shapes are far apart' do
-        clean_shape(@polygon1)
-        @polygon1.x = 0
-        @polygon1.y = 0
-
-        clean_rect(@rect1)
-        @rect1.x = 10
-        @rect1.y = 5
-
-        expect(Gosling::Collision.test(@polygon1, @rect1)).to be false
-      end
-    end
-
-    context 'polygon vs. sprite' do
-      it 'collides if the shapes are close enough' do
-        clean_shape(@polygon1)
-        @polygon1.x = 0
-        @polygon1.y = 0
-
-        clean_sprite(@sprite1)
-        @sprite1.x = 8
-        @sprite1.y = 8
-
-        expect(Gosling::Collision.test(@polygon1, @sprite1)).to be true
-      end
-
-      it 'does not collide if the shapes are far apart' do
-        clean_shape(@polygon1)
-        @polygon1.x = 0
-        @polygon1.y = 0
-
-        clean_sprite(@sprite1)
-        @sprite1.x = 13
-        @sprite1.y = 8
-
-        expect(Gosling::Collision.test(@polygon1, @sprite1)).to be false
-      end
-    end
-
-    context 'rect vs. rect' do
-      it 'collides if the shapes are close enough' do
-        clean_rect(@rect1)
-        @rect1.x = 0
-        @rect1.y = 0
-
-        clean_rect(@rect2)
-        @rect2.x = 5
-        @rect2.y = 5
-
-        expect(Gosling::Collision.test(@rect1, @rect2)).to be true
-      end
-
-      it 'does not collide if the shapes are far apart' do
-        clean_rect(@rect1)
-        @rect1.x = 0
-        @rect1.y = 0
-
-        clean_shape(@rect2)
-        @rect2.x = 11
-        @rect2.y = 5
-
-        expect(Gosling::Collision.test(@rect1, @rect2)).to be false
-      end
-    end
-
-    context 'rect vs. sprite' do
-      it 'collides if the shapes are close enough' do
-        clean_rect(@rect1)
-        @rect1.x = 0
-        @rect1.y = 0
-
-        clean_sprite(@sprite1)
-        @sprite1.x = 8
-        @sprite1.y = 8
-
-        expect(Gosling::Collision.test(@rect1, @sprite1)).to be true
-      end
-
-      it 'does not collide if the shapes are far apart' do
-        clean_rect(@rect1)
-        @rect1.x = 0
-        @rect1.y = 0
-
-        clean_sprite(@sprite1)
-        @sprite1.x = 16
-        @sprite1.y = 8
-
-        expect(Gosling::Collision.test(@rect1, @sprite1)).to be false
-      end
-    end
-
-    context 'sprite vs. sprite' do
-      it 'collides if the shapes are close enough' do
-        clean_sprite(@sprite1)
-        @sprite1.x = 0
-        @sprite1.y = 0
-
-        clean_sprite(@sprite2)
-        @sprite2.x = 8
-        @sprite2.y = 8
-
-        expect(Gosling::Collision.test(@sprite1, @sprite2)).to be true
-      end
-
-      it 'does not collide if the shapes are far apart' do
-        clean_sprite(@sprite1)
-        @sprite1.x = 0
-        @sprite1.y = 0
-
-        clean_sprite(@sprite2)
-        @sprite2.x = 17
-        @sprite2.y = 8
-
-        expect(Gosling::Collision.test(@sprite1, @sprite2)).to be false
+  context 'any actor vs. itself' do
+    it 'never collides' do
+      [@actor1, @circle1, @polygon1, @rect1, @sprite1].each do |actor|
+        expect(Gosling::Collision.test(actor, actor)).to be false
+        result = Gosling::Collision.get_collision_info(actor, actor)
+        expect(result[:colliding]).to be false
+        expect(result[:overlap]).to be nil
+        expect(result[:penetration]).to be nil
       end
     end
   end
 
-  describe '#get_collision_info' do
-    context 'any actor vs. itself' do
-      it 'never collides' do
-        [@actor1, @circle1, @polygon1, @rect1, @sprite1].each do |actor|
-          result = Gosling::Collision.get_collision_info(actor, actor)
-          expect(result[:colliding]).to be false
-          expect(result[:overlap]).to be nil
-          expect(result[:penetration]).to be nil
-        end
-      end
-    end
-
-    context 'actor vs. anything' do
-      it 'never collides' do
-        pairs = [
-          [@actor1, @actor2],
-          [@actor1, @circle1],
-          [@actor1, @polygon1],
-          [@actor1, @rect1],
-          [@actor1, @sprite1]
-        ]
-        pairs.each do |pair|
-          result = Gosling::Collision.get_collision_info(*pair)
-          expect(result[:colliding]).to be false
-          expect(result[:overlap]).to be nil
-          expect(result[:penetration]).to be nil
-        end
-      end
-    end
-
-    context 'circle vs. circle' do
-      before do
-        clean_shape(@circle1)
-        @circle1.x = 0
-        @circle1.y = 0
-
-        clean_shape(@circle2)
-        @circle2.x = 5
-        @circle2.y = 5
-      end
-
-      it 'collides if the shapes are close enough' do
-        result = Gosling::Collision.get_collision_info(@circle1, @circle2)
-        expect(result[:colliding]).to be true
-        expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(10 - Math.sqrt(50))
-        expect(result[:penetration]).to eq(Snow::Vec3[1, 1, 0].normalize * result[:overlap])
-      end
-
-      it 'returns a vector that separates the shapes' do
-        result = Gosling::Collision.get_collision_info(@circle1, @circle2)
-        @circle2.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
-        expect(Gosling::Collision.test(@circle1, @circle2)).to be false
-      end
-
-      it 'always returns the vector that displaces shape b away from shape a' do
-        @circle1.y = 10
-        result = Gosling::Collision.get_collision_info(@circle1, @circle2)
-        expect(result[:penetration]).to eq(Snow::Vec3[1, -1, 0].normalize * result[:overlap])
-      end
-
-      it 'does not collide if the shapes are far apart' do
-        @circle2.x = 10
-
-        result = Gosling::Collision.get_collision_info(@circle1, @circle2)
+  context 'actor vs. anything' do
+    it 'never collides' do
+      pairs = [
+        [@actor1, @actor2],
+        [@actor1, @circle1],
+        [@actor1, @polygon1],
+        [@actor1, @rect1],
+        [@actor1, @sprite1]
+      ]
+      pairs.each do |pair|
+        expect(Gosling::Collision.test(*pair)).to be false
+        result = Gosling::Collision.get_collision_info(*pair)
         expect(result[:colliding]).to be false
         expect(result[:overlap]).to be nil
         expect(result[:penetration]).to be nil
       end
     end
+  end
 
-    context 'circle vs. polygon' do
-      before do
-        clean_shape(@circle1)
-        @circle1.x = 0
-        @circle1.y = 0
+  context 'circle vs. circle' do
+    before do
+      clean_shape(@circle1)
+      @circle1.x = 0
+      @circle1.y = 0
 
-        clean_shape(@polygon1)
-        @polygon1.x = 5
-        @polygon1.y = 5
-      end
+      clean_shape(@circle2)
+      @circle2.x = 5
+      @circle2.y = 5
+    end
 
-      it 'collides if the shapes are close enough' do
-        result = Gosling::Collision.get_collision_info(@circle1, @polygon1)
-        expect(result[:colliding]).to be true
-        expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(5)
-        expect(result[:penetration]).to eq(Snow::Vec3[1, 1, 0].normalize * result[:overlap])
-      end
+    it 'collides if the shapes are close enough' do
+      expect(Gosling::Collision.test(@circle1, @circle2)).to be true
+      result = Gosling::Collision.get_collision_info(@circle1, @circle2)
+      expect(result[:colliding]).to be true
+      expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(10 - Math.sqrt(50))
+      expect(result[:penetration]).to eq(Snow::Vec3[1, 1, 0].normalize * result[:overlap])
+    end
 
-      it 'returns a vector that separates the shapes' do
-        result = Gosling::Collision.get_collision_info(@circle1, @polygon1)
-        @polygon1.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
-        expect(Gosling::Collision.test(@circle1, @polygon1)).to be false
-      end
+    it 'returns a vector that separates the shapes' do
+      result = Gosling::Collision.get_collision_info(@circle1, @circle2)
+      @circle2.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
+      expect(Gosling::Collision.test(@circle1, @circle2)).to be false
+    end
 
-      it 'does not collide if the shapes are far apart' do
-        @polygon1.x = 10
-        @polygon1.y = 10
+    it 'always returns the vector that displaces shape b away from shape a' do
+      @circle1.y = 10
+      result = Gosling::Collision.get_collision_info(@circle1, @circle2)
+      expect(result[:penetration]).to eq(Snow::Vec3[1, -1, 0].normalize * result[:overlap])
+    end
 
-        result = Gosling::Collision.get_collision_info(@circle1, @polygon1)
-        expect(result[:colliding]).to be false
-        expect(result[:overlap]).to be nil
-        expect(result[:penetration]).to be nil
+    it 'does not collide if the shapes are far apart' do
+      @circle2.x = 10
+
+      expect(Gosling::Collision.test(@circle1, @circle2)).to be false
+
+      result = Gosling::Collision.get_collision_info(@circle1, @circle2)
+      expect(result[:colliding]).to be false
+      expect(result[:overlap]).to be nil
+      expect(result[:penetration]).to be nil
+    end
+  end
+
+  context 'circle vs. polygon' do
+    before do
+      clean_shape(@circle1)
+      @circle1.x = 0
+      @circle1.y = 0
+
+      clean_shape(@polygon1)
+      @polygon1.x = 5
+      @polygon1.y = 5
+    end
+
+    it 'collides if the shapes are close enough' do
+      expect(Gosling::Collision.test(@circle1, @polygon1)).to be true
+      result = Gosling::Collision.get_collision_info(@circle1, @polygon1)
+      expect(result[:colliding]).to be true
+      expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(5)
+      expect(result[:penetration]).to eq(Snow::Vec3[1, 1, 0].normalize * result[:overlap])
+    end
+
+    it 'returns a vector that separates the shapes' do
+      result = Gosling::Collision.get_collision_info(@circle1, @polygon1)
+      @polygon1.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
+      expect(Gosling::Collision.test(@circle1, @polygon1)).to be false
+    end
+
+    it 'does not collide if the shapes are far apart' do
+      @polygon1.x = 10
+      @polygon1.y = 10
+
+      expect(Gosling::Collision.test(@circle1, @polygon1)).to be false
+      result = Gosling::Collision.get_collision_info(@circle1, @polygon1)
+      expect(result[:colliding]).to be false
+      expect(result[:overlap]).to be nil
+      expect(result[:penetration]).to be nil
+    end
+  end
+
+  context 'circle vs. rect' do
+    before do
+      clean_shape(@circle1)
+      @circle1.x = 0
+      @circle1.y = 0
+
+      clean_rect(@rect1)
+      @rect1.x = 5
+      @rect1.y = 5
+    end
+
+    it 'collides if the shapes are close enough' do
+      expect(Gosling::Collision.test(@circle1, @rect1)).to be true
+      result = Gosling::Collision.get_collision_info(@circle1, @rect1)
+      expect(result[:colliding]).to be true
+      expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(5)
+      expect(result[:penetration]).to eq(Snow::Vec3[1, 1, 0].normalize * result[:overlap])
+    end
+
+    it 'returns a vector that separates the shapes' do
+      result = Gosling::Collision.get_collision_info(@circle1, @rect1)
+      @rect1.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
+      expect(Gosling::Collision.test(@circle1, @rect1)).to be false
+    end
+
+    it 'does not collide if the shapes are far apart' do
+      @rect1.x = 10
+      @rect1.y = 10
+
+      expect(Gosling::Collision.test(@circle1, @rect1)).to be false
+      result = Gosling::Collision.get_collision_info(@circle1, @rect1)
+      expect(result[:colliding]).to be false
+      expect(result[:overlap]).to be nil
+      expect(result[:penetration]).to be nil
+    end
+  end
+
+  context 'circle vs. sprite' do
+    before do
+      clean_shape(@circle1)
+      @circle1.x = 0
+      @circle1.y = 0
+
+      clean_sprite(@sprite1)
+      @sprite1.x = 8
+      @sprite1.y = 8
+    end
+
+    it 'collides if the shapes are close enough' do
+      expect(Gosling::Collision.test(@circle1, @sprite1)).to be true
+      result = Gosling::Collision.get_collision_info(@circle1, @sprite1)
+      expect(result[:colliding]).to be true
+      expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(5)
+      expect(result[:penetration]).to eq(Snow::Vec3[1, 1, 0].normalize * result[:overlap])
+    end
+
+    it 'returns a vector that separates the shapes' do
+      result = Gosling::Collision.get_collision_info(@circle1, @sprite1)
+      @sprite1.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
+      expect(Gosling::Collision.test(@circle1, @sprite1)).to be false
+    end
+
+    it 'does not collide if the shapes are far apart' do
+      @sprite1.x = 16
+      @sprite1.y = 16
+
+      expect(Gosling::Collision.test(@circle1, @sprite1)).to be false
+      result = Gosling::Collision.get_collision_info(@circle1, @sprite1)
+      expect(result[:colliding]).to be false
+      expect(result[:overlap]).to be nil
+      expect(result[:penetration]).to be nil
+    end
+  end
+
+  context 'polygon vs. polygon' do
+    before do
+      clean_shape(@polygon1)
+      @polygon1.x = 0
+      @polygon1.y = 0
+
+      clean_shape(@polygon2)
+      @polygon2.x = 0
+      @polygon2.y = 5
+    end
+
+    it 'collides if the shapes are close enough' do
+      expect(Gosling::Collision.test(@polygon1, @polygon2)).to be true
+      result = Gosling::Collision.get_collision_info(@polygon1, @polygon2)
+      expect(result[:colliding]).to be true
+      axis = Snow::Vec2[-10, -5].normalize
+      a = Snow::Vec2[0, 0].dot_product(axis)
+      b = Snow::Vec2[0, 5].dot_product(axis)
+      expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(a - b)
+      expect(result[:penetration]).to eq(Snow::Vec3[2, 1, 0].normalize * result[:overlap])
+    end
+
+    it 'returns a vector that separates the shapes' do
+      result = Gosling::Collision.get_collision_info(@polygon1, @polygon2)
+      @polygon2.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
+      expect(Gosling::Collision.test(@polygon1, @polygon2)).to be false
+    end
+
+    it 'always returns the vector that displaces shape b away from shape a' do
+      @polygon1.y = 5
+      @polygon2.y = 0
+      result = Gosling::Collision.get_collision_info(@polygon1, @polygon2)
+      expect(result[:penetration]).to eq(Snow::Vec3[0, -1, 0].normalize * result[:overlap])
+    end
+
+    it 'does not collide if the shapes are far apart' do
+      @polygon2.x = 5
+
+      expect(Gosling::Collision.test(@polygon1, @polygon2)).to be false
+      result = Gosling::Collision.get_collision_info(@polygon1, @polygon2)
+      expect(result[:colliding]).to be false
+      expect(result[:overlap]).to be nil
+      expect(result[:penetration]).to be nil
+    end
+  end
+
+  context 'polygon vs. rect' do
+    before do
+      clean_shape(@polygon1)
+      @polygon1.x = 0
+      @polygon1.y = 0
+
+      clean_rect(@rect1)
+      @rect1.x = 5
+      @rect1.y = 5
+    end
+
+    it 'collides if the shapes are close enough' do
+      expect(Gosling::Collision.test(@polygon1, @rect1)).to be true
+      result = Gosling::Collision.get_collision_info(@polygon1, @rect1)
+      expect(result[:colliding]).to be true
+      axis = Snow::Vec2[-10, -5].normalize
+      a = Snow::Vec2[0, 0].dot_product(axis)
+      b = Snow::Vec2[0, 5].dot_product(axis)
+      expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(a - b)
+      expect(result[:penetration]).to eq(Snow::Vec3[2, 1, 0].normalize * result[:overlap])
+    end
+
+    it 'returns a vector that separates the shapes' do
+      result = Gosling::Collision.get_collision_info(@polygon1, @rect1)
+      @rect1.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
+      expect(Gosling::Collision.test(@polygon1, @rect1)).to be false
+    end
+
+    it 'does not collide if the shapes are far apart' do
+      @rect1.x = 10
+
+      expect(Gosling::Collision.test(@polygon1, @rect1)).to be false
+      result = Gosling::Collision.get_collision_info(@polygon1, @rect1)
+      expect(result[:colliding]).to be false
+      expect(result[:overlap]).to be nil
+      expect(result[:penetration]).to be nil
+    end
+  end
+
+  context 'polygon vs. sprite' do
+    before do
+      clean_shape(@polygon1)
+      @polygon1.x = 0
+      @polygon1.y = 0
+
+      clean_sprite(@sprite1)
+      @sprite1.x = 8
+      @sprite1.y = 8
+    end
+
+    it 'collides if the shapes are close enough' do
+      expect(Gosling::Collision.test(@polygon1, @sprite1)).to be true
+      result = Gosling::Collision.get_collision_info(@polygon1, @sprite1)
+      expect(result[:colliding]).to be true
+      axis = Snow::Vec2[-10, -5].normalize
+      a = Snow::Vec2[0, 0].dot_product(axis)
+      b = Snow::Vec2[0, 5].dot_product(axis)
+      expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(a - b)
+      expect(result[:penetration]).to eq(Snow::Vec3[2, 1, 0].normalize * result[:overlap])
+    end
+
+    it 'returns a vector that separates the shapes' do
+      result = Gosling::Collision.get_collision_info(@polygon1, @sprite1)
+      @sprite1.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
+      expect(Gosling::Collision.test(@polygon1, @sprite1)).to be false
+    end
+
+    it 'does not collide if the shapes are far apart' do
+      @sprite1.x = 13
+
+      expect(Gosling::Collision.test(@polygon1, @sprite1)).to be false
+      result = Gosling::Collision.get_collision_info(@polygon1, @sprite1)
+      expect(result[:colliding]).to be false
+      expect(result[:overlap]).to be nil
+      expect(result[:penetration]).to be nil
+    end
+  end
+
+  context 'rect vs. rect' do
+    before do
+      clean_rect(@rect1)
+      @rect1.x = 0
+      @rect1.y = 0
+
+      clean_rect(@rect2)
+      @rect2.x = 5
+      @rect2.y = 5
+    end
+
+    it 'collides if the shapes are close enough' do
+      expect(Gosling::Collision.test(@rect1, @rect2)).to be true
+      result = Gosling::Collision.get_collision_info(@rect1, @rect2)
+      expect(result[:colliding]).to be true
+      expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(5)
+      if result[:penetration].x == 0
+        expect(result[:penetration]).to eq(Snow::Vec3[0, 1, 0].normalize * result[:overlap])
+      else
+        expect(result[:penetration]).to eq(Snow::Vec3[1, 0, 0].normalize * result[:overlap])
       end
     end
 
-    context 'circle vs. rect' do
-      before do
-        clean_shape(@circle1)
-        @circle1.x = 0
-        @circle1.y = 0
+    it 'returns a vector that separates the shapes' do
+      result = Gosling::Collision.get_collision_info(@rect1, @rect2)
+      @rect2.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
+      expect(Gosling::Collision.test(@rect1, @rect2)).to be false
+    end
 
-        clean_rect(@rect1)
-        @rect1.x = 5
-        @rect1.y = 5
-      end
+    it 'does not collide if the shapes are far apart' do
+      @rect2.x = 11
 
-      it 'collides if the shapes are close enough' do
-        result = Gosling::Collision.get_collision_info(@circle1, @rect1)
-        expect(result[:colliding]).to be true
-        expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(5)
-        expect(result[:penetration]).to eq(Snow::Vec3[1, 1, 0].normalize * result[:overlap])
-      end
+      expect(Gosling::Collision.test(@rect1, @rect2)).to be false
+      result = Gosling::Collision.get_collision_info(@rect1, @rect2)
+      expect(result[:colliding]).to be false
+      expect(result[:overlap]).to be nil
+      expect(result[:penetration]).to be nil
+    end
+  end
 
-      it 'returns a vector that separates the shapes' do
-        result = Gosling::Collision.get_collision_info(@circle1, @rect1)
-        @rect1.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
-        expect(Gosling::Collision.test(@circle1, @rect1)).to be false
-      end
+  context 'rect vs. sprite' do
+    before do
+      clean_rect(@rect1)
+      @rect1.x = 0
+      @rect1.y = 0
 
-      it 'does not collide if the shapes are far apart' do
-        @rect1.x = 10
-        @rect1.y = 10
+      clean_sprite(@sprite1)
+      @sprite1.x = 8
+      @sprite1.y = 8
+    end
 
-        result = Gosling::Collision.get_collision_info(@circle1, @rect1)
-        expect(result[:colliding]).to be false
-        expect(result[:overlap]).to be nil
-        expect(result[:penetration]).to be nil
+    it 'collides if the shapes are close enough' do
+      expect(Gosling::Collision.test(@rect1, @sprite1)).to be true
+      result = Gosling::Collision.get_collision_info(@rect1, @sprite1)
+      expect(result[:colliding]).to be true
+      expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(5)
+      if result[:penetration].x == 0
+        expect(result[:penetration]).to eq(Snow::Vec3[0, 1, 0].normalize * result[:overlap])
+      else
+        expect(result[:penetration]).to eq(Snow::Vec3[1, 0, 0].normalize * result[:overlap])
       end
     end
 
-    context 'circle vs. sprite' do
-      before do
-        clean_shape(@circle1)
-        @circle1.x = 0
-        @circle1.y = 0
+    it 'returns a vector that separates the shapes' do
+      result = Gosling::Collision.get_collision_info(@rect1, @sprite1)
+      @sprite1.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
+      expect(Gosling::Collision.test(@rect1, @sprite1)).to be false
+    end
 
-        clean_sprite(@sprite1)
-        @sprite1.x = 8
-        @sprite1.y = 8
-      end
+    it 'does not collide if the shapes are far apart' do
+      @sprite1.x = 16
 
-      it 'collides if the shapes are close enough' do
-        result = Gosling::Collision.get_collision_info(@circle1, @sprite1)
-        expect(result[:colliding]).to be true
-        expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(5)
-        expect(result[:penetration]).to eq(Snow::Vec3[1, 1, 0].normalize * result[:overlap])
-      end
+      expect(Gosling::Collision.test(@rect1, @sprite1)).to be false
+      result = Gosling::Collision.get_collision_info(@rect1, @sprite1)
+      expect(result[:colliding]).to be false
+      expect(result[:overlap]).to be nil
+      expect(result[:penetration]).to be nil
+    end
+  end
 
-      it 'returns a vector that separates the shapes' do
-        result = Gosling::Collision.get_collision_info(@circle1, @sprite1)
-        @sprite1.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
-        expect(Gosling::Collision.test(@circle1, @sprite1)).to be false
-      end
+  context 'sprite vs. sprite' do
+    before do
+      clean_sprite(@sprite1)
+      @sprite1.x = 0
+      @sprite1.y = 0
 
-      it 'does not collide if the shapes are far apart' do
-        @sprite1.x = 16
-        @sprite1.y = 16
+      clean_sprite(@sprite2)
+      @sprite2.x = 8
+      @sprite2.y = 8
+    end
 
-        result = Gosling::Collision.get_collision_info(@circle1, @sprite1)
-        expect(result[:colliding]).to be false
-        expect(result[:overlap]).to be nil
-        expect(result[:penetration]).to be nil
+    it 'collides if the shapes are close enough' do
+      expect(Gosling::Collision.test(@sprite1, @sprite2)).to be true
+      result = Gosling::Collision.get_collision_info(@sprite1, @sprite2)
+      expect(result[:colliding]).to be true
+      expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(8)
+      if result[:penetration].x == 0
+        expect(result[:penetration]).to eq(Snow::Vec3[0, 1, 0].normalize * result[:overlap])
+      else
+        expect(result[:penetration]).to eq(Snow::Vec3[1, 0, 0].normalize * result[:overlap])
       end
     end
 
-    context 'polygon vs. polygon' do
-      before do
-        clean_shape(@polygon1)
-        @polygon1.x = 0
-        @polygon1.y = 0
-
-        clean_shape(@polygon2)
-        @polygon2.x = 0
-        @polygon2.y = 5
-      end
-
-      it 'collides if the shapes are close enough' do
-        result = Gosling::Collision.get_collision_info(@polygon1, @polygon2)
-        expect(result[:colliding]).to be true
-        axis = Snow::Vec2[-10, -5].normalize
-        a = Snow::Vec2[0, 0].dot_product(axis)
-        b = Snow::Vec2[0, 5].dot_product(axis)
-        expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(a - b)
-        expect(result[:penetration]).to eq(Snow::Vec3[2, 1, 0].normalize * result[:overlap])
-      end
-
-      it 'returns a vector that separates the shapes' do
-        result = Gosling::Collision.get_collision_info(@polygon1, @polygon2)
-        @polygon2.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
-        expect(Gosling::Collision.test(@polygon1, @polygon2)).to be false
-      end
-
-      it 'always returns the vector that displaces shape b away from shape a' do
-        @polygon1.y = 5
-        @polygon2.y = 0
-        result = Gosling::Collision.get_collision_info(@polygon1, @polygon2)
-        expect(result[:penetration]).to eq(Snow::Vec3[0, -1, 0].normalize * result[:overlap])
-      end
-
-      it 'does not collide if the shapes are far apart' do
-        @polygon2.x = 5
-
-        result = Gosling::Collision.get_collision_info(@polygon1, @polygon2)
-        expect(result[:colliding]).to be false
-        expect(result[:overlap]).to be nil
-        expect(result[:penetration]).to be nil
-      end
+    it 'returns a vector that separates the shapes' do
+      result = Gosling::Collision.get_collision_info(@sprite1, @sprite2)
+      @sprite2.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
+      expect(Gosling::Collision.test(@sprite1, @sprite2)).to be false
     end
 
-    context 'polygon vs. rect' do
-      before do
-        clean_shape(@polygon1)
-        @polygon1.x = 0
-        @polygon1.y = 0
+    it 'does not collide if the shapes are far apart' do
+      @sprite2.x = 17
 
-        clean_rect(@rect1)
-        @rect1.x = 5
-        @rect1.y = 5
-      end
-
-      it 'collides if the shapes are close enough' do
-        result = Gosling::Collision.get_collision_info(@polygon1, @rect1)
-        expect(result[:colliding]).to be true
-        axis = Snow::Vec2[-10, -5].normalize
-        a = Snow::Vec2[0, 0].dot_product(axis)
-        b = Snow::Vec2[0, 5].dot_product(axis)
-        expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(a - b)
-        expect(result[:penetration]).to eq(Snow::Vec3[2, 1, 0].normalize * result[:overlap])
-      end
-
-      it 'returns a vector that separates the shapes' do
-        result = Gosling::Collision.get_collision_info(@polygon1, @rect1)
-        @rect1.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
-        expect(Gosling::Collision.test(@polygon1, @rect1)).to be false
-      end
-
-      it 'does not collide if the shapes are far apart' do
-        @rect1.x = 10
-
-        result = Gosling::Collision.get_collision_info(@polygon1, @rect1)
-        expect(result[:colliding]).to be false
-        expect(result[:overlap]).to be nil
-        expect(result[:penetration]).to be nil
-      end
-    end
-
-    context 'polygon vs. sprite' do
-      before do
-        clean_shape(@polygon1)
-        @polygon1.x = 0
-        @polygon1.y = 0
-
-        clean_sprite(@sprite1)
-        @sprite1.x = 8
-        @sprite1.y = 8
-      end
-
-      it 'collides if the shapes are close enough' do
-        result = Gosling::Collision.get_collision_info(@polygon1, @sprite1)
-        expect(result[:colliding]).to be true
-        axis = Snow::Vec2[-10, -5].normalize
-        a = Snow::Vec2[0, 0].dot_product(axis)
-        b = Snow::Vec2[0, 5].dot_product(axis)
-        expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(a - b)
-        expect(result[:penetration]).to eq(Snow::Vec3[2, 1, 0].normalize * result[:overlap])
-      end
-
-      it 'returns a vector that separates the shapes' do
-        result = Gosling::Collision.get_collision_info(@polygon1, @sprite1)
-        @sprite1.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
-        expect(Gosling::Collision.test(@polygon1, @sprite1)).to be false
-      end
-
-      it 'does not collide if the shapes are far apart' do
-        @sprite1.x = 13
-
-        result = Gosling::Collision.get_collision_info(@polygon1, @sprite1)
-        expect(result[:colliding]).to be false
-        expect(result[:overlap]).to be nil
-        expect(result[:penetration]).to be nil
-      end
-    end
-
-    context 'rect vs. rect' do
-      before do
-        clean_rect(@rect1)
-        @rect1.x = 0
-        @rect1.y = 0
-
-        clean_rect(@rect2)
-        @rect2.x = 5
-        @rect2.y = 5
-      end
-
-      it 'collides if the shapes are close enough' do
-        result = Gosling::Collision.get_collision_info(@rect1, @rect2)
-        expect(result[:colliding]).to be true
-        expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(5)
-        if result[:penetration].x == 0
-          expect(result[:penetration]).to eq(Snow::Vec3[0, 1, 0].normalize * result[:overlap])
-        else
-          expect(result[:penetration]).to eq(Snow::Vec3[1, 0, 0].normalize * result[:overlap])
-        end
-      end
-
-      it 'returns a vector that separates the shapes' do
-        result = Gosling::Collision.get_collision_info(@rect1, @rect2)
-        @rect2.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
-        expect(Gosling::Collision.test(@rect1, @rect2)).to be false
-      end
-
-      it 'does not collide if the shapes are far apart' do
-        @rect2.x = 11
-
-        result = Gosling::Collision.get_collision_info(@rect1, @rect2)
-        expect(result[:colliding]).to be false
-        expect(result[:overlap]).to be nil
-        expect(result[:penetration]).to be nil
-      end
-    end
-
-    context 'rect vs. sprite' do
-      before do
-        clean_rect(@rect1)
-        @rect1.x = 0
-        @rect1.y = 0
-
-        clean_sprite(@sprite1)
-        @sprite1.x = 8
-        @sprite1.y = 8
-      end
-
-      it 'collides if the shapes are close enough' do
-        result = Gosling::Collision.get_collision_info(@rect1, @sprite1)
-        expect(result[:colliding]).to be true
-        expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(5)
-        if result[:penetration].x == 0
-          expect(result[:penetration]).to eq(Snow::Vec3[0, 1, 0].normalize * result[:overlap])
-        else
-          expect(result[:penetration]).to eq(Snow::Vec3[1, 0, 0].normalize * result[:overlap])
-        end
-      end
-
-      it 'returns a vector that separates the shapes' do
-        result = Gosling::Collision.get_collision_info(@rect1, @sprite1)
-        @sprite1.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
-        expect(Gosling::Collision.test(@rect1, @sprite1)).to be false
-      end
-
-      it 'does not collide if the shapes are far apart' do
-        @sprite1.x = 16
-
-        result = Gosling::Collision.get_collision_info(@rect1, @sprite1)
-        expect(result[:colliding]).to be false
-        expect(result[:overlap]).to be nil
-        expect(result[:penetration]).to be nil
-      end
-    end
-
-    context 'sprite vs. sprite' do
-      before do
-        clean_sprite(@sprite1)
-        @sprite1.x = 0
-        @sprite1.y = 0
-
-        clean_sprite(@sprite2)
-        @sprite2.x = 8
-        @sprite2.y = 8
-      end
-
-      it 'collides if the shapes are close enough' do
-        result = Gosling::Collision.get_collision_info(@sprite1, @sprite2)
-        expect(result[:colliding]).to be true
-        expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(8)
-        if result[:penetration].x == 0
-          expect(result[:penetration]).to eq(Snow::Vec3[0, 1, 0].normalize * result[:overlap])
-        else
-          expect(result[:penetration]).to eq(Snow::Vec3[1, 0, 0].normalize * result[:overlap])
-        end
-      end
-
-      it 'returns a vector that separates the shapes' do
-        result = Gosling::Collision.get_collision_info(@sprite1, @sprite2)
-        @sprite2.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
-        expect(Gosling::Collision.test(@sprite1, @sprite2)).to be false
-      end
-
-      it 'does not collide if the shapes are far apart' do
-        @sprite2.x = 17
-
-        result = Gosling::Collision.get_collision_info(@sprite1, @sprite2)
-        expect(result[:colliding]).to be false
-        expect(result[:overlap]).to be nil
-        expect(result[:penetration]).to be nil
-      end
+      expect(Gosling::Collision.test(@sprite1, @sprite2)).to be false
+      result = Gosling::Collision.get_collision_info(@sprite1, @sprite2)
+      expect(result[:colliding]).to be false
+      expect(result[:overlap]).to be nil
+      expect(result[:penetration]).to be nil
     end
   end
 
