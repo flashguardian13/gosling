@@ -15,9 +15,9 @@ module Gosling
     # Initializes this Transformable to have no transformations (identity matrix).
     #
     def initialize
-      @center = Snow::Vec3[0.to_r, 0.to_r, 1.to_r]
-      @scale = Snow::Vec2[1.to_r, 1.to_r]
-      @translation = Snow::Vec3[0.to_r, 0.to_r, 1.to_r]
+      @center = Snow::Vec3[0, 0, 1]
+      @scale = Snow::Vec2[1, 1]
+      @translation = Snow::Vec3[0, 0, 1]
       reset
     end
 
@@ -26,10 +26,10 @@ module Gosling
     # matrix.
     #
     def reset
-      self.center = 0.to_r, 0.to_r
-      self.scale = 1.to_r, 1.to_r
-      self.rotation = 0.to_r
-      self.translation = 0.to_r, 0.to_r
+      self.center = 0, 0
+      self.scale = 1, 1
+      self.rotation = 0
+      self.translation = 0, 0
     end
 
     ##
@@ -305,8 +305,8 @@ module Gosling
     def self.transform_point(mat, v)
       type_check(mat, Snow::Mat3)
       type_check(v, Snow::Vec3)
-      result = mat * Snow::Vec3[v[0], v[1], 1.to_r]
-      result[2] = 0.to_r
+      result = mat * Snow::Vec3[v[0], v[1], 1]
+      result[2] = 0
       result
     end
 
@@ -329,8 +329,8 @@ module Gosling
       unless inverse_mat
         raise "Unable to invert matrix: #{mat}!"
       end
-      result = mat.inverse * Snow::Vec3[v[0], v[1], 1.to_r]
-      result[2] = 0.to_r
+      result = mat.inverse * Snow::Vec3[v[0], v[1], 1]
+      result[2] = 0
       result
     end
 
