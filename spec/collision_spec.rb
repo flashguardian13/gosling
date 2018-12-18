@@ -586,124 +586,172 @@ describe Gosling::Collision do
     end
 
     context 'point vs. circle' do
-      it 'returns true if point is in shape' do
+      before do
         clean_shape(@circle1)
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 0, 0], @circle1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[4, 0, 0], @circle1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-4, 0, 0], @circle1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 4, 0], @circle1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -4, 0], @circle1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[5, 0, 0], @circle1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-5, 0, 0], @circle1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 5, 0], @circle1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -5, 0], @circle1)).to be true
+      end
+
+      it 'returns true if point is in shape' do
+        points = [
+          Snow::Vec3[0, 0, 0],
+          Snow::Vec3[4, 0, 0],
+          Snow::Vec3[-4, 0, 0],
+          Snow::Vec3[0, 4, 0],
+          Snow::Vec3[0, -4, 0],
+          Snow::Vec3[5, 0, 0],
+          Snow::Vec3[-5, 0, 0],
+          Snow::Vec3[0, 5, 0],
+          Snow::Vec3[0, -5, 0],
+        ]
+        points.each do |p|
+          expect(Gosling::Collision.is_point_in_shape?(p, @circle1)).to be true
+        end
       end
 
       it 'returns false if point is not in shape' do
-        clean_shape(@circle1)
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[6, 0, 0], @circle1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-6, 0, 0], @circle1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 6, 0], @circle1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -6, 0], @circle1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[4, 4, 0], @circle1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-4, 4, 0], @circle1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-4, -4, 0], @circle1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[4, -4, 0], @circle1)).to be false
+        points = [
+          Snow::Vec3[6, 0, 0],
+          Snow::Vec3[-6, 0, 0],
+          Snow::Vec3[0, 6, 0],
+          Snow::Vec3[0, -6, 0],
+          Snow::Vec3[4, 4, 0],
+          Snow::Vec3[-4, 4, 0],
+          Snow::Vec3[-4, -4, 0],
+          Snow::Vec3[4, -4, 0],
+        ]
+        points.each do |p|
+          expect(Gosling::Collision.is_point_in_shape?(p, @circle1)).to be false
+        end
       end
     end
 
     context 'point vs. polygon' do
-      it 'returns true if point is in shape' do
+      before do
         clean_shape(@polygon1)
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 0, 0], @polygon1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 4, 0], @polygon1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -4, 0], @polygon1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[4, -4, 0], @polygon1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-4, -4, 0], @polygon1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 5, 0], @polygon1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -5, 0], @polygon1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[5, -5, 0], @polygon1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-5, -5, 0], @polygon1)).to be true
+      end
+
+      it 'returns true if point is in shape' do
+        points = [
+          Snow::Vec3[0, 0, 0],
+          Snow::Vec3[0, 4, 0],
+          Snow::Vec3[0, -4, 0],
+          Snow::Vec3[4, -4, 0],
+          Snow::Vec3[-4, -4, 0],
+          Snow::Vec3[0, 5, 0],
+          Snow::Vec3[0, -5, 0],
+          Snow::Vec3[5, -5, 0],
+          Snow::Vec3[-5, -5, 0],
+        ]
+        points.each do |p|
+          expect(Gosling::Collision.is_point_in_shape?(p, @polygon1)).to be true
+        end
       end
 
       it 'returns false if point is not in shape' do
-        clean_shape(@polygon1)
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 6, 0], @polygon1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -6, 0], @polygon1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[6, -6, 0], @polygon1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-6, -6, 0], @polygon1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[4, 4, 0], @polygon1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-4, 4, 0], @polygon1)).to be false
+        points = [
+          Snow::Vec3[0, 6, 0],
+          Snow::Vec3[0, -6, 0],
+          Snow::Vec3[6, -6, 0],
+          Snow::Vec3[-6, -6, 0],
+          Snow::Vec3[4, 4, 0],
+          Snow::Vec3[-4, 4, 0],
+        ]
+        points.each do |p|
+          expect(Gosling::Collision.is_point_in_shape?(p, @polygon1)).to be false
+        end
       end
     end
 
     context 'point vs. rect' do
-      it 'returns true if point is in shape' do
+      before do
         clean_rect(@rect1)
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 0, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-4, -4, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -4, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[4, -4, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[4, 0, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[4, 4, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 4, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-4, 4, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-4, 0, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-5, -5, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -5, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[5, -5, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[5, 0, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[5, 5, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 5, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-5, 5, 0], @rect1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-5, 0, 0], @rect1)).to be true
+      end
+
+      it 'returns true if point is in shape' do
+        points = [
+          Snow::Vec3[0, 0, 0],
+          Snow::Vec3[-4, -4, 0],
+          Snow::Vec3[0, -4, 0],
+          Snow::Vec3[4, -4, 0],
+          Snow::Vec3[4, 0, 0],
+          Snow::Vec3[4, 4, 0],
+          Snow::Vec3[0, 4, 0],
+          Snow::Vec3[-4, 4, 0],
+          Snow::Vec3[-4, 0, 0],
+          Snow::Vec3[-5, -5, 0],
+          Snow::Vec3[0, -5, 0],
+          Snow::Vec3[5, -5, 0],
+          Snow::Vec3[5, 0, 0],
+          Snow::Vec3[5, 5, 0],
+          Snow::Vec3[0, 5, 0],
+          Snow::Vec3[-5, 5, 0],
+          Snow::Vec3[-5, 0, 0],
+        ]
+        points.each do |p|
+          expect(Gosling::Collision.is_point_in_shape?(p, @rect1)).to be true
+        end
       end
 
       it 'returns false if point is not in shape' do
-        clean_rect(@rect1)
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-6, -6, 0], @rect1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -6, 0], @rect1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[6, -6, 0], @rect1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[6, 0, 0], @rect1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[6, 6, 0], @rect1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 6, 0], @rect1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-6, 6, 0], @rect1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-6, 0, 0], @rect1)).to be false
+        points = [
+          Snow::Vec3[-6, -6, 0],
+          Snow::Vec3[0, -6, 0],
+          Snow::Vec3[6, -6, 0],
+          Snow::Vec3[6, 0, 0],
+          Snow::Vec3[6, 6, 0],
+          Snow::Vec3[0, 6, 0],
+          Snow::Vec3[-6, 6, 0],
+          Snow::Vec3[-6, 0, 0],
+        ]
+        points.each do |p|
+          expect(Gosling::Collision.is_point_in_shape?(p, @rect1)).to be false
+        end
       end
     end
 
     context 'point vs. sprite' do
-      it 'returns true if point is in shape' do
+      before do
         clean_sprite(@sprite1)
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 0, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-7, -7, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -7, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[7, -7, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[7, 0, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[7, 7, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 7, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-7, 7, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-7, 0, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-8, -8, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -8, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[8, -8, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[8, 0, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[8, 8, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 8, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-8, 8, 0], @sprite1)).to be true
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-8, 0, 0], @sprite1)).to be true
+      end
+
+      it 'returns true if point is in shape' do
+        points = [
+          Snow::Vec3[0, 0, 0],
+          Snow::Vec3[-7, -7, 0],
+          Snow::Vec3[0, -7, 0],
+          Snow::Vec3[7, -7, 0],
+          Snow::Vec3[7, 0, 0],
+          Snow::Vec3[7, 7, 0],
+          Snow::Vec3[0, 7, 0],
+          Snow::Vec3[-7, 7, 0],
+          Snow::Vec3[-7, 0, 0],
+          Snow::Vec3[-8, -8, 0],
+          Snow::Vec3[0, -8, 0],
+          Snow::Vec3[8, -8, 0],
+          Snow::Vec3[8, 0, 0],
+          Snow::Vec3[8, 8, 0],
+          Snow::Vec3[0, 8, 0],
+          Snow::Vec3[-8, 8, 0],
+          Snow::Vec3[-8, 0, 0],
+        ]
+        points.each do |p|
+          expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-8, 0, 0], @sprite1)).to be true
+        end
       end
 
       it 'returns false if point is not in shape' do
-        clean_sprite(@sprite1)
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-9, -9, 0], @sprite1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, -9, 0], @sprite1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[9, -9, 0], @sprite1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[9, 0, 0], @sprite1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[9, 9, 0], @sprite1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 9, 0], @sprite1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-9, 9, 0], @sprite1)).to be false
-        expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-9, 0, 0], @sprite1)).to be false
+        points = [
+          Snow::Vec3[-9, -9, 0],
+          Snow::Vec3[0, -9, 0],
+          Snow::Vec3[9, -9, 0],
+          Snow::Vec3[9, 0, 0],
+          Snow::Vec3[9, 9, 0],
+          Snow::Vec3[0, 9, 0],
+          Snow::Vec3[-9, 9, 0],
+          Snow::Vec3[-9, 0, 0],
+        ]
+        points.each do |p|
+          expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-9, 0, 0], @sprite1)).to be false
+        end
       end
     end
   end
@@ -835,6 +883,11 @@ describe Gosling::Collision do
   end
 
   describe '#get_circle_separation_axis' do
+    before do
+      clean_shape(@circle1)
+      clean_shape(@circle2)
+    end
+
     it 'expects two shape arguments' do
       expect { Gosling::Collision.get_circle_separation_axis(@circle1, @circle2) }.not_to raise_error
       expect { Gosling::Collision.get_circle_separation_axis(@circle1, @polygon1) }.not_to raise_error
@@ -848,11 +901,9 @@ describe Gosling::Collision do
     end
 
     it 'returns a 3d vector' do
-      clean_shape(@circle1)
       @circle1.x = 0
       @circle1.y = 0
 
-      clean_shape(@circle2)
       @circle2.x = 10
       @circle2.y = -5
 
@@ -861,11 +912,9 @@ describe Gosling::Collision do
     end
 
     it "returns nil if distance beween shape centers is 0" do
-      clean_shape(@circle1)
       @circle1.x = 0
       @circle1.y = 0
 
-      clean_shape(@circle2)
       @circle2.x = 0
       @circle2.y = 0
 
@@ -874,11 +923,9 @@ describe Gosling::Collision do
     end
 
     it 'returns a correct unit vector' do
-      clean_shape(@circle1)
       @circle1.x = 5
       @circle1.y = -10
 
-      clean_shape(@circle2)
       @circle2.x = 10
       @circle2.y = -5
 
@@ -1091,8 +1138,11 @@ describe Gosling::Collision do
     end
 
     context 'with a circle' do
-      it 'returns expected values' do
+      before do
         clean_shape(@circle1)
+      end
+
+      it 'returns expected values' do
         @circle1.x = 0
         @circle1.y = 0
         @circle1.radius = 5
@@ -1112,7 +1162,6 @@ describe Gosling::Collision do
       end
 
       it 'respects centering' do
-        clean_shape(@circle1)
         @circle1.center_x = 3
         @circle1.center_y = 6
 
@@ -1126,7 +1175,6 @@ describe Gosling::Collision do
       end
 
       it 'respects scaling' do
-        clean_shape(@circle1)
         @circle1.scale_x = 2
         @circle1.scale_y = 0.5
 
@@ -1140,7 +1188,6 @@ describe Gosling::Collision do
       end
 
       it 'respects rotation' do
-        clean_shape(@circle1)
         @circle1.rotation = Math::PI
 
         axis = Snow::Vec3[1, 0, 0].normalize
@@ -1149,7 +1196,6 @@ describe Gosling::Collision do
       end
 
       it 'respects translation' do
-        clean_shape(@circle1)
         @circle1.x = -12
         @circle1.y = 23
 
