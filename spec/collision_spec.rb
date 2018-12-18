@@ -1,5 +1,9 @@
 require 'set'
 
+def angle_to_vector(angle)
+  Snow::Vec3[Math.sin(angle).round(12), Math.cos(angle).round(12), 0]
+end
+
 def clean_actor(actor)
   actor.x = 0
   actor.y = 0
@@ -37,6 +41,8 @@ def break_inheritance_chain(ancestry)
     actor.parent.remove_child(actor) if actor.parent
   end
 end
+
+ANGLE_COUNT = 8 * 4
 
 describe Gosling::Collision do
   FLOAT_TOLERANCE = 0.000001
@@ -107,6 +113,8 @@ describe Gosling::Collision do
     @translate_actor = Gosling::Actor.new(@window)
     @translate_actor.x = 128
     @translate_actor.y = 256
+
+    @angles = (0...ANGLE_COUNT).map { |i| Math::PI * 2 * i / ANGLE_COUNT }
   end
 
   context 'any actor vs. itself' do
@@ -160,9 +168,16 @@ describe Gosling::Collision do
     end
 
     it 'returns a vector that separates the shapes' do
-      result = Gosling::Collision.get_collision_info(@circle1, @circle2)
-      @circle2.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
-      expect(Gosling::Collision.test(@circle1, @circle2)).to be false
+      @angles.each do |r|
+        @circle1.x = 5 + Math.sin(r) * 5
+        @circle1.y = 5 + Math.cos(r) * 5
+        @circle2.x = 5
+        @circle2.y = 5
+
+        result = Gosling::Collision.get_collision_info(@circle1, @circle2)
+        @circle2.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
+        expect(Gosling::Collision.test(@circle1, @circle2)).to be false
+      end
     end
 
     it 'always returns the vector that displaces shape b away from shape a' do
@@ -317,9 +332,25 @@ describe Gosling::Collision do
     end
 
     it 'returns a vector that separates the shapes' do
-      result = Gosling::Collision.get_collision_info(@polygon1, @polygon2)
-      @polygon2.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
-      expect(Gosling::Collision.test(@polygon1, @polygon2)).to be false
+      @polygon1.x = 0
+      @polygon1.y = 0
+
+      @angles.each do |r|
+        @polygon2.x = 0
+        @polygon2.y = 5
+
+        @polygon1.rotation = r
+        result = Gosling::Collision.get_collision_info(@polygon1, @polygon2)
+        @polygon2.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
+        expect(Gosling::Collision.test(@polygon1, @polygon2)).to be false
+        @polygon1.rotation = 0
+
+        @polygon2.x = Math.sin(r)
+        @polygon2.y = Math.cos(r)
+        result = Gosling::Collision.get_collision_info(@polygon1, @polygon2)
+        @polygon2.pos += result[:penetration] * (1 + FLOAT_TOLERANCE)
+        expect(Gosling::Collision.test(@polygon1, @polygon2)).to be false
+      end
     end
 
     it 'always returns the vector that displaces shape b away from shape a' do

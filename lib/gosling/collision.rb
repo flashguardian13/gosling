@@ -76,14 +76,15 @@ module Gosling
         return info unless overlap && overlap > COLLISION_TOLERANCE
         if smallest_overlap.nil? || smallest_overlap > overlap
           smallest_overlap = overlap
-          smallest_axis = axis
+          flip = (projectionA[0] + projectionA[1]) * 0.5 > (projectionB[0] + projectionB[1]) * 0.5
+          smallest_axis = flip ? -axis : axis
         end
       end
 
       info[:colliding] = true
       info[:overlap] = smallest_overlap
       info[:penetration] = smallest_axis.normalize * smallest_overlap
-      info[:penetration] *= -1 if info[:penetration].dot_product(shapeB.get_global_position - shapeA.get_global_position) < 0
+
       return info
     end
 
