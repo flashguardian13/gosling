@@ -216,6 +216,9 @@ module Gosling
     #
     def rotation=(radians)
       type_check(radians, Numeric)
+      if radians.is_a?(Float)
+        raise ArgumentError.new("Expected a finite number, but received #{radians.inspect}!") unless radians.finite?
+      end
       @rotation = radians
       @rotate_is_dirty = @is_dirty = true
     end
