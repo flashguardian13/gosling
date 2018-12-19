@@ -122,6 +122,12 @@ describe Gosling::Transformable do
       tf.rotation = r
       expect(tf.rotation).to be == r
     end
+
+    it 'does not allow non-finite floats' do
+      tf = TransformableThing.new
+      expect { tf.rotation = Float::NAN }.to raise_error(ArgumentError)
+      expect { tf.rotation = Float::INFINITY }.to raise_error(ArgumentError)
+    end
   end
 
   describe '#set_translation' do

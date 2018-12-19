@@ -15,6 +15,8 @@ module Gosling
   class Collision
     include Singleton
 
+    COLLISION_TOLERANCE = 0.000001
+
     ##
     # Tests two Actors or child classes to see whether they overlap. Actors, having no shape, never overlap. Child
     # classes use appropriate algorithms based on their shape.
@@ -40,6 +42,50 @@ module Gosling
       end
 
       return true
+    end
+
+    ##
+    # Tests two Actors or child classes to see whether they overlap. This is similar to #test, but returns additional
+    # information.
+    #
+    # Arguments:
+    # - shapeA: an Actor
+    # - shapeB: another Actor
+    #
+    # Returns a hash with the following key/value pairs:
+    # - colliding: true if the Actors overlap; false otherwise
+    # - overlap: if colliding, the smallest overlapping distance; nil otherwise
+    # - penetration: if colliding, a vector representing how far shape B must move to be separated from (or merely
+    #     touching) shape A; nil otherwise
+    #
+    def self.get_collision_info(shapeA, shapeB)
+      info = { colliding: false, overlap: nil, penetration: nil }
+
+      return info if shapeA.instance_of?(Actor) || shapeB.instance_of?(Actor)
+
+      return info if shapeA === shapeB
+
+      separation_axes = get_separation_axes(shapeA, shapeB)
+
+      smallest_overlap = nil
+      smallest_axis = nil
+      separation_axes.each do |axis|
+        projectionA = project_onto_axis(shapeA, axis)
+        projectionB = project_onto_axis(shapeB, axis)
+        overlap = get_overlap(projectionA, projectionB)
+        return info unless overlap && overlap > COLLISION_TOLERANCE
+        if smallest_overlap.nil? || smallest_overlap > overlap
+          smallest_overlap = overlap
+          flip = (projectionA[0] + projectionA[1]) * 0.5 > (projectionB[0] + projectionB[1]) * 0.5
+          smallest_axis = flip ? -axis : axis
+        end
+      end
+
+      info[:colliding] = true
+      info[:overlap] = smallest_overlap
+      info[:penetration] = smallest_axis.normalize * smallest_overlap
+
+      return info
     end
 
     ##
@@ -147,6 +193,11 @@ module Gosling
     end
 
     def self.projections_overlap?(a, b)
+      overlap = get_overlap(a, b)
+      overlap != nil && overlap > COLLISION_TOLERANCE
+    end
+
+    def self.get_overlap(a, b)
       type_check(a, Array)
       type_check(b, Array)
       a.each { |x| type_check(x, Numeric) }
@@ -155,7 +206,11 @@ module Gosling
 
       a.sort! if a[0] > a[1]
       b.sort! if b[0] > b[1]
-      (a[0] <= b[1] && (b[1] <= a[1] || b[0] <= a[0])) || (b[0] <= a[1] && (a[0] <= b[0] || a[1] <= b[1]))
+      return b[1] - b[0] if a[0] <= b[0] && b[1] <= a[1]
+      return a[1] - a[0] if b[0] <= a[0] && a[1] <= b[1]
+      return a[1] - b[0] if a[0] <= b[0] && b[0] <= a[1]
+      return b[1] - a[0] if b[0] <= a[0] && a[0] <= b[1]
+      nil
     end
   end
 end

@@ -9,57 +9,15 @@ module Gosling
   # SnowMath gem to remain performant.
   #
   module Transformable
-    ##
-    # Wraps Math.sin to produce rationals instead of floats. Common values are returned quickly from a lookup table.
-    #
-    def self.rational_sin(r)
-      type_check(r, Numeric)
-
-      r = r % (2 * Math::PI)
-      case r
-      when 0.0
-        0.to_r
-      when Math::PI / 2
-        1.to_r
-      when Math::PI
-        0.to_r
-      when Math::PI * 3 / 2
-        -1.to_r
-      else
-        Math.sin(r).to_r
-      end
-    end
-
-    ##
-    # Wraps Math.cos to produce rationals instead of floats. Common values are returned quickly from a lookup table.
-    #
-    def self.rational_cos(r)
-      type_check(r, Numeric)
-
-      r = r % (2 * Math::PI)
-      case r
-      when 0.0
-        1.to_r
-      when Math::PI / 2
-        0.to_r
-      when Math::PI
-        -1.to_r
-      when Math::PI * 3 / 2
-        0.to_r
-      else
-        Math.cos(r).to_r
-      end
-    end
-
     attr_reader :rotation
 
     ##
     # Initializes this Transformable to have no transformations (identity matrix).
     #
     def initialize
-      @center = Snow::Vec3[0.to_r, 0.to_r, 1.to_r]
-      @scale = Snow::Vec2[1.to_r, 1.to_r]
-      @translation = Snow::Vec3[0.to_r, 0.to_r, 1.to_r]
+      @center = Snow::Vec3[0, 0, 1]
+      @scale = Snow::Vec2[1, 1]
+      @translation = Snow::Vec3[0, 0, 1]
       reset
     end
 
@@ -68,10 +26,10 @@ module Gosling
     # matrix.
     #
     def reset
-      self.center = 0.to_r, 0.to_r
-      self.scale = 1.to_r, 1.to_r
-      self.rotation = 0.to_r
-      self.translation = 0.to_r, 0.to_r
+      self.center = 0, 0
+      self.scale = 1, 1
+      self.rotation = 0
+      self.translation = 0, 0
     end
 
     ##
@@ -258,6 +216,9 @@ module Gosling
     #
     def rotation=(radians)
       type_check(radians, Numeric)
+      if radians.is_a?(Float)
+        raise ArgumentError.new("Expected a finite number, but received #{radians.inspect}!") unless radians.finite?
+      end
       @rotation = radians
       @rotate_is_dirty = @is_dirty = true
     end
@@ -347,8 +308,8 @@ module Gosling
     def self.transform_point(mat, v)
       type_check(mat, Snow::Mat3)
       type_check(v, Snow::Vec3)
-      result = mat * Snow::Vec3[v[0], v[1], 1.to_r]
-      result[2] = 0.to_r
+      result = mat * Snow::Vec3[v[0], v[1], 1]
+      result[2] = 0
       result
     end
 
@@ -371,8 +332,8 @@ module Gosling
       unless inverse_mat
         raise "Unable to invert matrix: #{mat}!"
       end
-      result = mat.inverse * Snow::Vec3[v[0], v[1], 1.to_r]
-      result[2] = 0.to_r
+      result = mat.inverse * Snow::Vec3[v[0], v[1], 1]
+      result[2] = 0
       result
     end
 
@@ -397,18 +358,17 @@ module Gosling
     def update_scale_matrix
       return unless @scale_is_dirty || @scale_mat.nil?
       @scale_mat ||= Snow::Mat3.new
-      @scale_mat[0] = @scale[0].to_r
-      @scale_mat[4] = @scale[1].to_r
+      @scale_mat[0] = @scale[0]
+      @scale_mat[4] = @scale[1]
       @scale_is_dirty = false
     end
 
     def update_rotate_matrix
       return unless @rotate_is_dirty || @rotate_mat.nil?
       @rotate_mat ||= Snow::Mat3.new
-      @rotate_mat[0] = Transformable.rational_cos(@rotation)
-      @rotate_mat[1] = Transformable.rational_sin(@rotation)
-      @rotate_mat[3] = -Transformable.rational_sin(@rotation)
-      @rotate_mat[4] = Transformable.rational_cos(@rotation)
+      @rotate_mat[4] = @rotate_mat[0] = Math.cos(@rotation)
+      @rotate_mat[1] = Math.sin(@rotation)
+      @rotate_mat[3] = -@rotate_mat[1]
       @rotate_is_dirty = false
     end
 

@@ -13,17 +13,64 @@ describe Gosling::Polygon do
   end
 
   describe '#set_vertices' do
-    it 'assigns new vertices' do
+    it 'accepts an array of Vectors' do
       vertices = [
         Snow::Vec3[ 1,  0, 1],
         Snow::Vec3[ 0,  1, 1],
         Snow::Vec3[-1,  0, 1],
-        Snow::Vec3[ 0, -1, 1],
+        Snow::Vec3[ 0, -1, 1]
       ]
 
       polygon = Gosling::Polygon.new(@window)
-      polygon.set_vertices(vertices)
-      expect(polygon.get_vertices).to be == vertices
+      expect { polygon.set_vertices(vertices) }.not_to raise_error
+      expect(polygon.get_vertices.length).to eq(vertices.length)
+      vertices.each_index do |i|
+        expect(polygon.get_vertices[i].x).to eq(vertices[i].x)
+        expect(polygon.get_vertices[i].y).to eq(vertices[i].y)
+      end
+
+      vertices = [
+        Snow::Vec2[ 1,  0],
+        Snow::Vec2[ 0,  1],
+        Snow::Vec2[-1,  0]
+      ]
+
+      expect { polygon.set_vertices(vertices) }.not_to raise_error
+      expect(polygon.get_vertices.length).to eq(vertices.length)
+      vertices.each_index do |i|
+        expect(polygon.get_vertices[i].x).to eq(vertices[i].x)
+        expect(polygon.get_vertices[i].y).to eq(vertices[i].y)
+      end
+    end
+
+    it 'accepts an array of arrays of numbers' do
+      vertices = [
+        [ 1,  0, 1],
+        [ 0,  1, 1],
+        [-1,  0, 1]
+      ]
+
+      polygon = Gosling::Polygon.new(@window)
+      expect { polygon.set_vertices(vertices) }.not_to raise_error
+      expect(polygon.get_vertices.length).to eq(vertices.length)
+      vertices.each_index do |i|
+        expect(polygon.get_vertices[i].x).to eq(vertices[i][0])
+        expect(polygon.get_vertices[i].y).to eq(vertices[i][1])
+      end
+
+      vertices = [
+        [ 1,  0],
+        [ 0,  1],
+        [-1,  0],
+        [ 0, -1]
+      ]
+
+      expect { polygon.set_vertices(vertices) }.not_to raise_error
+      expect(polygon.get_vertices.length).to eq(vertices.length)
+      vertices.each_index do |i|
+        expect(polygon.get_vertices[i].x).to eq(vertices[i][0])
+        expect(polygon.get_vertices[i].y).to eq(vertices[i][1])
+      end
     end
 
     it 'raises an error if the parameter is not an array' do
@@ -31,14 +78,12 @@ describe Gosling::Polygon do
       expect { polygon.set_vertices("foo") }.to raise_error(ArgumentError)
     end
 
-    it 'raises an error if the parameter array contains non-vectors' do
+    it 'raises an error if the parameter array does not contains vectors or equivalents' do
       vertices = [
-        [ 1,  0, 1],
-        [ 0,  1, 1],
-        [-1,  0, 1],
-        [ 0, -1, 1],
+        ['21', '3'],
+        ['7', '-3'],
+        ['4.212', '0.0']
       ]
-
       polygon = Gosling::Polygon.new(@window)
       expect { polygon.set_vertices(vertices) }.to raise_error(ArgumentError)
     end
@@ -53,12 +98,12 @@ describe Gosling::Polygon do
       expect { polygon.set_vertices(vertices) }.to raise_error(ArgumentError)
     end
 
-    it 'raises an error if any vertices in the parameter array are not length 3' do
+    it 'raises an error if any vertices in the parameter array are not at least length 2' do
       vertices = [
         Snow::Vec3[ 1,  0, 1],
         Snow::Vec3[ 0,  1, 0],
         Snow::Vec2[-1,  0],
-        Snow::Vec3[ 0, -1, 3],
+        [0],
       ]
 
       polygon = Gosling::Polygon.new(@window)
