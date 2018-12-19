@@ -6,7 +6,7 @@ require 'gosling/version'
 Gem::Specification.new do |spec|
   spec.name        = 'gosling'
   spec.version     = Gosling::VERSION
-  spec.date        = "2018-12-13"
+  spec.date        = "2018-12-18"
   spec.summary     = "Ruby 2D app creation"
   spec.description = "A lightweight library for creating 2D apps in Ruby."
   spec.authors     = ['Ben Amos']
