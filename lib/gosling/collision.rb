@@ -66,6 +66,7 @@ module Gosling
       return info if shapeA === shapeB
 
       separation_axes = get_separation_axes(shapeA, shapeB)
+      return info if separation_axes.empty?
 
       smallest_overlap = nil
       smallest_axis = nil
@@ -85,7 +86,7 @@ module Gosling
       info[:overlap] = smallest_overlap
       info[:penetration] = smallest_axis.normalize * smallest_overlap
 
-      return info
+      info
     end
 
     ##

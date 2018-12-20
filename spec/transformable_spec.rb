@@ -101,9 +101,14 @@ describe Gosling::Transformable do
   end
 
   describe '#set_scale' do
-    it 'accepts a size 2 vector' do
+    it 'accepts a size 2 vector, an equivalent, or a single numeric value' do
       tf = TransformableThing.new
       expect { tf.scale = Snow::Vec2[1, 1] }.not_to raise_error
+      expect { tf.scale = [1, 1] }.not_to raise_error
+      expect { tf.scale = 1 }.not_to raise_error
+      expect { tf.set_scale([1, 1]) }.not_to raise_error
+      expect { tf.set_scale(1, 1) }.not_to raise_error
+      expect { tf.set_scale(1) }.not_to raise_error
       expect { tf.scale = :foo }.to raise_error(ArgumentError)
     end
 
@@ -112,6 +117,15 @@ describe Gosling::Transformable do
       tf = TransformableThing.new
       tf.scale = v
       expect(tf.scale).to be == v
+    end
+
+    context 'when given a single value' do
+      it 'sets the x and y scaling' do
+        tf = TransformableThing.new
+        tf.scale = 2.7
+        expect(tf.scale.x).to eq(2.7)
+        expect(tf.scale.y).to eq(2.7)
+      end
     end
   end
 

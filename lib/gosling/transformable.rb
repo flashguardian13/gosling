@@ -164,26 +164,36 @@ module Gosling
     # If passed more than two numeric arguments, only the first two are used.
     #
     # Usage:
+    # - transform.scale = scalar
     # - transform.scale = x, y
     # - transform.scale = [x, y]
     # - transform.scale = Snow::Vec2[x, y]
     # - transform.scale = Snow::Vec3[x, y, z]
     # - transform.scale = Snow::Vec4[x, y, z, c]
     #
-    def scale=(args)
-      case args[0]
-      when Array
-        self.scale = args[0][0], args[0][1]
-      when Snow::Vec2, Snow::Vec3, Snow::Vec4
-        @scale.x = args[0].x
-        @scale.y = args[0].y
-      when Numeric
-        raise ArgumentError.new("Cannot set scale from #{args.inspect}: numeric array requires at least two arguments!") unless args.length >= 2
-        args.each { |arg| type_check(arg, Numeric) }
-        @scale.x = args[0]
-        @scale.y = args[1]
+    def scale=(*args)
+      if args.length >= 2
+        case args[0]
+        when Numeric
+          args.each { |arg| type_check(arg, Numeric) }
+          @scale.x = args[0]
+          @scale.y = args[1]
+        else
+          raise ArgumentError.new("Bad combination of arguments: #{args.inspect}! Please supply a Snow::Vec2, an Array of Numerics, or a single scalar.")
+        end
+      elsif args.length == 1
+        case args[0]
+        when Array
+          self.set_scale(*(args[0]))
+        when Snow::Vec2
+          self.set_scale(args[0].x, args[0].y)
+        when Numeric
+          self.set_scale(args[0], args[0])
+        else
+          raise ArgumentError.new("Bad combination of arguments: #{args.inspect}! Please supply a Snow::Vec2, an Array of Numerics, or a single scalar.")
+        end
       else
-        raise ArgumentError.new("Cannot set scale from #{args.inspect}: bad type!")
+        raise ArgumentError.new("Bad combination of arguments: #{args.inspect}! Please supply a Snow::Vec2, an Array of Numerics, or a single scalar.")
       end
       @scale_is_dirty = @is_dirty = true
     end
