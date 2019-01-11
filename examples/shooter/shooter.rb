@@ -20,10 +20,16 @@ if __FILE__ == $PROGRAM_NAME
   window.show
   result = profile.stop
 
-  printer = RubyProf::GraphHtmlPrinter.new(result)
-  commit = ''
+  commit = 'a33f2c7'
   timestamp = Time.now.strftime("%F-%T").gsub(/\D/, '-')
+
+  printer = RubyProf::GraphHtmlPrinter.new(result)
   File.open(File.join(File.dirname(__FILE__), "profile-graphs-#{commit}-#{timestamp}.html"), 'w') do |f|
-    printer.print(f, :min_percent => 1)
+    printer.print(f, :min_percent => 5)
+  end
+
+  printer = RubyProf::GraphPrinter.new(result)
+  File.open(File.join(File.dirname(__FILE__), "profile-graphs-#{commit}-#{timestamp}.txt"), 'w') do |f|
+    printer.print(f, :min_percent => 5)
   end
 end
