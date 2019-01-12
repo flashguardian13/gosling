@@ -66,7 +66,7 @@ module Gosling
     #
     def get_global_vertices
       tf = get_global_transform
-      @vertices.map { |v| Transformable.transform_point(tf, v) }
+      @vertices.map { |v| Transformable.transform_point(tf, v, Snow::Vec3.new) }
     end
 
     ##

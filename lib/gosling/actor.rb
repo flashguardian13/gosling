@@ -231,7 +231,7 @@ module Gosling
     #
     def get_global_position
       tf = get_global_transform
-      Transformable.transform_point(tf, center)
+      Transformable.transform_point(tf, center, Snow::Vec3.new)
     end
 
     ##

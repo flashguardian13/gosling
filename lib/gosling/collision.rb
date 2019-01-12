@@ -184,7 +184,7 @@ module Gosling
         global_tf = shape.get_global_transform
         local_axis = global_tf.inverse * Snow::Vec3[axis[0], axis[1], 0]
         v = shape.get_point_at_angle(Math.atan2(local_axis[1], local_axis[0]))
-        [v, v * -1].map { |vertex| Transformable.transform_point(global_tf, vertex) }
+        [v, v * -1].map { |vertex| Transformable.transform_point(global_tf, vertex, Snow::Vec3.new) }
       else
         shape.get_global_vertices
       end
