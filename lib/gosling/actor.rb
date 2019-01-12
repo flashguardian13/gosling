@@ -139,12 +139,19 @@ module Gosling
     # be skipped and not drawn.
     #
     def draw(matrix = nil)
-      matrix ||= Snow::Mat3.new
-      transform = to_matrix * matrix
+      transform = MatrixCache.instance.get
+      if matrix
+        to_matrix.multiply(matrix, transform)
+      else
+        transform.set(to_matrix)
+      end
+
       render(transform) if @is_visible
       if @are_children_visible
         @children.each { |child| child.draw(transform) }
       end
+    ensure
+      MatrixCache.instance.recycle(transform)
     end
 
     ##
