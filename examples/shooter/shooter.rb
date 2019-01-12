@@ -25,11 +25,11 @@ if __FILE__ == $PROGRAM_NAME
 
   printer = RubyProf::GraphHtmlPrinter.new(result)
   File.open(File.join(File.dirname(__FILE__), "profile-graphs-#{commit}-#{timestamp}.html"), 'w') do |f|
-    printer.print(f, :min_percent => 5)
+    printer.print(f, min_percent: 5, sort_method: :self_time)
   end
 
   printer = RubyProf::GraphPrinter.new(result)
   File.open(File.join(File.dirname(__FILE__), "profile-graphs-#{commit}-#{timestamp}.txt"), 'w') do |f|
-    printer.print(f, :min_percent => 5)
+    printer.print(f, min_percent: 5, sort_method: :self_time)
   end
 end
