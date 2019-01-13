@@ -64,9 +64,27 @@ module Gosling
     ##
     # Returns an array containing all of our local vertices transformed to global-space. (See Actor#get_global_transform.)
     #
-    def get_global_vertices
-      tf = get_global_transform
-      @vertices.map { |v| Transformable.transform_point(tf, v, Snow::Vec3.new) }
+    def get_global_vertices(out = nil)
+      type_check(out, Array) unless out.nil?
+
+      tf = MatrixCache.instance.get
+      get_global_transform(tf)
+
+      if out.nil?
+        return @vertices.map { |v| Transformable.transform_point(tf, v, Snow::Vec3.new) }
+      end
+
+      @vertices.each_index do |i|
+        v = @vertices[i]
+        if out[i]
+          Transformable.transform_point(tf, v, out[i])
+        else
+          out[i] = Transformable.transform_point(tf, v)
+        end
+      end
+      out
+    ensure
+      MatrixCache.instance.recycle(tf) if tf
     end
 
     ##
