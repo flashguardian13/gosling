@@ -216,12 +216,11 @@ module Gosling
     # space of its root ancestor).
     #
     def get_global_transform(out = nil)
+      out ||= Snow::Mat3.new
       if parent
-        out ||= Snow::Mat3.new
         to_matrix.multiply(parent.get_global_transform, out)
-        out
       else
-        to_matrix
+        out.set(to_matrix)
       end
     end
 
