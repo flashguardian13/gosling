@@ -66,6 +66,9 @@ module Gosling
     #
     def get_global_vertices(out = nil)
       type_check(out, Array) unless out.nil?
+      if out.is_a?(Array)
+        raise ArgumentError.new("Array passed in has too many vertices in it! Expected #{@vertices.length}, found #{out.length}. #{out.inspect}") if out.length > @vertices.length
+      end
 
       tf = MatrixCache.instance.get
       get_global_transform(tf)

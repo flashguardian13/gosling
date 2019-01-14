@@ -59,7 +59,7 @@ module Gosling
     #     touching) shape A; nil otherwise
     #
     def self.get_collision_info(shapeA, shapeB)
-      info = { colliding: false, overlap: nil, penetration: nil }
+      info = { actors: [shapeA, shapeB], colliding: false, overlap: nil, penetration: nil }
 
       return info if shapeA.instance_of?(Actor) || shapeB.instance_of?(Actor)
 
@@ -107,10 +107,15 @@ module Gosling
 
       separation_axes = []
       if shape.instance_of?(Circle)
-        centers_axis = point - shape.get_global_position
+        centers_axis = point - (@@global_position_cache.key?(shape) ? @@global_position_cache[shape] : shape.get_global_position)
         separation_axes.push(centers_axis) if centers_axis && centers_axis.magnitude > 0
       else
-        separation_axes.concat(get_polygon_separation_axes(shape.get_global_vertices))
+        vertices =  if @@global_vertices_cache.key?(shape)
+                      @@global_vertices_cache[shape]
+                    else
+                      shape.get_global_vertices
+                    end
+        separation_axes.concat(get_polygon_separation_axes(vertices))
       end
 
       separation_axes.each do |axis|
@@ -122,7 +127,130 @@ module Gosling
       return true
     end
 
+    @@collision_buffer = []
+    @@global_position_cache = {}
+    @@global_vertices_cache = {}
+    @@global_transform_cache = {}
+    @@buffer_iterator_a = nil
+    @@buffer_iterator_b = nil
+
+    ##
+    #
+    #
+    def self.buffer_shapes(actors)
+      type_check(actors, Array)
+      actors.each { |a| type_check(a, Actor) }
+
+      reset_buffer_iterators
+
+      shapes = actors.reject { |a| a.instance_of?(Actor) }
+
+      @@collision_buffer = @@collision_buffer | shapes
+      shapes.each do |shape|
+        unless @@global_transform_cache.key?(shape)
+          @@global_transform_cache[shape] = MatrixCache.instance.get
+        end
+        shape.get_global_transform(@@global_transform_cache[shape])
+
+        unless @@global_position_cache.key?(shape)
+          @@global_position_cache[shape] = VectorCache.instance.get
+        end
+        # TODO: can we calculate this position using the global transform we already have?
+        @@global_position_cache[shape].set(shape.get_global_position)
+
+        if shape.is_a?(Polygon)
+          unless @@global_vertices_cache.key?(shape)
+            @@global_vertices_cache[shape] = Array.new(shape.get_vertices.length) { VectorCache.instance.get }
+          end
+          # TODO: can we calculate these vertices using the global transform we already have?
+          shape.get_global_vertices(@@global_vertices_cache[shape])
+        end
+      end
+    end
+
+    ##
+    #
+    #
+    def self.unbuffer_shapes(actors)
+      type_check(actors, Array)
+      actors.each { |a| type_check(a, Actor) }
+
+      reset_buffer_iterators
+
+      @@collision_buffer = @@collision_buffer - actors
+      actors.each do |actor|
+        if @@global_transform_cache.key?(actor)
+          MatrixCache.instance.recycle(@@global_transform_cache[actor])
+          @@global_transform_cache.delete(actor)
+        end
+
+        if @@global_position_cache.key?(actor)
+          VectorCache.instance.recycle(@@global_position_cache[actor])
+          @@global_position_cache.delete(actor)
+        end
+
+        if @@global_vertices_cache.key?(actor)
+          @@global_vertices_cache[actor].each do |vertex|
+            VectorCache.instance.recycle(vertex)
+          end
+          @@global_vertices_cache.delete(actor)
+        end
+      end
+    end
+
+    ##
+    #
+    #
+    def self.clear_buffer
+      unbuffer_shapes(@@collision_buffer)
+    end
+
+    ##
+    #
+    #
+    def self.next_collision_info
+      reset_buffer_iterators if @@buffer_iterator_a.nil? || @@buffer_iterator_b.nil?
+      return if interation_complete?
+
+      info = get_collision_info(@@collision_buffer[@@buffer_iterator_a], @@collision_buffer[@@buffer_iterator_b])
+      skip_next_collision
+      info
+    end
+
+    ##
+    #
+    #
+    def self.peek_at_next_collision
+      reset_buffer_iterators if @@buffer_iterator_a.nil? || @@buffer_iterator_b.nil?
+      return if interation_complete?
+
+      [@@collision_buffer[@@buffer_iterator_a], @@collision_buffer[@@buffer_iterator_b]]
+    end
+
+    ##
+    #
+    #
+    def self.skip_next_collision
+      reset_buffer_iterators if @@buffer_iterator_a.nil? || @@buffer_iterator_b.nil?
+      return if interation_complete?
+
+      @@buffer_iterator_b += 1
+      if @@buffer_iterator_b >= @@buffer_iterator_a
+        @@buffer_iterator_b = 0
+        @@buffer_iterator_a += 1
+      end
+    end
+
     private
+
+    def self.interation_complete?
+      @@buffer_iterator_a >= @@collision_buffer.length
+    end
+
+    def self.reset_buffer_iterators
+      @@buffer_iterator_a = 1
+      @@buffer_iterator_b = 0
+    end
 
     def self.get_normal(vector)
       type_check(vector, Snow::Vec3)
@@ -144,7 +272,9 @@ module Gosling
     def self.get_circle_separation_axis(circleA, circleB)
       type_check(circleA, Actor)
       type_check(circleB, Actor)
-      axis = circleB.get_global_position - circleA.get_global_position
+      global_pos_a = (@@global_position_cache.key?(circleA) ? @@global_position_cache[circleA] : circleA.get_global_position)
+      global_pos_b = (@@global_position_cache.key?(circleB) ? @@global_position_cache[circleB] : circleB.get_global_position)
+      axis = global_pos_b - global_pos_a
       (axis.magnitude > 0) ? axis.normalize : nil
     end
 
@@ -160,11 +290,21 @@ module Gosling
       separation_axes = []
 
       unless shapeA.instance_of?(Circle)
-        separation_axes.concat(get_polygon_separation_axes(shapeA.get_global_vertices))
+        vertices =  if @@global_vertices_cache.key?(shapeA)
+                      @@global_vertices_cache[shapeA]
+                    else
+                      shapeA.get_global_vertices
+                    end
+        separation_axes.concat(get_polygon_separation_axes(vertices))
       end
 
       unless shapeB.instance_of?(Circle)
-        separation_axes.concat(get_polygon_separation_axes(shapeB.get_global_vertices))
+        vertices = if @@global_vertices_cache.key?(shapeB)
+                      @@global_vertices_cache[shapeB]
+                    else
+                      shapeB.get_global_vertices
+                    end
+        separation_axes.concat(get_polygon_separation_axes(vertices))
       end
 
       if shapeA.instance_of?(Circle) || shapeB.instance_of?(Circle)
@@ -181,10 +321,16 @@ module Gosling
       type_check(axis, Snow::Vec3)
 
       global_vertices = if shape.instance_of?(Circle)
-        global_tf = shape.get_global_transform
+        global_tf = if @@global_transform_cache.key?(shape)
+          @@global_transform_cache[shape]
+        else
+          shape.get_global_transform
+        end
         local_axis = global_tf.inverse * Snow::Vec3[axis[0], axis[1], 0]
         v = shape.get_point_at_angle(Math.atan2(local_axis[1], local_axis[0]))
         [v, v * -1].map { |vertex| Transformable.transform_point(global_tf, vertex, Snow::Vec3.new) }
+      elsif @@global_vertices_cache.key?(shape)
+        @@global_vertices_cache[shape]
       else
         shape.get_global_vertices
       end
