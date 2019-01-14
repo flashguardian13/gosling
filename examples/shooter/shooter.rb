@@ -10,6 +10,9 @@ require 'time'
 #     space: shoot bullets
 #     escape: quit the game
 
+$debug_show_collision_masks = false
+$enable_type_checking = false
+
 if __FILE__ == $PROGRAM_NAME
   window = GameWindow.new(1024, 768, false)
 
