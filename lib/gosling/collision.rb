@@ -297,7 +297,7 @@ module Gosling
       VectorCache.instance.recycle(global_pos_b) if global_pos_b
     end
 
-    def self.get_separation_axes(shapeA, shapeB)
+    def self.get_separation_axes(shapeA, shapeB, separation_axes = nil)
       unless shapeA.is_a?(Actor) && !shapeA.instance_of?(Actor)
         raise ArgumentError.new("Expected a child of the Actor class, but received #{shapeA.inspect}!")
       end
@@ -306,33 +306,49 @@ module Gosling
         raise ArgumentError.new("Expected a child of the Actor class, but received #{shapeB.inspect}!")
       end
 
-      separation_axes = []
+      type_check(separation_axes, Array) unless separation_axes.nil?
+
+      separation_axes ||= []
+      global_vertices = nil
 
       unless shapeA.instance_of?(Circle)
-        vertices =  if @@global_vertices_cache.key?(shapeA)
-                      @@global_vertices_cache[shapeA]
-                    else
-                      shapeA.get_global_vertices
-                    end
-        separation_axes.concat(get_polygon_separation_axes(vertices))
+        unless @@global_vertices_cache.key?(shapeA)
+          global_vertices = Array.new(shapeA.get_vertices.length) { VectorCache.instance.get }
+          shapeA.get_global_vertices(global_vertices)
+        end
+        get_polygon_separation_axes(@@global_vertices_cache.fetch(shapeA, global_vertices), separation_axes)
       end
 
       unless shapeB.instance_of?(Circle)
-        vertices = if @@global_vertices_cache.key?(shapeB)
-                      @@global_vertices_cache[shapeB]
-                    else
-                      shapeB.get_global_vertices
-                    end
-        separation_axes.concat(get_polygon_separation_axes(vertices))
+        unless @@global_vertices_cache.key?(shapeB)
+          global_vertices ||= []
+          (shapeB.get_vertices.length - global_vertices.length).times do
+            global_vertices.push(VectorCache.instance.get)
+          end
+          (global_vertices.length - shapeB.get_vertices.length).times do
+            VectorCache.instance.recycle(global_vertices.pop)
+          end
+          shapeB.get_global_vertices(global_vertices)
+        end
+        get_polygon_separation_axes(@@global_vertices_cache.fetch(shapeB, global_vertices), separation_axes)
       end
 
       if shapeA.instance_of?(Circle) || shapeB.instance_of?(Circle)
-        axis = get_circle_separation_axis(shapeA, shapeB)
-        separation_axes.push(axis) if axis
+        axis = VectorCache.instance.get
+        if get_circle_separation_axis(shapeA, shapeB, axis)
+          separation_axes.push(axis)
+        else
+          VectorCache.instance.recycle(axis)
+        end
       end
 
-      separation_axes.map! { |v| v[0] < 0 ? v * -1 : v }
-      separation_axes.uniq
+      separation_axes.each { |v| v.negate! if v.x < 0 }
+      all_axes = separation_axes.dup
+      duplicate_axes = all_axes - (separation_axes.uniq! { |x| x.to_s } || separation_axes)
+      separation_axes
+    ensure
+      duplicate_axes.each { |v| VectorCache.instance.recycle(v) } if duplicate_axes
+      global_vertices.each { |v| VectorCache.instance.recycle(v) } if global_vertices
     end
 
     def self.project_onto_axis(shape, axis, out = nil)
