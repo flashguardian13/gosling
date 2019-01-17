@@ -316,27 +316,77 @@ module Gosling
       separation_axes.uniq
     end
 
-    def self.project_onto_axis(shape, axis)
+    def self.project_onto_axis(shape, axis, out = nil)
       type_check(shape, Actor)
       type_check(axis, Snow::Vec3)
+      type_check(out, Array) unless out.nil?
 
-      global_vertices = if shape.instance_of?(Circle)
-        global_tf = if @@global_transform_cache.key?(shape)
-          @@global_transform_cache[shape]
+      global_vertices = nil
+
+      global_tf = nil
+      global_tf_inverse = nil
+
+      zero_z_axis = nil
+      local_axis = nil
+      intersection = nil
+
+      unless @@global_vertices_cache.key?(shape)
+        if shape.instance_of?(Circle)
+          global_vertices = []
+
+          unless @@global_transform_cache.key?(shape)
+            global_tf = MatrixCache.instance.get
+            shape.get_global_transform(global_tf)
+          end
+
+          zero_z_axis = VectorCache.instance.get
+          zero_z_axis.set(axis.x, axis.y, 0)
+
+          global_tf_inverse = MatrixCache.instance.get
+          @@global_transform_cache.fetch(shape, global_tf).inverse(global_tf_inverse)
+
+          local_axis = VectorCache.instance.get
+          global_tf_inverse.multiply(zero_z_axis, local_axis)
+
+          intersection = VectorCache.instance.get
+          # TODO: is this a wasted effort? a roundabout way of normalizing?
+          shape.get_point_at_angle(Math.atan2(local_axis.y, local_axis.x), intersection)
+
+          vertex = VectorCache.instance.get
+          # TODO: Are we transforming points more than once?
+          Transformable.transform_point(@@global_transform_cache.fetch(shape, global_tf), intersection, vertex)
+          global_vertices.push(vertex)
+
+          vertex = VectorCache.instance.get
+          intersection.negate!
+          Transformable.transform_point(@@global_transform_cache.fetch(shape, global_tf), intersection, vertex)
+          global_vertices.push(vertex)
         else
-          shape.get_global_transform
+          global_vertices = Array.new(shape.get_vertices.length) { VectorCache.instance.get }
+          shape.get_global_vertices(global_vertices)
         end
-        local_axis = global_tf.inverse * Snow::Vec3[axis[0], axis[1], 0]
-        v = shape.get_point_at_angle(Math.atan2(local_axis[1], local_axis[0]))
-        [v, v * -1].map { |vertex| Transformable.transform_point(global_tf, vertex, Snow::Vec3.new) }
-      elsif @@global_vertices_cache.key?(shape)
-        @@global_vertices_cache[shape]
-      else
-        shape.get_global_vertices
       end
 
-      projections = global_vertices.map { |vertex| vertex.dot_product(axis) }.sort
-      [projections.first, projections.last]
+      min = nil
+      max = nil
+      @@global_vertices_cache.fetch(shape, global_vertices).each do |vertex|
+        projection = vertex.dot_product(axis)
+        min = projection if min.nil? || projection < min
+        max = projection if max.nil? || projection > max
+      end
+      out ||= []
+      out[1] = max
+      out[0] = min
+      out
+    ensure
+      MatrixCache.instance.recycle(global_tf) if global_tf
+      MatrixCache.instance.recycle(global_tf_inverse) if global_tf_inverse
+
+      VectorCache.instance.recycle(zero_z_axis) if zero_z_axis
+      VectorCache.instance.recycle(local_axis) if local_axis
+      VectorCache.instance.recycle(intersection) if intersection
+
+      global_vertices.each { |v| VectorCache.instance.recycle(v) } if global_vertices
     end
 
     def self.projections_overlap?(a, b)
