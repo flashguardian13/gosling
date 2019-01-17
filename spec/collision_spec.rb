@@ -360,7 +360,7 @@ describe Gosling::Collision do
       a = Snow::Vec2[0, 0].dot_product(axis)
       b = Snow::Vec2[0, 5].dot_product(axis)
       expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(a - b)
-      expect(result[:penetration]).to eq(Snow::Vec3[2, 1, 0].normalize * result[:overlap])
+      expect(result[:penetration]).to eq(Snow::Vec3[-2, 1, 0].normalize * result[:overlap])
     end
 
     it 'returns a vector that separates the shapes' do
@@ -916,12 +916,13 @@ describe Gosling::Collision do
         Snow::Vec3[-1,  2, 0]
       ]
       result = Gosling::Collision.get_polygon_separation_axes(vertices)
-      expect(result.length).to be == 5
-      expect(result[0]).to be == Snow::Vec3[ 2, -1, 0].normalize
-      expect(result[1]).to be == Snow::Vec3[ 1, -1, 0].normalize
-      expect(result[2]).to be == Snow::Vec3[-1, -1, 0].normalize
-      expect(result[3]).to be == Snow::Vec3[-3,  0, 0].normalize
-      expect(result[4]).to be == Snow::Vec3[ 1,  3, 0].normalize
+      expect(result).to match_array([
+                          Snow::Vec3[ 1,  3, 0].normalize,
+                          Snow::Vec3[ 2, -1, 0].normalize,
+                          Snow::Vec3[ 1, -1, 0].normalize,
+                          Snow::Vec3[-1, -1, 0].normalize,
+                          Snow::Vec3[-3,  0, 0].normalize
+                        ])
     end
   end
 
@@ -1034,11 +1035,11 @@ describe Gosling::Collision do
       clean_shape(@circle1)
 
       result = Gosling::Collision.get_separation_axes(@polygon1, @circle1)
-      expect(result).to be == [
-        Snow::Vec3[10, 5, 0].normalize,
-        Snow::Vec3[0, -10, 0].normalize,
-        Snow::Vec3[10, -5, 0].normalize
-      ]
+      expect(result).to match_array([
+                          Snow::Vec3[10, 5, 0].normalize,
+                          Snow::Vec3[0, -10, 0].normalize,
+                          Snow::Vec3[10, -5, 0].normalize
+                        ])
     end
 
     it 'respects scaling' do
@@ -1049,11 +1050,11 @@ describe Gosling::Collision do
       clean_shape(@circle1)
 
       result = Gosling::Collision.get_separation_axes(@polygon1, @circle1)
-      expect(result).to be == [
-        Snow::Vec3[20, 15, 0].normalize,
-        Snow::Vec3[0, -30, 0].normalize,
-        Snow::Vec3[20, -15, 0].normalize
-      ]
+      expect(result).to match_array([
+                          Snow::Vec3[20, 15, 0].normalize,
+                          Snow::Vec3[0, -30, 0].normalize,
+                          Snow::Vec3[20, -15, 0].normalize
+                        ])
     end
 
     it 'respects rotation' do
@@ -1063,11 +1064,11 @@ describe Gosling::Collision do
 
       clean_shape(@circle1)
 
-      expect(result).to be == [
-        Snow::Vec3[5, -10, 0].normalize,
-        Snow::Vec3[10, 0, 0].normalize,
-        Snow::Vec3[5, 10, 0].normalize
-      ]
+      expect(result).to match_array([
+                          Snow::Vec3[5, -10, 0].normalize,
+                          Snow::Vec3[10, 0, 0].normalize,
+                          Snow::Vec3[5, 10, 0].normalize
+                        ])
     end
 
     it 'respects translation' do
@@ -1078,12 +1079,12 @@ describe Gosling::Collision do
       clean_shape(@circle1)
 
       result = Gosling::Collision.get_separation_axes(@polygon1, @circle1)
-      expect(result).to be == [
-        Snow::Vec3[10, 5, 0].normalize,
-        Snow::Vec3[0, -10, 0].normalize,
-        Snow::Vec3[10, -5, 0].normalize,
-        Snow::Vec3[50, -10, 0].normalize
-      ]
+      expect(result).to match_array([
+                          Snow::Vec3[10, 5, 0].normalize,
+                          Snow::Vec3[0, -10, 0].normalize,
+                          Snow::Vec3[10, -5, 0].normalize,
+                          Snow::Vec3[50, -10, 0].normalize
+                        ])
     end
 
     context 'with two polygons' do

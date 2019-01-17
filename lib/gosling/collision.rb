@@ -254,20 +254,23 @@ module Gosling
 
     def self.get_normal(vector, out = nil)
       type_check(vector, Snow::Vec3)
-      raise ArgumentError.new("Cannot determine normal of zero-length vector") if vector.magnitude_squared == 0
+      raise ArgumentError.new("Cannot determine normal of zero-length vector") if vector.x == 0 && vector.y == 0
       out ||= Snow::Vec3.new
       out.set(-vector.y, vector.x, 0)
     end
 
-    def self.get_polygon_separation_axes(vertices)
+    def self.get_polygon_separation_axes(vertices, axes = nil)
       type_check(vertices, Array)
       vertices.each { |v| type_check(v, Snow::Vec3) }
+      type_check(axes, Array) unless axes.nil?
 
-      axes = (0...vertices.length).map do |i|
-        axis = vertices[(i + 1) % vertices.length] - vertices[i]
-        (axis.magnitude > 0) ? get_normal(axis).normalize : nil
+      axes ||= []
+      vertices.each_index do |i|
+        axis = VectorCache.instance.get
+        vertices[i].subtract(vertices[i - 1], axis)
+        axes.push(get_normal(axis, axis).normalize!) if axis.x != 0 || axis.y != 0
       end
-      axes.compact
+      axes
     end
 
     def self.get_circle_separation_axis(circleA, circleB)
