@@ -252,10 +252,11 @@ module Gosling
       @@buffer_iterator_b = 0
     end
 
-    def self.get_normal(vector)
+    def self.get_normal(vector, out = nil)
       type_check(vector, Snow::Vec3)
       raise ArgumentError.new("Cannot determine normal of zero-length vector") if vector.magnitude_squared == 0
-      Snow::Vec3[-vector[1], vector[0], 0]
+      out ||= Snow::Vec3.new
+      out.set(-vector.y, vector.x, 0)
     end
 
     def self.get_polygon_separation_axes(vertices)
