@@ -936,9 +936,9 @@ describe Gosling::Collision do
       expect { Gosling::Collision.get_circle_separation_axis(@circle1, @circle2) }.not_to raise_error
       expect { Gosling::Collision.get_circle_separation_axis(@circle1, @polygon1) }.not_to raise_error
       expect { Gosling::Collision.get_circle_separation_axis(@rect1, @circle2) }.not_to raise_error
+      expect { Gosling::Collision.get_circle_separation_axis(@circle1, @circle2, Snow::Vec3.new) }.not_to raise_error
 
       expect { Gosling::Collision.get_circle_separation_axis(:foo, @circle2) }.to raise_error(ArgumentError)
-      expect { Gosling::Collision.get_circle_separation_axis(@circle1, @circle2, @circle1) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.get_circle_separation_axis(@circle1) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.get_circle_separation_axis() }.to raise_error(ArgumentError)
       expect { Gosling::Collision.get_circle_separation_axis(:foo) }.to raise_error(ArgumentError)

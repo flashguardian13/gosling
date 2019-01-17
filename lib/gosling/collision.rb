@@ -273,13 +273,28 @@ module Gosling
       axes
     end
 
-    def self.get_circle_separation_axis(circleA, circleB)
+    def self.get_circle_separation_axis(circleA, circleB, out = nil)
       type_check(circleA, Actor)
       type_check(circleB, Actor)
-      global_pos_a = (@@global_position_cache.key?(circleA) ? @@global_position_cache[circleA] : circleA.get_global_position)
-      global_pos_b = (@@global_position_cache.key?(circleB) ? @@global_position_cache[circleB] : circleB.get_global_position)
-      axis = global_pos_b - global_pos_a
-      (axis.magnitude > 0) ? axis.normalize : nil
+
+      global_pos_a = nil
+      unless @@global_position_cache.key?(circleA)
+        global_pos_a = VectorCache.instance.get
+        circleA.get_global_position(global_pos_a)
+      end
+
+      global_pos_b = nil
+      unless @@global_position_cache.key?(circleB)
+        global_pos_b = VectorCache.instance.get
+        circleB.get_global_position(global_pos_b)
+      end
+
+      out ||= Snow::Vec3.new
+      @@global_position_cache.fetch(circleB, global_pos_b).subtract(@@global_position_cache.fetch(circleA, global_pos_a), out)
+      (out.x != 0 || out.y != 0) ? out.normalize! : nil
+    ensure
+      VectorCache.instance.recycle(global_pos_a) if global_pos_a
+      VectorCache.instance.recycle(global_pos_b) if global_pos_b
     end
 
     def self.get_separation_axes(shapeA, shapeB)

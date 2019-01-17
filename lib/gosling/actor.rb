@@ -228,9 +228,13 @@ module Gosling
     # Returns the global x/y position of this actor (where it is relative to its root ancestor). This value is calculated
     # using the Actor's center (see Transformable#center).
     #
-    def get_global_position
-      tf = get_global_transform
-      Transformable.transform_point(tf, center, Snow::Vec3.new)
+    def get_global_position(out = nil)
+      tf = MatrixCache.instance.get
+      get_global_transform(tf)
+      out ||= Snow::Vec3.new
+      Transformable.transform_point(tf, center, out)
+    ensure
+      MatrixCache.instance.recycle(tf)
     end
 
     ##
