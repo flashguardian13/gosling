@@ -58,8 +58,13 @@ module Gosling
     # - penetration: if colliding, a vector representing how far shape B must move to be separated from (or merely
     #     touching) shape A; nil otherwise
     #
-    def self.get_collision_info(shapeA, shapeB)
-      info = { actors: [shapeA, shapeB], colliding: false, overlap: nil, penetration: nil }
+    def self.get_collision_info(shapeA, shapeB, info = nil)
+      if info
+        info.clear
+      else
+        info = {}
+      end
+      info.merge!(actors: [shapeA, shapeB], colliding: false, overlap: nil, penetration: nil)
 
       return info if shapeA.instance_of?(Actor) || shapeB.instance_of?(Actor)
 
