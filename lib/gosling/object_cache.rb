@@ -1,23 +1,24 @@
 module ObjectCache
+  attr_reader :size
+
   def clear
     @cache.clear
+    @size = 0
   end
 
   def recycle(obj)
     self.reset(obj)
-    @cache.push(obj)
+    @cache[@size] = obj
+    @size += 1
   end
 
   def get
-    if @cache.empty?
+    if @size <= 0
       self.create
     else
-      @cache.pop
+      @size -= 1
+      @cache[@size]
     end
-  end
-
-  def size
-    @cache.length
   end
 
   protected

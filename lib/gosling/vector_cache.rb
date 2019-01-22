@@ -6,6 +6,7 @@ class VectorCache
 
   def initialize
     @cache = []
+    @size = 0
   end
 
   protected

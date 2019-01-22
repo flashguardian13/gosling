@@ -6,6 +6,7 @@ class MatrixCache
 
   def initialize
     @cache = []
+    @size = 0
   end
 
   protected
