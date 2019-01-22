@@ -79,7 +79,8 @@ module Gosling
         if smallest_overlap.nil? || smallest_overlap > overlap
           smallest_overlap = overlap
           flip = (projectionA[0] + projectionA[1]) * 0.5 > (projectionB[0] + projectionB[1]) * 0.5
-          smallest_axis = flip ? -axis : axis
+          smallest_axis = axis
+          smallest_axis.negate! if flip
         end
       end
 
