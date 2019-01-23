@@ -33,7 +33,8 @@ module Gosling
 
       return false if shapeA === shapeB
 
-      separation_axes = get_separation_axes(shapeA, shapeB)
+      separation_axes = []
+      get_separation_axes(shapeA, shapeB, separation_axes)
 
       separation_axes.each do |axis|
         projectionA = project_onto_axis(shapeA, axis)
@@ -42,6 +43,8 @@ module Gosling
       end
 
       return true
+    ensure
+      separation_axes.each { |axis| VectorCache.instance.recycle(axis) } if separation_axes
     end
 
     ##
