@@ -159,7 +159,15 @@ module Gosling
     @@buffer_iterator_b = nil
 
     ##
+    # Adds one or more descendents of Actor to the collision testing buffer. The buffer's iterators will be reset to the
+    # first potential collision in the buffer.
     #
+    # When added to the buffer, important and expensive global-space collision values for each Actor - transform,
+    # position, and any vertices - are calculated and cached for re-use. This ensures that expensive transform
+    # calculations are only performed once per actor during each collision resolution step.
+    #
+    # If you modify a buffered actor's transforms in any way, you will need to update its cached values by calling
+    # buffer_shapes again. Otherwise, it will continue to use stale and inaccurate transform information.
     #
     def self.buffer_shapes(actors)
       type_check(actors, Array)
@@ -193,7 +201,8 @@ module Gosling
     end
 
     ##
-    #
+    # Removes one or more descendents of Actor from the collision testing buffer. Any cached values for the actors
+    # are discarded. The buffer's iterators will be reset to the first potential collision in the buffer.
     #
     def self.unbuffer_shapes(actors)
       type_check(actors, Array)
@@ -223,18 +232,19 @@ module Gosling
     end
 
     ##
-    #
+    # Removes all actors from the collision testing buffer. See Collision.unbuffer_shapes.
     #
     def self.clear_buffer
       unbuffer_shapes(@@collision_buffer)
     end
 
     ##
-    #
+    # Returns collision information for the next pair of actors in the collision buffer, or returns nil if all pairs in the
+    # buffer have been tested. Advances the buffer's iterators to the next pair. See Collision.get_collision_info.
     #
     def self.next_collision_info
       reset_buffer_iterators if @@buffer_iterator_a.nil? || @@buffer_iterator_b.nil?
-      return if interation_complete?
+      return if iteration_complete?
 
       info = get_collision_info(@@collision_buffer[@@buffer_iterator_a], @@collision_buffer[@@buffer_iterator_b])
       skip_next_collision
@@ -242,21 +252,29 @@ module Gosling
     end
 
     ##
+    # Returns the pair of actors in the collision buffer that would be tested during the next call to
+    # Collision.next_collision_info, or returns nil if all pairs in the buffer have been tested. Does not perform
+    # collision testing or advance the buffer's iterators.
     #
+    # One use of this method is to look at the two actors about to be tested and, using some custom and likely more
+    # efficient logic, determine if it's worth bothering to collision test these actors at all. If not, the pair's collision test
+    # can be skipped by calling Collision.skip_next_collision.
     #
     def self.peek_at_next_collision
       reset_buffer_iterators if @@buffer_iterator_a.nil? || @@buffer_iterator_b.nil?
-      return if interation_complete?
+      return if iteration_complete?
 
       [@@collision_buffer[@@buffer_iterator_a], @@collision_buffer[@@buffer_iterator_b]]
     end
 
     ##
-    #
+    # Advances the collision buffer's iterators to the next pair of actors in the buffer without performing any collision
+    # testing. By using this method in conjunction with Collision.peek_at_next_collision, it is possible to selectively
+    # skip collision testing for pairs of actors that meet certain criteria.
     #
     def self.skip_next_collision
       reset_buffer_iterators if @@buffer_iterator_a.nil? || @@buffer_iterator_b.nil?
-      return if interation_complete?
+      return if iteration_complete?
 
       @@buffer_iterator_b += 1
       if @@buffer_iterator_b >= @@buffer_iterator_a
@@ -267,7 +285,7 @@ module Gosling
 
     private
 
-    def self.interation_complete?
+    def self.iteration_complete?
       @@buffer_iterator_a >= @@collision_buffer.length
     end
 
