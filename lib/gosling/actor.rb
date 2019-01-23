@@ -216,6 +216,7 @@ module Gosling
     # space of its root ancestor).
     #
     def get_global_transform(out = nil)
+      # TODO: optimize
       out ||= Snow::Mat3.new
       if parent
         to_matrix.multiply(parent.get_global_transform, out)
@@ -297,6 +298,8 @@ module Gosling
 
     def render(matrix)
     end
+
+    # TODO: add fill_polygon()
 
     ##
     # Internal use only. See #add_child and #remove_child.

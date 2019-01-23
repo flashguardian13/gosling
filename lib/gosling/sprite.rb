@@ -34,6 +34,7 @@ module Gosling
     private
 
     def render(matrix)
+      # TODO: optimize and refactor
       global_vertices = @vertices.map { |v| Transformable.transform_point(matrix, v, Snow::Vec3.new) }
       @image.draw_as_quad(
         global_vertices[0][0].to_f, global_vertices[0][1].to_f, @color,

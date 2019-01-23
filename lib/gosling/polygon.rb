@@ -100,6 +100,7 @@ module Gosling
     private
 
     def render(matrix)
+      # TODO: optimize and refactor
       type_check(matrix, Snow::Mat3)
       global_vertices = @vertices.map { |v| Transformable.transform_point(matrix, v) }
       i = 2
