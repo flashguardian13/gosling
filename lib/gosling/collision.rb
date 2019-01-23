@@ -117,26 +117,38 @@ module Gosling
 
       return false if shape.instance_of?(Actor)
 
+      global_pos = nil
+      centers_axis = nil
+      global_vertices = nil
       separation_axes = []
       if shape.instance_of?(Circle)
-        centers_axis = point - (@@global_position_cache.key?(shape) ? @@global_position_cache[shape] : shape.get_global_position)
-        separation_axes.push(centers_axis) if centers_axis && centers_axis.magnitude > 0
+        unless @@global_position_cache.key?(shape)
+          global_pos = VectorCache.instance.get
+          shape.get_global_position(global_pos)
+        end
+        centers_axis = VectorCache.instance.get
+        point.subtract(@@global_position_cache.fetch(shape, global_pos), centers_axis)
+        separation_axes.push(centers_axis) if centers_axis && (centers_axis.x != 0 || centers_axis.y != 0)
       else
-        vertices =  if @@global_vertices_cache.key?(shape)
-                      @@global_vertices_cache[shape]
-                    else
-                      shape.get_global_vertices
-                    end
-        separation_axes.concat(get_polygon_separation_axes(vertices))
+        unless @@global_vertices_cache.key?(shape)
+          global_vertices = Array.new(shape.get_vertices.length) { VectorCache.instance.get }
+          shape.get_global_vertices(global_vertices)
+        end
+        get_polygon_separation_axes(@@global_vertices_cache.fetch(shape, global_vertices), separation_axes)
       end
 
       separation_axes.each do |axis|
         shape_projection = project_onto_axis(shape, axis)
         point_projection = point.dot_product(axis)
-        return false unless shape_projection.min <= point_projection && point_projection <= shape_projection.max
+        return false unless shape_projection.first <= point_projection && point_projection <= shape_projection.last
       end
 
       return true
+    ensure
+      VectorCache.instance.recycle(global_pos) if global_pos
+      VectorCache.instance.recycle(centers_axis) if centers_axis
+      global_vertices.each { |v| VectorCache.instance.recycle(v) } if global_vertices
+      separation_axes.each { |v| VectorCache.instance.recycle(v) } if separation_axes
     end
 
     @@collision_buffer = []
