@@ -139,12 +139,19 @@ module Gosling
     # be skipped and not drawn.
     #
     def draw(matrix = nil)
-      matrix ||= Snow::Mat3.new
-      transform = to_matrix * matrix
+      transform = MatrixCache.instance.get
+      if matrix
+        to_matrix.multiply(matrix, transform)
+      else
+        transform.set(to_matrix)
+      end
+
       render(transform) if @is_visible
       if @are_children_visible
         @children.each { |child| child.draw(transform) }
       end
+    ensure
+      MatrixCache.instance.recycle(transform)
     end
 
     ##
@@ -209,12 +216,12 @@ module Gosling
     # space of its root ancestor).
     #
     def get_global_transform(out = nil)
+      # TODO: optimize
+      out ||= Snow::Mat3.new
       if parent
-        out ||= Snow::Mat3.new
         to_matrix.multiply(parent.get_global_transform, out)
-        out
       else
-        to_matrix
+        out.set(to_matrix)
       end
     end
 
@@ -222,9 +229,13 @@ module Gosling
     # Returns the global x/y position of this actor (where it is relative to its root ancestor). This value is calculated
     # using the Actor's center (see Transformable#center).
     #
-    def get_global_position
-      tf = get_global_transform
-      Transformable.transform_point(tf, center)
+    def get_global_position(out = nil)
+      tf = MatrixCache.instance.get
+      get_global_transform(tf)
+      out ||= Snow::Vec3.new
+      Transformable.transform_point(tf, center, out)
+    ensure
+      MatrixCache.instance.recycle(tf)
     end
 
     ##
@@ -287,6 +298,8 @@ module Gosling
 
     def render(matrix)
     end
+
+    # TODO: add fill_polygon()
 
     ##
     # Internal use only. See #add_child and #remove_child.

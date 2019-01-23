@@ -164,26 +164,36 @@ module Gosling
     # If passed more than two numeric arguments, only the first two are used.
     #
     # Usage:
+    # - transform.scale = scalar
     # - transform.scale = x, y
     # - transform.scale = [x, y]
     # - transform.scale = Snow::Vec2[x, y]
     # - transform.scale = Snow::Vec3[x, y, z]
     # - transform.scale = Snow::Vec4[x, y, z, c]
     #
-    def scale=(args)
-      case args[0]
-      when Array
-        self.scale = args[0][0], args[0][1]
-      when Snow::Vec2, Snow::Vec3, Snow::Vec4
-        @scale.x = args[0].x
-        @scale.y = args[0].y
-      when Numeric
-        raise ArgumentError.new("Cannot set scale from #{args.inspect}: numeric array requires at least two arguments!") unless args.length >= 2
-        args.each { |arg| type_check(arg, Numeric) }
-        @scale.x = args[0]
-        @scale.y = args[1]
+    def scale=(*args)
+      if args.length >= 2
+        case args[0]
+        when Numeric
+          args.each { |arg| type_check(arg, Numeric) }
+          @scale.x = args[0]
+          @scale.y = args[1]
+        else
+          raise ArgumentError.new("Bad combination of arguments: #{args.inspect}! Please supply a Snow::Vec2, an Array of Numerics, or a single scalar.")
+        end
+      elsif args.length == 1
+        case args[0]
+        when Array
+          self.set_scale(*(args[0]))
+        when Snow::Vec2
+          self.set_scale(args[0].x, args[0].y)
+        when Numeric
+          self.set_scale(args[0], args[0])
+        else
+          raise ArgumentError.new("Bad combination of arguments: #{args.inspect}! Please supply a Snow::Vec2, an Array of Numerics, or a single scalar.")
+        end
       else
-        raise ArgumentError.new("Cannot set scale from #{args.inspect}: bad type!")
+        raise ArgumentError.new("Bad combination of arguments: #{args.inspect}! Please supply a Snow::Vec2, an Array of Numerics, or a single scalar.")
       end
       @scale_is_dirty = @is_dirty = true
     end
@@ -305,44 +315,49 @@ module Gosling
     # Transforms a Vec3 using the provided Mat3 transform and returns the result as a new Vec3. This is the
     # opposite of Transformable.untransform_point.
     #
-    def self.transform_point(mat, v)
+    def self.transform_point(mat, point, out = nil)
       type_check(mat, Snow::Mat3)
-      type_check(v, Snow::Vec3)
-      result = mat * Snow::Vec3[v[0], v[1], 1]
-      result[2] = 0
-      result
+      type_check(point, Snow::Vec3)
+      type_check(out, Snow::Vec3) unless out.nil?
+      raise "Output vector is temporarily required!" unless out
+
+      transformable_point = VectorCache.instance.get
+      transformable_point.set(point.x, point.y, 1)
+
+      out ||= Snow::Vec3.new
+      mat.multiply(transformable_point, out)
+      out.z = 0
+      out
+    ensure
+      VectorCache.instance.recycle(transformable_point) if transformable_point
     end
 
     ##
     # Applies all of our transformations to the point, returning the resulting point as a new Vec3. This is the opposite
     # of Transformable#untransform_point.
     #
-    def transform_point(v)
-      Transformable.transform_point(to_matrix, v)
+    def transform_point(point, out = nil)
+      Transformable.transform_point(to_matrix, point, out)
     end
 
     ##
     # Transforms a Vec3 using the inverse of the provided Mat3 transform and returns the result as a new Vec3. This
     # is the opposite of Transformable.transform_point.
     #
-    def self.untransform_point(mat, v)
-      type_check(mat, Snow::Mat3)
-      type_check(v, Snow::Vec3)
-      inverse_mat = mat.inverse
-      unless inverse_mat
-        raise "Unable to invert matrix: #{mat}!"
-      end
-      result = mat.inverse * Snow::Vec3[v[0], v[1], 1]
-      result[2] = 0
-      result
+    def self.untransform_point(mat, point, out = nil)
+      inverse_mat = MatrixCache.instance.get
+      raise "Unable to invert matrix: #{mat}!" unless mat.inverse(inverse_mat)
+      transform_point(inverse_mat, point, out)
+    ensure
+      MatrixCache.instance.recycle(inverse_mat) if inverse_mat
     end
 
     ##
     # Applies the inverse of all of our transformations to the point, returning the resulting point as a new Vec3. This
     # is the opposite of Transformable#transform_point.
     #
-    def untransform_point(v)
-      Transformable.untransform_point(to_matrix, v)
+    def untransform_point(point, out = nil)
+      Transformable.untransform_point(to_matrix, point, out)
     end
 
     private

@@ -33,6 +33,7 @@ module Gosling
     private
 
     def rebuild_vertices
+      # TODO: optimize and refactor
       vertices = [
         Snow::Vec3[     0,       0, 0],
         Snow::Vec3[@width,       0, 0],

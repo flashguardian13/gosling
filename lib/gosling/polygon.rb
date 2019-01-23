@@ -64,9 +64,30 @@ module Gosling
     ##
     # Returns an array containing all of our local vertices transformed to global-space. (See Actor#get_global_transform.)
     #
-    def get_global_vertices
-      tf = get_global_transform
-      @vertices.map { |v| Transformable.transform_point(tf, v) }
+    def get_global_vertices(out = nil)
+      type_check(out, Array) unless out.nil?
+      if out.is_a?(Array)
+        raise ArgumentError.new("Array passed in has too many vertices in it! Expected #{@vertices.length}, found #{out.length}. #{out.inspect}") if out.length > @vertices.length
+      end
+
+      tf = MatrixCache.instance.get
+      get_global_transform(tf)
+
+      if out.nil?
+        return @vertices.map { |v| Transformable.transform_point(tf, v, Snow::Vec3.new) }
+      end
+
+      @vertices.each_index do |i|
+        v = @vertices[i]
+        if out[i]
+          Transformable.transform_point(tf, v, out[i])
+        else
+          out[i] = Transformable.transform_point(tf, v)
+        end
+      end
+      out
+    ensure
+      MatrixCache.instance.recycle(tf) if tf
     end
 
     ##
@@ -79,6 +100,7 @@ module Gosling
     private
 
     def render(matrix)
+      # TODO: optimize and refactor
       type_check(matrix, Snow::Mat3)
       global_vertices = @vertices.map { |v| Transformable.transform_point(matrix, v) }
       i = 2

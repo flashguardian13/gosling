@@ -33,7 +33,8 @@ module Gosling
 
       return false if shapeA === shapeB
 
-      separation_axes = get_separation_axes(shapeA, shapeB)
+      separation_axes = []
+      get_separation_axes(shapeA, shapeB, separation_axes)
 
       separation_axes.each do |axis|
         projectionA = project_onto_axis(shapeA, axis)
@@ -42,6 +43,8 @@ module Gosling
       end
 
       return true
+    ensure
+      separation_axes.each { |axis| VectorCache.instance.recycle(axis) } if separation_axes
     end
 
     ##
@@ -58,14 +61,21 @@ module Gosling
     # - penetration: if colliding, a vector representing how far shape B must move to be separated from (or merely
     #     touching) shape A; nil otherwise
     #
-    def self.get_collision_info(shapeA, shapeB)
-      info = { colliding: false, overlap: nil, penetration: nil }
+    def self.get_collision_info(shapeA, shapeB, info = nil)
+      if info
+        info.clear
+      else
+        info = {}
+      end
+      info.merge!(actors: [shapeA, shapeB], colliding: false, overlap: nil, penetration: nil)
 
       return info if shapeA.instance_of?(Actor) || shapeB.instance_of?(Actor)
 
       return info if shapeA === shapeB
 
-      separation_axes = get_separation_axes(shapeA, shapeB)
+      separation_axes = []
+      get_separation_axes(shapeA, shapeB, separation_axes)
+      return info if separation_axes.empty?
 
       smallest_overlap = nil
       smallest_axis = nil
@@ -77,7 +87,8 @@ module Gosling
         if smallest_overlap.nil? || smallest_overlap > overlap
           smallest_overlap = overlap
           flip = (projectionA[0] + projectionA[1]) * 0.5 > (projectionB[0] + projectionB[1]) * 0.5
-          smallest_axis = flip ? -axis : axis
+          smallest_axis = axis
+          smallest_axis.negate! if flip
         end
       end
 
@@ -85,7 +96,9 @@ module Gosling
       info[:overlap] = smallest_overlap
       info[:penetration] = smallest_axis.normalize * smallest_overlap
 
-      return info
+      info
+    ensure
+      separation_axes.each { |axis| VectorCache.instance.recycle(axis) } if separation_axes
     end
 
     ##
@@ -104,50 +117,229 @@ module Gosling
 
       return false if shape.instance_of?(Actor)
 
+      global_pos = nil
+      centers_axis = nil
+      global_vertices = nil
       separation_axes = []
       if shape.instance_of?(Circle)
-        centers_axis = point - shape.get_global_position
-        separation_axes.push(centers_axis) if centers_axis && centers_axis.magnitude > 0
+        unless @@global_position_cache.key?(shape)
+          global_pos = VectorCache.instance.get
+          shape.get_global_position(global_pos)
+        end
+        centers_axis = VectorCache.instance.get
+        point.subtract(@@global_position_cache.fetch(shape, global_pos), centers_axis)
+        separation_axes.push(centers_axis) if centers_axis && (centers_axis.x != 0 || centers_axis.y != 0)
       else
-        separation_axes.concat(get_polygon_separation_axes(shape.get_global_vertices))
+        unless @@global_vertices_cache.key?(shape)
+          global_vertices = Array.new(shape.get_vertices.length) { VectorCache.instance.get }
+          shape.get_global_vertices(global_vertices)
+        end
+        get_polygon_separation_axes(@@global_vertices_cache.fetch(shape, global_vertices), separation_axes)
       end
 
       separation_axes.each do |axis|
         shape_projection = project_onto_axis(shape, axis)
         point_projection = point.dot_product(axis)
-        return false unless shape_projection.min <= point_projection && point_projection <= shape_projection.max
+        return false unless shape_projection.first <= point_projection && point_projection <= shape_projection.last
       end
 
       return true
+    ensure
+      VectorCache.instance.recycle(global_pos) if global_pos
+      VectorCache.instance.recycle(centers_axis) if centers_axis
+      global_vertices.each { |v| VectorCache.instance.recycle(v) } if global_vertices
+      separation_axes.each { |v| VectorCache.instance.recycle(v) } if separation_axes
+    end
+
+    @@collision_buffer = []
+    @@global_position_cache = {}
+    @@global_vertices_cache = {}
+    @@global_transform_cache = {}
+    @@buffer_iterator_a = nil
+    @@buffer_iterator_b = nil
+
+    ##
+    # Adds one or more descendents of Actor to the collision testing buffer. The buffer's iterators will be reset to the
+    # first potential collision in the buffer.
+    #
+    # When added to the buffer, important and expensive global-space collision values for each Actor - transform,
+    # position, and any vertices - are calculated and cached for re-use. This ensures that expensive transform
+    # calculations are only performed once per actor during each collision resolution step.
+    #
+    # If you modify a buffered actor's transforms in any way, you will need to update its cached values by calling
+    # buffer_shapes again. Otherwise, it will continue to use stale and inaccurate transform information.
+    #
+    def self.buffer_shapes(actors)
+      type_check(actors, Array)
+      actors.each { |a| type_check(a, Actor) }
+
+      reset_buffer_iterators
+
+      shapes = actors.reject { |a| a.instance_of?(Actor) }
+
+      @@collision_buffer = @@collision_buffer | shapes
+      shapes.each do |shape|
+        unless @@global_transform_cache.key?(shape)
+          @@global_transform_cache[shape] = MatrixCache.instance.get
+        end
+        shape.get_global_transform(@@global_transform_cache[shape])
+
+        unless @@global_position_cache.key?(shape)
+          @@global_position_cache[shape] = VectorCache.instance.get
+        end
+        # TODO: can we calculate this position using the global transform we already have?
+        @@global_position_cache[shape].set(shape.get_global_position)
+
+        if shape.is_a?(Polygon)
+          unless @@global_vertices_cache.key?(shape)
+            @@global_vertices_cache[shape] = Array.new(shape.get_vertices.length) { VectorCache.instance.get }
+          end
+          # TODO: can we calculate these vertices using the global transform we already have?
+          shape.get_global_vertices(@@global_vertices_cache[shape])
+        end
+      end
+    end
+
+    ##
+    # Removes one or more descendents of Actor from the collision testing buffer. Any cached values for the actors
+    # are discarded. The buffer's iterators will be reset to the first potential collision in the buffer.
+    #
+    def self.unbuffer_shapes(actors)
+      type_check(actors, Array)
+      actors.each { |a| type_check(a, Actor) }
+
+      reset_buffer_iterators
+
+      @@collision_buffer = @@collision_buffer - actors
+      actors.each do |actor|
+        if @@global_transform_cache.key?(actor)
+          MatrixCache.instance.recycle(@@global_transform_cache[actor])
+          @@global_transform_cache.delete(actor)
+        end
+
+        if @@global_position_cache.key?(actor)
+          VectorCache.instance.recycle(@@global_position_cache[actor])
+          @@global_position_cache.delete(actor)
+        end
+
+        if @@global_vertices_cache.key?(actor)
+          @@global_vertices_cache[actor].each do |vertex|
+            VectorCache.instance.recycle(vertex)
+          end
+          @@global_vertices_cache.delete(actor)
+        end
+      end
+    end
+
+    ##
+    # Removes all actors from the collision testing buffer. See Collision.unbuffer_shapes.
+    #
+    def self.clear_buffer
+      unbuffer_shapes(@@collision_buffer)
+    end
+
+    ##
+    # Returns collision information for the next pair of actors in the collision buffer, or returns nil if all pairs in the
+    # buffer have been tested. Advances the buffer's iterators to the next pair. See Collision.get_collision_info.
+    #
+    def self.next_collision_info
+      reset_buffer_iterators if @@buffer_iterator_a.nil? || @@buffer_iterator_b.nil?
+      return if iteration_complete?
+
+      info = get_collision_info(@@collision_buffer[@@buffer_iterator_a], @@collision_buffer[@@buffer_iterator_b])
+      skip_next_collision
+      info
+    end
+
+    ##
+    # Returns the pair of actors in the collision buffer that would be tested during the next call to
+    # Collision.next_collision_info, or returns nil if all pairs in the buffer have been tested. Does not perform
+    # collision testing or advance the buffer's iterators.
+    #
+    # One use of this method is to look at the two actors about to be tested and, using some custom and likely more
+    # efficient logic, determine if it's worth bothering to collision test these actors at all. If not, the pair's collision test
+    # can be skipped by calling Collision.skip_next_collision.
+    #
+    def self.peek_at_next_collision
+      reset_buffer_iterators if @@buffer_iterator_a.nil? || @@buffer_iterator_b.nil?
+      return if iteration_complete?
+
+      [@@collision_buffer[@@buffer_iterator_a], @@collision_buffer[@@buffer_iterator_b]]
+    end
+
+    ##
+    # Advances the collision buffer's iterators to the next pair of actors in the buffer without performing any collision
+    # testing. By using this method in conjunction with Collision.peek_at_next_collision, it is possible to selectively
+    # skip collision testing for pairs of actors that meet certain criteria.
+    #
+    def self.skip_next_collision
+      reset_buffer_iterators if @@buffer_iterator_a.nil? || @@buffer_iterator_b.nil?
+      return if iteration_complete?
+
+      @@buffer_iterator_b += 1
+      if @@buffer_iterator_b >= @@buffer_iterator_a
+        @@buffer_iterator_b = 0
+        @@buffer_iterator_a += 1
+      end
     end
 
     private
 
-    def self.get_normal(vector)
-      type_check(vector, Snow::Vec3)
-      raise ArgumentError.new("Cannot determine normal of zero-length vector") if vector.magnitude_squared == 0
-      Snow::Vec3[-vector[1], vector[0], 0]
+    def self.iteration_complete?
+      @@buffer_iterator_a >= @@collision_buffer.length
     end
 
-    def self.get_polygon_separation_axes(vertices)
+    def self.reset_buffer_iterators
+      @@buffer_iterator_a = 1
+      @@buffer_iterator_b = 0
+    end
+
+    def self.get_normal(vector, out = nil)
+      type_check(vector, Snow::Vec3)
+      raise ArgumentError.new("Cannot determine normal of zero-length vector") if vector.x == 0 && vector.y == 0
+      out ||= Snow::Vec3.new
+      out.set(-vector.y, vector.x, 0)
+    end
+
+    def self.get_polygon_separation_axes(vertices, axes = nil)
       type_check(vertices, Array)
       vertices.each { |v| type_check(v, Snow::Vec3) }
+      type_check(axes, Array) unless axes.nil?
 
-      axes = (0...vertices.length).map do |i|
-        axis = vertices[(i + 1) % vertices.length] - vertices[i]
-        (axis.magnitude > 0) ? get_normal(axis).normalize : nil
+      axes ||= []
+      vertices.each_index do |i|
+        axis = VectorCache.instance.get
+        vertices[i].subtract(vertices[i - 1], axis)
+        axes.push(get_normal(axis, axis).normalize!) if axis.x != 0 || axis.y != 0
       end
-      axes.compact
+      axes
     end
 
-    def self.get_circle_separation_axis(circleA, circleB)
+    def self.get_circle_separation_axis(circleA, circleB, out = nil)
       type_check(circleA, Actor)
       type_check(circleB, Actor)
-      axis = circleB.get_global_position - circleA.get_global_position
-      (axis.magnitude > 0) ? axis.normalize : nil
+
+      global_pos_a = nil
+      unless @@global_position_cache.key?(circleA)
+        global_pos_a = VectorCache.instance.get
+        circleA.get_global_position(global_pos_a)
+      end
+
+      global_pos_b = nil
+      unless @@global_position_cache.key?(circleB)
+        global_pos_b = VectorCache.instance.get
+        circleB.get_global_position(global_pos_b)
+      end
+
+      out ||= Snow::Vec3.new
+      @@global_position_cache.fetch(circleB, global_pos_b).subtract(@@global_position_cache.fetch(circleA, global_pos_a), out)
+      (out.x != 0 || out.y != 0) ? out.normalize! : nil
+    ensure
+      VectorCache.instance.recycle(global_pos_a) if global_pos_a
+      VectorCache.instance.recycle(global_pos_b) if global_pos_b
     end
 
-    def self.get_separation_axes(shapeA, shapeB)
+    def self.get_separation_axes(shapeA, shapeB, separation_axes = nil)
       unless shapeA.is_a?(Actor) && !shapeA.instance_of?(Actor)
         raise ArgumentError.new("Expected a child of the Actor class, but received #{shapeA.inspect}!")
       end
@@ -156,40 +348,122 @@ module Gosling
         raise ArgumentError.new("Expected a child of the Actor class, but received #{shapeB.inspect}!")
       end
 
-      separation_axes = []
+      type_check(separation_axes, Array) unless separation_axes.nil?
+
+      separation_axes ||= []
+      global_vertices = nil
 
       unless shapeA.instance_of?(Circle)
-        separation_axes.concat(get_polygon_separation_axes(shapeA.get_global_vertices))
+        unless @@global_vertices_cache.key?(shapeA)
+          global_vertices = Array.new(shapeA.get_vertices.length) { VectorCache.instance.get }
+          shapeA.get_global_vertices(global_vertices)
+        end
+        get_polygon_separation_axes(@@global_vertices_cache.fetch(shapeA, global_vertices), separation_axes)
       end
 
       unless shapeB.instance_of?(Circle)
-        separation_axes.concat(get_polygon_separation_axes(shapeB.get_global_vertices))
+        unless @@global_vertices_cache.key?(shapeB)
+          global_vertices ||= []
+          (shapeB.get_vertices.length - global_vertices.length).times do
+            global_vertices.push(VectorCache.instance.get)
+          end
+          (global_vertices.length - shapeB.get_vertices.length).times do
+            VectorCache.instance.recycle(global_vertices.pop)
+          end
+          shapeB.get_global_vertices(global_vertices)
+        end
+        get_polygon_separation_axes(@@global_vertices_cache.fetch(shapeB, global_vertices), separation_axes)
       end
 
       if shapeA.instance_of?(Circle) || shapeB.instance_of?(Circle)
-        axis = get_circle_separation_axis(shapeA, shapeB)
-        separation_axes.push(axis) if axis
+        axis = VectorCache.instance.get
+        if get_circle_separation_axis(shapeA, shapeB, axis)
+          separation_axes.push(axis)
+        else
+          VectorCache.instance.recycle(axis)
+        end
       end
 
-      separation_axes.map! { |v| v[0] < 0 ? v * -1 : v }
-      separation_axes.uniq
+      separation_axes.each { |v| v.negate! if v.x < 0 }
+      all_axes = separation_axes.dup
+      duplicate_axes = all_axes - (separation_axes.uniq! { |x| x.to_s } || separation_axes)
+      separation_axes
+    ensure
+      duplicate_axes.each { |v| VectorCache.instance.recycle(v) } if duplicate_axes
+      global_vertices.each { |v| VectorCache.instance.recycle(v) } if global_vertices
     end
 
-    def self.project_onto_axis(shape, axis)
+    def self.project_onto_axis(shape, axis, out = nil)
       type_check(shape, Actor)
       type_check(axis, Snow::Vec3)
+      type_check(out, Array) unless out.nil?
 
-      global_vertices = if shape.instance_of?(Circle)
-        global_tf = shape.get_global_transform
-        local_axis = global_tf.inverse * Snow::Vec3[axis[0], axis[1], 0]
-        v = shape.get_point_at_angle(Math.atan2(local_axis[1], local_axis[0]))
-        [v, v * -1].map { |vertex| Transformable.transform_point(global_tf, vertex) }
-      else
-        shape.get_global_vertices
+      global_vertices = nil
+
+      global_tf = nil
+      global_tf_inverse = nil
+
+      zero_z_axis = nil
+      local_axis = nil
+      intersection = nil
+
+      unless @@global_vertices_cache.key?(shape)
+        if shape.instance_of?(Circle)
+          global_vertices = []
+
+          unless @@global_transform_cache.key?(shape)
+            global_tf = MatrixCache.instance.get
+            shape.get_global_transform(global_tf)
+          end
+
+          zero_z_axis = VectorCache.instance.get
+          zero_z_axis.set(axis.x, axis.y, 0)
+
+          global_tf_inverse = MatrixCache.instance.get
+          @@global_transform_cache.fetch(shape, global_tf).inverse(global_tf_inverse)
+
+          local_axis = VectorCache.instance.get
+          global_tf_inverse.multiply(zero_z_axis, local_axis)
+
+          intersection = VectorCache.instance.get
+          # TODO: is this a wasted effort? a roundabout way of normalizing?
+          shape.get_point_at_angle(Math.atan2(local_axis.y, local_axis.x), intersection)
+
+          vertex = VectorCache.instance.get
+          # TODO: Are we transforming points more than once?
+          Transformable.transform_point(@@global_transform_cache.fetch(shape, global_tf), intersection, vertex)
+          global_vertices.push(vertex)
+
+          vertex = VectorCache.instance.get
+          intersection.negate!
+          Transformable.transform_point(@@global_transform_cache.fetch(shape, global_tf), intersection, vertex)
+          global_vertices.push(vertex)
+        else
+          global_vertices = Array.new(shape.get_vertices.length) { VectorCache.instance.get }
+          shape.get_global_vertices(global_vertices)
+        end
       end
 
-      projections = global_vertices.map { |vertex| vertex.dot_product(axis) }.sort
-      [projections.first, projections.last]
+      min = nil
+      max = nil
+      @@global_vertices_cache.fetch(shape, global_vertices).each do |vertex|
+        projection = vertex.dot_product(axis)
+        min = projection if min.nil? || projection < min
+        max = projection if max.nil? || projection > max
+      end
+      out ||= []
+      out[1] = max
+      out[0] = min
+      out
+    ensure
+      MatrixCache.instance.recycle(global_tf) if global_tf
+      MatrixCache.instance.recycle(global_tf_inverse) if global_tf_inverse
+
+      VectorCache.instance.recycle(zero_z_axis) if zero_z_axis
+      VectorCache.instance.recycle(local_axis) if local_axis
+      VectorCache.instance.recycle(intersection) if intersection
+
+      global_vertices.each { |v| VectorCache.instance.recycle(v) } if global_vertices
     end
 
     def self.projections_overlap?(a, b)
