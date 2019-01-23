@@ -1,3 +1,11 @@
+require 'fiddle'
+
+class Object
+  def unfreeze
+    Fiddle::Pointer.new(object_id * 2)[1] &= ~(1 << 3)
+  end
+end
+
 module ObjectCache
   attr_reader :size
 
@@ -9,6 +17,7 @@ module ObjectCache
   def recycle(obj)
     return if @cache.any? { |x| x.equal?(obj) }
     self.reset(obj)
+    obj.freeze
     @cache[@size] = obj
     @size += 1
   end
@@ -18,7 +27,9 @@ module ObjectCache
       self.create
     else
       @size -= 1
-      @cache[@size]
+      obj = @cache[@size]
+      obj.unfreeze
+      obj
     end
   end
 
