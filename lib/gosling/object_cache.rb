@@ -7,6 +7,7 @@ module ObjectCache
   end
 
   def recycle(obj)
+    return if @cache.any? { |x| x.equal?(obj) }
     self.reset(obj)
     @cache[@size] = obj
     @size += 1
