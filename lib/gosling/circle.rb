@@ -48,7 +48,10 @@ module Gosling
 
     private
 
+    # TODO: add local_vertices
+
     def render(matrix)
+      # TODO: optimize and refactor
       local_vertices = (0...RENDER_VERTEX_COUNT).map do |i|
         get_point_at_angle(Math::PI * 2 * i / RENDER_VERTEX_COUNT)
       end

@@ -14,8 +14,8 @@ module Gosling
     # Gosu::Image. Otherwise, it loads the image, stores it in the cache, and returns it.
     #
     def self.get(filename)
-      raise ArgumentError.new("File not found: '#{filename}' in '#{Dir.pwd}'") unless File.exists?(filename)
       unless @@cache.has_key?(filename)
+        raise ArgumentError.new("File not found: '#{filename}' in '#{Dir.pwd}'") unless File.exists?(filename)
         @@cache[filename] = Gosu::Image.new(filename, tileable: true)
       end
       @@cache[filename]

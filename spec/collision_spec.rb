@@ -1,5 +1,25 @@
 require 'set'
 
+module Gosling
+  class Collision
+    def self.collision_buffer
+      @@collision_buffer
+    end
+
+    def self.global_vertices_cache
+      @@global_vertices_cache
+    end
+
+    def self.global_position_cache
+      @@global_position_cache
+    end
+
+    def self.global_transform_cache
+      @@global_transform_cache
+    end
+  end
+end
+
 def angle_to_vector(angle)
   Snow::Vec3[Math.sin(angle).round(12), Math.cos(angle).round(12), 0]
 end
@@ -122,6 +142,8 @@ describe Gosling::Collision do
       [@actor1, @circle1, @polygon1, @rect1, @sprite1].each do |actor|
         expect(Gosling::Collision.test(actor, actor)).to be false
         result = Gosling::Collision.get_collision_info(actor, actor)
+        expect(result[:actors]).to include(actor)
+        expect(result[:actors].length).to eq(2)
         expect(result[:colliding]).to be false
         expect(result[:overlap]).to be nil
         expect(result[:penetration]).to be nil
@@ -141,6 +163,7 @@ describe Gosling::Collision do
       pairs.each do |pair|
         expect(Gosling::Collision.test(*pair)).to be false
         result = Gosling::Collision.get_collision_info(*pair)
+        expect(result[:actors]).to include(*pair)
         expect(result[:colliding]).to be false
         expect(result[:overlap]).to be nil
         expect(result[:penetration]).to be nil
@@ -162,6 +185,7 @@ describe Gosling::Collision do
     it 'collides if the shapes are close enough' do
       expect(Gosling::Collision.test(@circle1, @circle2)).to be true
       result = Gosling::Collision.get_collision_info(@circle1, @circle2)
+      expect(result[:actors]).to include(@circle1, @circle2)
       expect(result[:colliding]).to be true
       expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(10 - Math.sqrt(50))
       expect(result[:penetration]).to eq(Snow::Vec3[1, 1, 0].normalize * result[:overlap])
@@ -192,6 +216,7 @@ describe Gosling::Collision do
       expect(Gosling::Collision.test(@circle1, @circle2)).to be false
 
       result = Gosling::Collision.get_collision_info(@circle1, @circle2)
+      expect(result[:actors]).to include(@circle1, @circle2)
       expect(result[:colliding]).to be false
       expect(result[:overlap]).to be nil
       expect(result[:penetration]).to be nil
@@ -212,6 +237,7 @@ describe Gosling::Collision do
     it 'collides if the shapes are close enough' do
       expect(Gosling::Collision.test(@circle1, @polygon1)).to be true
       result = Gosling::Collision.get_collision_info(@circle1, @polygon1)
+      expect(result[:actors]).to include(@circle1, @polygon1)
       expect(result[:colliding]).to be true
       expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(5)
       expect(result[:penetration]).to eq(Snow::Vec3[1, 1, 0].normalize * result[:overlap])
@@ -229,6 +255,7 @@ describe Gosling::Collision do
 
       expect(Gosling::Collision.test(@circle1, @polygon1)).to be false
       result = Gosling::Collision.get_collision_info(@circle1, @polygon1)
+      expect(result[:actors]).to include(@circle1, @polygon1)
       expect(result[:colliding]).to be false
       expect(result[:overlap]).to be nil
       expect(result[:penetration]).to be nil
@@ -249,6 +276,7 @@ describe Gosling::Collision do
     it 'collides if the shapes are close enough' do
       expect(Gosling::Collision.test(@circle1, @rect1)).to be true
       result = Gosling::Collision.get_collision_info(@circle1, @rect1)
+      expect(result[:actors]).to include(@circle1, @rect1)
       expect(result[:colliding]).to be true
       expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(5)
       expect(result[:penetration]).to eq(Snow::Vec3[1, 1, 0].normalize * result[:overlap])
@@ -266,6 +294,7 @@ describe Gosling::Collision do
 
       expect(Gosling::Collision.test(@circle1, @rect1)).to be false
       result = Gosling::Collision.get_collision_info(@circle1, @rect1)
+      expect(result[:actors]).to include(@circle1, @rect1)
       expect(result[:colliding]).to be false
       expect(result[:overlap]).to be nil
       expect(result[:penetration]).to be nil
@@ -286,6 +315,7 @@ describe Gosling::Collision do
     it 'collides if the shapes are close enough' do
       expect(Gosling::Collision.test(@circle1, @sprite1)).to be true
       result = Gosling::Collision.get_collision_info(@circle1, @sprite1)
+      expect(result[:actors]).to include(@circle1, @sprite1)
       expect(result[:colliding]).to be true
       expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(5)
       expect(result[:penetration]).to eq(Snow::Vec3[1, 1, 0].normalize * result[:overlap])
@@ -303,6 +333,7 @@ describe Gosling::Collision do
 
       expect(Gosling::Collision.test(@circle1, @sprite1)).to be false
       result = Gosling::Collision.get_collision_info(@circle1, @sprite1)
+      expect(result[:actors]).to include(@circle1, @sprite1)
       expect(result[:colliding]).to be false
       expect(result[:overlap]).to be nil
       expect(result[:penetration]).to be nil
@@ -323,12 +354,13 @@ describe Gosling::Collision do
     it 'collides if the shapes are close enough' do
       expect(Gosling::Collision.test(@polygon1, @polygon2)).to be true
       result = Gosling::Collision.get_collision_info(@polygon1, @polygon2)
+      expect(result[:actors]).to include(@polygon1, @polygon2)
       expect(result[:colliding]).to be true
       axis = Snow::Vec2[-10, -5].normalize
       a = Snow::Vec2[0, 0].dot_product(axis)
       b = Snow::Vec2[0, 5].dot_product(axis)
       expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(a - b)
-      expect(result[:penetration]).to eq(Snow::Vec3[2, 1, 0].normalize * result[:overlap])
+      expect(result[:penetration]).to eq(Snow::Vec3[-2, 1, 0].normalize * result[:overlap])
     end
 
     it 'returns a vector that separates the shapes' do
@@ -365,6 +397,7 @@ describe Gosling::Collision do
 
       expect(Gosling::Collision.test(@polygon1, @polygon2)).to be false
       result = Gosling::Collision.get_collision_info(@polygon1, @polygon2)
+      expect(result[:actors]).to include(@polygon1, @polygon2)
       expect(result[:colliding]).to be false
       expect(result[:overlap]).to be nil
       expect(result[:penetration]).to be nil
@@ -385,6 +418,7 @@ describe Gosling::Collision do
     it 'collides if the shapes are close enough' do
       expect(Gosling::Collision.test(@polygon1, @rect1)).to be true
       result = Gosling::Collision.get_collision_info(@polygon1, @rect1)
+      expect(result[:actors]).to include(@polygon1, @rect1)
       expect(result[:colliding]).to be true
       axis = Snow::Vec2[-10, -5].normalize
       a = Snow::Vec2[0, 0].dot_product(axis)
@@ -404,6 +438,7 @@ describe Gosling::Collision do
 
       expect(Gosling::Collision.test(@polygon1, @rect1)).to be false
       result = Gosling::Collision.get_collision_info(@polygon1, @rect1)
+      expect(result[:actors]).to include(@polygon1, @rect1)
       expect(result[:colliding]).to be false
       expect(result[:overlap]).to be nil
       expect(result[:penetration]).to be nil
@@ -424,6 +459,7 @@ describe Gosling::Collision do
     it 'collides if the shapes are close enough' do
       expect(Gosling::Collision.test(@polygon1, @sprite1)).to be true
       result = Gosling::Collision.get_collision_info(@polygon1, @sprite1)
+      expect(result[:actors]).to include(@polygon1, @sprite1)
       expect(result[:colliding]).to be true
       axis = Snow::Vec2[-10, -5].normalize
       a = Snow::Vec2[0, 0].dot_product(axis)
@@ -443,6 +479,7 @@ describe Gosling::Collision do
 
       expect(Gosling::Collision.test(@polygon1, @sprite1)).to be false
       result = Gosling::Collision.get_collision_info(@polygon1, @sprite1)
+      expect(result[:actors]).to include(@polygon1, @sprite1)
       expect(result[:colliding]).to be false
       expect(result[:overlap]).to be nil
       expect(result[:penetration]).to be nil
@@ -463,6 +500,7 @@ describe Gosling::Collision do
     it 'collides if the shapes are close enough' do
       expect(Gosling::Collision.test(@rect1, @rect2)).to be true
       result = Gosling::Collision.get_collision_info(@rect1, @rect2)
+      expect(result[:actors]).to include(@rect1, @rect2)
       expect(result[:colliding]).to be true
       expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(5)
       if result[:penetration].x == 0
@@ -483,6 +521,7 @@ describe Gosling::Collision do
 
       expect(Gosling::Collision.test(@rect1, @rect2)).to be false
       result = Gosling::Collision.get_collision_info(@rect1, @rect2)
+      expect(result[:actors]).to include(@rect1, @rect2)
       expect(result[:colliding]).to be false
       expect(result[:overlap]).to be nil
       expect(result[:penetration]).to be nil
@@ -503,6 +542,7 @@ describe Gosling::Collision do
     it 'collides if the shapes are close enough' do
       expect(Gosling::Collision.test(@rect1, @sprite1)).to be true
       result = Gosling::Collision.get_collision_info(@rect1, @sprite1)
+      expect(result[:actors]).to include(@rect1, @sprite1)
       expect(result[:colliding]).to be true
       expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(5)
       if result[:penetration].x == 0
@@ -523,6 +563,7 @@ describe Gosling::Collision do
 
       expect(Gosling::Collision.test(@rect1, @sprite1)).to be false
       result = Gosling::Collision.get_collision_info(@rect1, @sprite1)
+      expect(result[:actors]).to include(@rect1, @sprite1)
       expect(result[:colliding]).to be false
       expect(result[:overlap]).to be nil
       expect(result[:penetration]).to be nil
@@ -543,6 +584,7 @@ describe Gosling::Collision do
     it 'collides if the shapes are close enough' do
       expect(Gosling::Collision.test(@sprite1, @sprite2)).to be true
       result = Gosling::Collision.get_collision_info(@sprite1, @sprite2)
+      expect(result[:actors]).to include(@sprite1, @sprite2)
       expect(result[:colliding]).to be true
       expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(8)
       if result[:penetration].x == 0
@@ -563,13 +605,14 @@ describe Gosling::Collision do
 
       expect(Gosling::Collision.test(@sprite1, @sprite2)).to be false
       result = Gosling::Collision.get_collision_info(@sprite1, @sprite2)
+      expect(result[:actors]).to include(@sprite1, @sprite2)
       expect(result[:colliding]).to be false
       expect(result[:overlap]).to be nil
       expect(result[:penetration]).to be nil
     end
   end
 
-  describe '#is_point_in_shape?' do
+  describe '.is_point_in_shape?' do
     it 'expects a point and an actor' do
       expect { Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 0, 0], @actor1) }.not_to raise_error
 
@@ -756,7 +799,7 @@ describe Gosling::Collision do
     end
   end
 
-  describe '#get_normal' do
+  describe '.get_normal' do
     it 'expects a 3d vector' do
       expect { Gosling::Collision.get_normal(Snow::Vec3[1, 0, 0]) }.not_to raise_error
       expect { Gosling::Collision.get_normal(Snow::Vec3[1, 0, 1, 0]) }.to raise_error(ArgumentError)
@@ -815,7 +858,7 @@ describe Gosling::Collision do
     end
   end
 
-  describe '#get_polygon_separation_axes' do
+  describe '.get_polygon_separation_axes' do
     it 'expects an array of length 3 vectors' do
       good_vector_array = [
         Snow::Vec3[3, 1, 0],
@@ -873,16 +916,17 @@ describe Gosling::Collision do
         Snow::Vec3[-1,  2, 0]
       ]
       result = Gosling::Collision.get_polygon_separation_axes(vertices)
-      expect(result.length).to be == 5
-      expect(result[0]).to be == Snow::Vec3[ 2, -1, 0].normalize
-      expect(result[1]).to be == Snow::Vec3[ 1, -1, 0].normalize
-      expect(result[2]).to be == Snow::Vec3[-1, -1, 0].normalize
-      expect(result[3]).to be == Snow::Vec3[-3,  0, 0].normalize
-      expect(result[4]).to be == Snow::Vec3[ 1,  3, 0].normalize
+      expect(result).to match_array([
+                          Snow::Vec3[ 1,  3, 0].normalize,
+                          Snow::Vec3[ 2, -1, 0].normalize,
+                          Snow::Vec3[ 1, -1, 0].normalize,
+                          Snow::Vec3[-1, -1, 0].normalize,
+                          Snow::Vec3[-3,  0, 0].normalize
+                        ])
     end
   end
 
-  describe '#get_circle_separation_axis' do
+  describe '.get_circle_separation_axis' do
     before do
       clean_shape(@circle1)
       clean_shape(@circle2)
@@ -892,9 +936,9 @@ describe Gosling::Collision do
       expect { Gosling::Collision.get_circle_separation_axis(@circle1, @circle2) }.not_to raise_error
       expect { Gosling::Collision.get_circle_separation_axis(@circle1, @polygon1) }.not_to raise_error
       expect { Gosling::Collision.get_circle_separation_axis(@rect1, @circle2) }.not_to raise_error
+      expect { Gosling::Collision.get_circle_separation_axis(@circle1, @circle2, Snow::Vec3.new) }.not_to raise_error
 
       expect { Gosling::Collision.get_circle_separation_axis(:foo, @circle2) }.to raise_error(ArgumentError)
-      expect { Gosling::Collision.get_circle_separation_axis(@circle1, @circle2, @circle1) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.get_circle_separation_axis(@circle1) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.get_circle_separation_axis() }.to raise_error(ArgumentError)
       expect { Gosling::Collision.get_circle_separation_axis(:foo) }.to raise_error(ArgumentError)
@@ -934,7 +978,7 @@ describe Gosling::Collision do
     end
   end
 
-  describe '#get_separation_axes' do
+  describe '.get_separation_axes' do
     it 'expects two shapes' do
       expect { Gosling::Collision.get_separation_axes(@circle1, @circle2) }.not_to raise_error
       expect { Gosling::Collision.get_separation_axes(@circle1, @polygon2) }.not_to raise_error
@@ -991,11 +1035,11 @@ describe Gosling::Collision do
       clean_shape(@circle1)
 
       result = Gosling::Collision.get_separation_axes(@polygon1, @circle1)
-      expect(result).to be == [
-        Snow::Vec3[10, 5, 0].normalize,
-        Snow::Vec3[0, -10, 0].normalize,
-        Snow::Vec3[10, -5, 0].normalize
-      ]
+      expect(result).to match_array([
+                          Snow::Vec3[10, 5, 0].normalize,
+                          Snow::Vec3[0, -10, 0].normalize,
+                          Snow::Vec3[10, -5, 0].normalize
+                        ])
     end
 
     it 'respects scaling' do
@@ -1006,11 +1050,11 @@ describe Gosling::Collision do
       clean_shape(@circle1)
 
       result = Gosling::Collision.get_separation_axes(@polygon1, @circle1)
-      expect(result).to be == [
-        Snow::Vec3[20, 15, 0].normalize,
-        Snow::Vec3[0, -30, 0].normalize,
-        Snow::Vec3[20, -15, 0].normalize
-      ]
+      expect(result).to match_array([
+                          Snow::Vec3[20, 15, 0].normalize,
+                          Snow::Vec3[0, -30, 0].normalize,
+                          Snow::Vec3[20, -15, 0].normalize
+                        ])
     end
 
     it 'respects rotation' do
@@ -1020,11 +1064,11 @@ describe Gosling::Collision do
 
       clean_shape(@circle1)
 
-      expect(result).to be == [
-        Snow::Vec3[5, -10, 0].normalize,
-        Snow::Vec3[10, 0, 0].normalize,
-        Snow::Vec3[5, 10, 0].normalize
-      ]
+      expect(result).to match_array([
+                          Snow::Vec3[5, -10, 0].normalize,
+                          Snow::Vec3[10, 0, 0].normalize,
+                          Snow::Vec3[5, 10, 0].normalize
+                        ])
     end
 
     it 'respects translation' do
@@ -1035,12 +1079,12 @@ describe Gosling::Collision do
       clean_shape(@circle1)
 
       result = Gosling::Collision.get_separation_axes(@polygon1, @circle1)
-      expect(result).to be == [
-        Snow::Vec3[10, 5, 0].normalize,
-        Snow::Vec3[0, -10, 0].normalize,
-        Snow::Vec3[10, -5, 0].normalize,
-        Snow::Vec3[50, -10, 0].normalize
-      ]
+      expect(result).to match_array([
+                          Snow::Vec3[10, 5, 0].normalize,
+                          Snow::Vec3[0, -10, 0].normalize,
+                          Snow::Vec3[10, -5, 0].normalize,
+                          Snow::Vec3[50, -10, 0].normalize
+                        ])
     end
 
     context 'with two polygons' do
@@ -1112,7 +1156,7 @@ describe Gosling::Collision do
     end
   end
 
-  describe '#project_onto_axis' do
+  describe '.project_onto_axis' do
     it 'expects a shape and a 3d unit vector' do
       axis = Snow::Vec3[1, 1, 0]
 
@@ -1339,7 +1383,7 @@ describe Gosling::Collision do
     end
   end
 
-  describe '#projections_overlap?' do
+  describe '.projections_overlap?' do
     it 'accepts two length 2 arrays with numbers' do
       expect { Gosling::Collision.projections_overlap?([0, 0], [0, 0]) }.not_to raise_error
       expect { Gosling::Collision.projections_overlap?([1, 2], [3, -4]) }.not_to raise_error
@@ -1397,7 +1441,7 @@ describe Gosling::Collision do
     end
   end
 
-  describe '#get_overlap' do
+  describe '.get_overlap' do
     it 'accepts two length 2 arrays with numbers' do
       expect { Gosling::Collision.get_overlap([0, 0], [0, 0]) }.not_to raise_error
       expect { Gosling::Collision.get_overlap([1, 2], [3, -4]) }.not_to raise_error
@@ -1452,6 +1496,224 @@ describe Gosling::Collision do
         expect(Gosling::Collision.get_overlap([-10, 0.0000001], [0, 10])).to eq(0.0000001)
         expect(Gosling::Collision.get_overlap([-5, 30], [-17, -4.999999999])).to be_within(0.00000001).of(0)
       end
+    end
+  end
+
+  describe '.buffer_shapes' do
+    it 'accepts an array of actors' do
+      expect { Gosling::Collision.buffer_shapes([]) }.not_to raise_error
+      expect { Gosling::Collision.buffer_shapes([@actor1, @circle1, @polygon1, @rect1, @sprite1]) }.not_to raise_error
+
+      expect { Gosling::Collision.buffer_shapes(@actor1) }.to raise_error(ArgumentError)
+      expect { Gosling::Collision.buffer_shapes(:foo) }.to raise_error(ArgumentError)
+      expect { Gosling::Collision.buffer_shapes(nil) }.to raise_error(ArgumentError)
+    end
+
+    it 'resets the buffer iterators' do
+      expect(Gosling::Collision).to receive(:reset_buffer_iterators)
+      Gosling::Collision.buffer_shapes([@actor1])
+    end
+
+    context 'when actors are initially buffered' do
+      before(:all) do
+        Gosling::Collision.clear_buffer
+        [@actor1, @circle1, @polygon1, @rect1, @sprite1].each { |a|
+          @scale_actor.add_child(a)
+          a.x = 0
+          a.y = 0
+        }
+        Gosling::Collision.buffer_shapes([@actor1, @circle1, @polygon1, @rect1, @sprite1])
+      end
+
+      it 'adds those actors to the collision test set' do
+        [@circle1, @polygon1, @rect1, @sprite1].each do |actor|
+          expect(Gosling::Collision.collision_buffer).to include(actor)
+        end
+      end
+
+      it 'caches computationally expensive information about each actor' do
+        expect(Gosling::Collision.global_vertices_cache.length).to eq(3)
+        expect(Gosling::Collision.global_position_cache.length).to eq(4)
+        expect(Gosling::Collision.global_transform_cache.length).to eq(4)
+
+        [@actor1, @circle1, @polygon1, @rect1, @sprite1].each do |actor|
+          expect(actor).not_to receive(:get_global_vertices)
+          expect(actor).not_to receive(:get_global_position)
+          expect(actor).not_to receive(:get_global_transform)
+        end
+
+        collisions = []
+        while true
+          info = Gosling::Collision.next_collision_info
+          break unless info
+          collisions << info
+        end
+        expect(collisions.length).to eq(6)
+      end
+
+      it 'only caches info for children of the Actor class' do
+        [@actor1].each do |actor|
+          expect(Gosling::Collision.collision_buffer).not_to include(actor)
+        end
+      end
+
+      context 'and then re-buffered' do
+        it 'updates info for already buffered actors' do
+          [@circle1, @circle2].each do |actor|
+            expect(actor).to receive(:get_global_position).once.and_call_original
+            expect(actor).to receive(:get_global_transform).twice.and_call_original
+          end
+          [@rect1].each do |actor|
+            expect(actor).to receive(:get_global_vertices).once.and_call_original
+            expect(actor).to receive(:get_global_transform).exactly(3).times.and_call_original
+          end
+
+          Gosling::Collision.buffer_shapes([@circle1, @circle2, @rect1])
+
+          [@circle1, @circle2, @rect1].each do |actor|
+            expect(Gosling::Collision.collision_buffer.select { |a| a == actor }.length).to eq(1)
+          end
+          expect(Gosling::Collision.global_vertices_cache.length).to eq(3)
+          expect(Gosling::Collision.global_position_cache.length).to eq(5)
+          expect(Gosling::Collision.global_transform_cache.length).to eq(5)
+        end
+      end
+
+      after(:all) do
+        Gosling::Collision.clear_buffer
+        [@actor1, @circle1, @polygon1, @rect1, @sprite1].each { |a| @scale_actor.remove_child(a) }
+      end
+    end
+  end
+
+  describe '.next_collision_info' do
+    before(:all) do
+      Gosling::Collision.clear_buffer
+      [@circle1, @polygon1, @rect1, @sprite1].each { |a| a.x = 0; a.y = 0 }
+      Gosling::Collision.buffer_shapes([@circle1, @polygon1, @rect1, @sprite1])
+    end
+
+    it 'returns collision information for the next pair of colliding actors, then nil when done' do
+      info = Gosling::Collision.next_collision_info
+      expect(info[:actors]).to include(@polygon1, @circle1)
+      expect(info[:colliding]).to be true
+
+      info = Gosling::Collision.next_collision_info
+      expect(info[:actors]).to include(@rect1, @circle1)
+      expect(info[:colliding]).to be true
+
+      info = Gosling::Collision.next_collision_info
+      expect(info[:actors]).to include(@rect1, @polygon1)
+      expect(info[:colliding]).to be true
+
+      info = Gosling::Collision.next_collision_info
+      expect(info[:actors]).to include(@sprite1, @circle1)
+      expect(info[:colliding]).to be true
+
+      info = Gosling::Collision.next_collision_info
+      expect(info[:actors]).to include(@sprite1, @polygon1)
+      expect(info[:colliding]).to be true
+
+      info = Gosling::Collision.next_collision_info
+      expect(info[:actors]).to include(@sprite1, @rect1)
+      expect(info[:colliding]).to be true
+
+      expect(Gosling::Collision.next_collision_info).to be_nil
+    end
+
+    after(:all) do
+      Gosling::Collision.clear_buffer
+    end
+  end
+
+  describe '.peek_at_next_collision' do
+    before(:all) do
+      Gosling::Collision.clear_buffer
+      [@circle1, @polygon1, @rect1, @sprite1].each { |a| a.x = 0; a.y = 0 }
+      Gosling::Collision.buffer_shapes([@circle1, @polygon1, @rect1, @sprite1])
+    end
+
+    it 'returns references to the next two buffered actors to be collision tested, if any' do
+      expect(Gosling::Collision.peek_at_next_collision).to eq([@polygon1, @circle1])
+      2.times { Gosling::Collision.skip_next_collision }
+      expect(Gosling::Collision.peek_at_next_collision).to eq([@rect1, @polygon1])
+      2.times { Gosling::Collision.skip_next_collision }
+      info = Gosling::Collision.next_collision_info
+      expect(info[:actors]).to include(@sprite1, @polygon1)
+      2.times { Gosling::Collision.skip_next_collision }
+      expect(Gosling::Collision.peek_at_next_collision).to be_nil
+    end
+
+    after(:all) do
+      Gosling::Collision.clear_buffer
+    end
+  end
+
+  describe '.skip_next_collision' do
+    before(:all) do
+      Gosling::Collision.clear_buffer
+      [@circle1, @polygon1, @rect1, @sprite1].each { |a| a.x = 0; a.y = 0 }
+      Gosling::Collision.buffer_shapes([@circle1, @polygon1, @rect1])
+    end
+
+    it 'moves the collision iterators forward without performing any collision testing' do
+      expect(Gosling::Collision.peek_at_next_collision).to eq([@polygon1, @circle1])
+      Gosling::Collision.skip_next_collision
+      expect(Gosling::Collision.peek_at_next_collision).to eq([@rect1, @circle1])
+      Gosling::Collision.skip_next_collision
+      info = Gosling::Collision.next_collision_info
+      expect(info[:actors]).to include(@rect1, @polygon1)
+      Gosling::Collision.skip_next_collision
+      expect(Gosling::Collision.peek_at_next_collision).to be_nil
+    end
+
+    after(:all) do
+      Gosling::Collision.clear_buffer
+    end
+  end
+
+  describe '.unbuffer_shapes' do
+    it 'accepts an array of actors' do
+      expect { Gosling::Collision.unbuffer_shapes([]) }.not_to raise_error
+      expect { Gosling::Collision.unbuffer_shapes([@actor1, @circle1, @polygon1, @rect1, @sprite1]) }.not_to raise_error
+
+      expect { Gosling::Collision.unbuffer_shapes(@actor1) }.to raise_error(ArgumentError)
+      expect { Gosling::Collision.unbuffer_shapes(:foo) }.to raise_error(ArgumentError)
+      expect { Gosling::Collision.unbuffer_shapes(nil) }.to raise_error(ArgumentError)
+    end
+
+    it 'resets the buffer iterators' do
+      expect(Gosling::Collision).to receive(:reset_buffer_iterators)
+      Gosling::Collision.unbuffer_shapes([@actor1])
+    end
+
+    it 'removes those actors from the collision test list and related info from the caches' do
+      Gosling::Collision.buffer_shapes([@actor1, @circle1, @polygon1, @rect1, @sprite1])
+      Gosling::Collision.unbuffer_shapes([@actor1, @polygon1, @sprite1])
+      [@actor1, @polygon1, @sprite1].each do |actor|
+        expect(Gosling::Collision.collision_buffer).not_to include(actor)
+      end
+      expect(Gosling::Collision.global_vertices_cache.length).to eq(1)
+      expect(Gosling::Collision.global_position_cache.length).to eq(2)
+      expect(Gosling::Collision.global_transform_cache.length).to eq(2)
+    end
+  end
+
+  describe '.clear_buffer' do
+    it 'removes all actors from the collision test list and related info from the caches' do
+      Gosling::Collision.buffer_shapes([@actor1, @circle1, @polygon1, @rect1, @sprite1])
+      Gosling::Collision.clear_buffer
+      [@actor1, @circle1, @polygon1, @rect1, @sprite1].each do |actor|
+        expect(Gosling::Collision.collision_buffer).not_to include(actor)
+      end
+      expect(Gosling::Collision.global_vertices_cache.length).to eq(0)
+      expect(Gosling::Collision.global_position_cache.length).to eq(0)
+      expect(Gosling::Collision.global_transform_cache.length).to eq(0)
+    end
+
+    it 'resets the buffer iterators' do
+      expect(Gosling::Collision).to receive(:reset_buffer_iterators)
+      Gosling::Collision.clear_buffer
     end
   end
 end
