@@ -46,7 +46,7 @@ describe VectorCache do
     it 'adds the Vec3 to the cache' do
       v = Snow::Vec3.new
       VectorCache.instance.recycle(v)
-      expect(VectorCache.instance.cache).to include(v)
+      expect(VectorCache.instance.cache.values).to include(v)
     end
 
     it 'zeros out the Vec3' do

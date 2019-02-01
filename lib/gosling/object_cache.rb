@@ -7,30 +7,29 @@ class Object
 end
 
 module ObjectCache
-  attr_reader :size
-
   def clear
     @cache.clear
-    @size = 0
   end
 
   def recycle(obj)
-    return if @cache.any? { |x| x.equal?(obj) }
+    return if @cache.key?(obj.object_id)
     self.reset(obj)
     obj.freeze
-    @cache[@size] = obj
-    @size += 1
+    @cache[obj.object_id] = obj
   end
 
   def get
-    if @size <= 0
+    if @cache.empty?
       self.create
     else
-      @size -= 1
-      obj = @cache[@size]
+      obj = @cache.delete(@cache.keys.first)
       obj.unfreeze
       obj
     end
+  end
+
+  def size
+    @cache.size
   end
 
   protected
