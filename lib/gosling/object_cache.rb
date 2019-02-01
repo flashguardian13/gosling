@@ -1,8 +1,12 @@
 require 'fiddle'
 
 class Object
+  FIDDLE_FREEZE_BIT = ~(1 << 3)
+
   def unfreeze
-    Fiddle::Pointer.new(object_id * 2)[1] &= ~(1 << 3)
+    ptr = @fiddle_pointer || Fiddle::Pointer.new(object_id * 2)
+    ptr[1] &= FIDDLE_FREEZE_BIT
+    @fiddle_pointer = ptr
   end
 end
 
