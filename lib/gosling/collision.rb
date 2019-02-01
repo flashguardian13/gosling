@@ -383,46 +383,44 @@ module Gosling
       global_vertices.each { |v| VectorCache.instance.recycle(v) } if global_vertices
     end
 
+    @@poa_zero_z_axis = nil
+    @@poa_local_axis = nil
+    @@poa_intersection = nil
+    @@poa_global_tf = nil
+    @@poa_global_tf_inverse = nil
     def self.project_onto_axis(shape, axis, out = nil)
       global_vertices = nil
-
-      global_tf = nil
-      global_tf_inverse = nil
-
-      zero_z_axis = nil
-      local_axis = nil
-      intersection = nil
 
       unless @@global_vertices_cache.key?(shape)
         if shape.instance_of?(Circle)
           global_vertices = []
 
           unless @@global_transform_cache.key?(shape)
-            global_tf = MatrixCache.instance.get
-            shape.get_global_transform(global_tf)
+            @@poa_global_tf ||= Snow::Mat3.new
+            shape.get_global_transform(@@poa_global_tf)
           end
 
-          zero_z_axis = VectorCache.instance.get
-          zero_z_axis.set(axis[0], axis[1], 0)
+          @@poa_zero_z_axis ||= Snow::Vec3.new
+          @@poa_zero_z_axis.set(axis[0], axis[1], 0)
 
-          global_tf_inverse = MatrixCache.instance.get
-          @@global_transform_cache.fetch(shape, global_tf).inverse(global_tf_inverse)
+          @@poa_global_tf_inverse ||= Snow::Mat3.new
+          @@global_transform_cache.fetch(shape, @@poa_global_tf).inverse(@@poa_global_tf_inverse)
 
-          local_axis = VectorCache.instance.get
-          global_tf_inverse.multiply(zero_z_axis, local_axis)
+          @@poa_local_axis ||= Snow::Vec3.new
+          @@poa_global_tf_inverse.multiply(@@poa_zero_z_axis, @@poa_local_axis)
 
-          intersection = VectorCache.instance.get
+          @@poa_intersection ||= Snow::Vec3.new
           # TODO: is this a wasted effort? a roundabout way of normalizing?
-          shape.get_point_at_angle(Math.atan2(local_axis[1], local_axis[0]), intersection)
+          shape.get_point_at_angle(Math.atan2(@@poa_local_axis[1], @@poa_local_axis[0]), @@poa_intersection)
 
           vertex = VectorCache.instance.get
           # TODO: Are we transforming points more than once?
-          Transformable.transform_point(@@global_transform_cache.fetch(shape, global_tf), intersection, vertex)
+          Transformable.transform_point(@@global_transform_cache.fetch(shape, @@poa_global_tf), @@poa_intersection, vertex)
           global_vertices.push(vertex)
 
           vertex = VectorCache.instance.get
-          intersection.negate!
-          Transformable.transform_point(@@global_transform_cache.fetch(shape, global_tf), intersection, vertex)
+          @@poa_intersection.negate!
+          Transformable.transform_point(@@global_transform_cache.fetch(shape, @@poa_global_tf), @@poa_intersection, vertex)
           global_vertices.push(vertex)
         else
           global_vertices = Array.new(shape.get_vertices.length) { VectorCache.instance.get }
@@ -442,13 +440,6 @@ module Gosling
       out[0] = min
       out
     ensure
-      MatrixCache.instance.recycle(global_tf) if global_tf
-      MatrixCache.instance.recycle(global_tf_inverse) if global_tf_inverse
-
-      VectorCache.instance.recycle(zero_z_axis) if zero_z_axis
-      VectorCache.instance.recycle(local_axis) if local_axis
-      VectorCache.instance.recycle(intersection) if intersection
-
       global_vertices.each { |v| VectorCache.instance.recycle(v) } if global_vertices
     end
 
