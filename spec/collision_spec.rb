@@ -804,8 +804,8 @@ describe Gosling::Collision do
       expect { Gosling::Collision.get_normal(Snow::Vec3[1, 0, 0]) }.not_to raise_error
       expect { Gosling::Collision.get_normal(Snow::Vec3[1, 0, 1, 0]) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.get_normal(Snow::Vec3[1, 0]) }.to raise_error(ArgumentError)
-      expect { Gosling::Collision.get_normal(:foo) }.to raise_error(ArgumentError)
-      expect { Gosling::Collision.get_normal(nil) }.to raise_error(ArgumentError)
+      expect { Gosling::Collision.get_normal(:foo) }.to raise_error
+      expect { Gosling::Collision.get_normal(nil) }.to raise_error
     end
 
     it 'returns a 3d vector' do
@@ -876,10 +876,10 @@ describe Gosling::Collision do
       ]
       p = Gosling::Polygon.new(@window)
       expect { Gosling::Collision.get_polygon_separation_axes(good_vector_array) }.not_to raise_error
-      expect { Gosling::Collision.get_polygon_separation_axes(bad_vector_array) }.to raise_error(ArgumentError)
+      expect { Gosling::Collision.get_polygon_separation_axes(bad_vector_array) }.to raise_error
       expect { Gosling::Collision.get_polygon_separation_axes(p.get_vertices) }.not_to raise_error
-      expect { Gosling::Collision.get_polygon_separation_axes(p) }.to raise_error(ArgumentError)
-      expect { Gosling::Collision.get_polygon_separation_axes(:foo) }.to raise_error(ArgumentError)
+      expect { Gosling::Collision.get_polygon_separation_axes(p) }.to raise_error
+      expect { Gosling::Collision.get_polygon_separation_axes(:foo) }.to raise_error
     end
 
     it 'returns an array of 3d vectors' do
@@ -938,7 +938,7 @@ describe Gosling::Collision do
       expect { Gosling::Collision.get_circle_separation_axis(@rect1, @circle2) }.not_to raise_error
       expect { Gosling::Collision.get_circle_separation_axis(@circle1, @circle2, Snow::Vec3.new) }.not_to raise_error
 
-      expect { Gosling::Collision.get_circle_separation_axis(:foo, @circle2) }.to raise_error(ArgumentError)
+      expect { Gosling::Collision.get_circle_separation_axis(:foo, @circle2) }.to raise_error
       expect { Gosling::Collision.get_circle_separation_axis(@circle1) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.get_circle_separation_axis() }.to raise_error(ArgumentError)
       expect { Gosling::Collision.get_circle_separation_axis(:foo) }.to raise_error(ArgumentError)
@@ -987,7 +987,7 @@ describe Gosling::Collision do
       expect { Gosling::Collision.get_separation_axes(@sprite1, @polygon2) }.not_to raise_error
 
       expect { Gosling::Collision.get_separation_axes(@actor1, @circle2) }.to raise_error(ArgumentError)
-      expect { Gosling::Collision.get_separation_axes(@circle1, @circle2, @polygon2) }.to raise_error(ArgumentError)
+      expect { Gosling::Collision.get_separation_axes(@circle1, @circle2, @polygon2) }.to raise_error
       expect { Gosling::Collision.get_separation_axes(@circle1, 1) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.get_separation_axes(@polygon1, :foo) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.get_separation_axes(:foo) }.to raise_error(ArgumentError)
@@ -1157,7 +1157,7 @@ describe Gosling::Collision do
   end
 
   describe '.project_onto_axis' do
-    it 'expects a shape and a 3d unit vector' do
+    it 'expects a shape and a 3d or better unit vector' do
       axis = Snow::Vec3[1, 1, 0]
 
       expect { Gosling::Collision.project_onto_axis(@sprite1, axis) }.not_to raise_error
@@ -1165,8 +1165,8 @@ describe Gosling::Collision do
       expect { Gosling::Collision.project_onto_axis(@circle1, axis) }.not_to raise_error
       expect { Gosling::Collision.project_onto_axis(@polygon1, axis) }.not_to raise_error
 
-      expect { Gosling::Collision.project_onto_axis(:foo, axis) }.to raise_error(ArgumentError)
-      expect { Gosling::Collision.project_onto_axis(@sprite1, Snow::Vec4[1, 1, 0, 2]) }.to raise_error(ArgumentError)
+      expect { Gosling::Collision.project_onto_axis(:foo, axis) }.to raise_error
+      expect { Gosling::Collision.project_onto_axis(@sprite1, Snow::Vec4[1, 1, 0, 2]) }.not_to raise_error
       expect { Gosling::Collision.project_onto_axis(@rect1, Snow::Vec2[1, 1]) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.project_onto_axis(@polygon1, :foo) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.project_onto_axis(@circle1, @circle1, axis) }.to raise_error(ArgumentError)
@@ -1179,6 +1179,22 @@ describe Gosling::Collision do
       expect(result).to be_instance_of(Array)
       expect(result.length).to be == 2
       expect(result.reject { |x| x.is_a?(Numeric) }).to be_empty
+    end
+
+    it 'works with four dimensional axes' do
+      clean_shape(@circle1)
+      @circle1.x = 1
+      @circle1.y = 1
+      @circle1.radius = 5
+
+      axis = Snow::Vec4[-1, 1, 0, 0].normalize
+      result = Gosling::Collision.project_onto_axis(@circle1, axis)
+      expect(result).to be == [-5, 5]
+
+      axis.z = 2
+      axis.w = -3
+      result = Gosling::Collision.project_onto_axis(@circle1, axis)
+      expect(result).to be == [-5, 5]
     end
 
     context 'with a circle' do
@@ -1393,7 +1409,7 @@ describe Gosling::Collision do
       expect { Gosling::Collision.projections_overlap?([1, 2], [3, -4], [5, 6]) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.projections_overlap?([1, 2]) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.projections_overlap?([1, 2], :foo) }.to raise_error(ArgumentError)
-      expect { Gosling::Collision.projections_overlap?(nil, [1, 2]) }.to raise_error(ArgumentError)
+      expect { Gosling::Collision.projections_overlap?(nil, [1, 2]) }.to raise_error
     end
 
     context 'when a and b do not overlap' do
@@ -1451,7 +1467,7 @@ describe Gosling::Collision do
       expect { Gosling::Collision.get_overlap([1, 2], [3, -4], [5, 6]) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.get_overlap([1, 2]) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.get_overlap([1, 2], :foo) }.to raise_error(ArgumentError)
-      expect { Gosling::Collision.get_overlap(nil, [1, 2]) }.to raise_error(ArgumentError)
+      expect { Gosling::Collision.get_overlap(nil, [1, 2]) }.to raise_error
     end
 
     context 'when a and b do not overlap' do

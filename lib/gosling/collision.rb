@@ -295,17 +295,12 @@ module Gosling
     end
 
     def self.get_normal(vector, out = nil)
-      type_check(vector, Snow::Vec3)
       raise ArgumentError.new("Cannot determine normal of zero-length vector") if vector.x == 0 && vector.y == 0
       out ||= Snow::Vec3.new
       out.set(-vector.y, vector.x, 0)
     end
 
     def self.get_polygon_separation_axes(vertices, axes = nil)
-      type_check(vertices, Array)
-      vertices.each { |v| type_check(v, Snow::Vec3) }
-      type_check(axes, Array) unless axes.nil?
-
       axes ||= []
       vertices.each_index do |i|
         axis = VectorCache.instance.get
@@ -316,9 +311,6 @@ module Gosling
     end
 
     def self.get_circle_separation_axis(circleA, circleB, out = nil)
-      type_check(circleA, Actor)
-      type_check(circleB, Actor)
-
       global_pos_a = nil
       unless @@global_position_cache.key?(circleA)
         global_pos_a = VectorCache.instance.get
@@ -347,8 +339,6 @@ module Gosling
       unless shapeB.is_a?(Actor) && !shapeB.instance_of?(Actor)
         raise ArgumentError.new("Expected a child of the Actor class, but received #{shapeB.inspect}!")
       end
-
-      type_check(separation_axes, Array) unless separation_axes.nil?
 
       separation_axes ||= []
       global_vertices = nil
@@ -394,10 +384,6 @@ module Gosling
     end
 
     def self.project_onto_axis(shape, axis, out = nil)
-      type_check(shape, Actor)
-      type_check(axis, Snow::Vec3)
-      type_check(out, Array) unless out.nil?
-
       global_vertices = nil
 
       global_tf = nil
@@ -472,12 +458,8 @@ module Gosling
     end
 
     def self.get_overlap(a, b)
-      type_check(a, Array)
-      type_check(b, Array)
-      a.each { |x| type_check(x, Numeric) }
-      b.each { |x| type_check(x, Numeric) }
-      raise ArgumentError.new("Expected two arrays of length 2, but received #{a.inspect} and #{b.inspect}!") unless a.length == 2 && b.length == 2
-
+      raise ArgumentError.new("Projection array must be length 2, not #{a.inspect}!") unless a.length == 2
+      raise ArgumentError.new("Projection array must be length 2, not #{b.inspect}!") unless b.length == 2
       a.sort! if a[0] > a[1]
       b.sort! if b[0] > b[1]
       return b[1] - b[0] if a[0] <= b[0] && b[1] <= a[1]
