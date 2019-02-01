@@ -315,21 +315,15 @@ module Gosling
     # Transforms a Vec3 using the provided Mat3 transform and returns the result as a new Vec3. This is the
     # opposite of Transformable.untransform_point.
     #
+    @@transformable_point
     def self.transform_point(mat, point, out = nil)
-      type_check(mat, Snow::Mat3)
-      type_check(point, Snow::Vec3)
-      type_check(out, Snow::Vec3) unless out.nil?
-      raise "Output vector is temporarily required!" unless out
-
-      transformable_point = VectorCache.instance.get
-      transformable_point.set(point.x, point.y, 1)
+      @@transformable_point ||= Snow::Vec3.new
+      @@transformable_point.set(point.x, point.y, 1)
 
       out ||= Snow::Vec3.new
-      mat.multiply(transformable_point, out)
+      mat.multiply(@@transformable_point, out)
       out.z = 0
       out
-    ensure
-      VectorCache.instance.recycle(transformable_point) if transformable_point
     end
 
     ##

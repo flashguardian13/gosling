@@ -260,8 +260,8 @@ describe Gosling::Transformable do
     it 'expects a length 3 vector' do
       out = Snow::Vec3.new
       expect { @read_only_tf.transform_point(Snow::Vec3[1, 0, 1], out) }.not_to raise_error
-      expect { @read_only_tf.transform_point(:foo, out) }.to raise_error(ArgumentError)
-      expect { @read_only_tf.transform_point(nil, out) }.to raise_error(ArgumentError)
+      expect { @read_only_tf.transform_point(:foo, out) }.to raise_error
+      expect { @read_only_tf.transform_point(nil, out) }.to raise_error
     end
 
     it 'returns a length 3 vector' do
@@ -319,8 +319,8 @@ describe Gosling::Transformable do
     it 'expects a length 3 vector' do
       out = Snow::Vec3.new
       expect { @read_only_tf.untransform_point(Snow::Vec3[1, 0, 1], out) }.not_to raise_error
-      expect { @read_only_tf.untransform_point(:foo, out) }.to raise_error(ArgumentError)
-      expect { @read_only_tf.untransform_point(nil, out) }.to raise_error(ArgumentError)
+      expect { @read_only_tf.untransform_point(:foo, out) }.to raise_error
+      expect { @read_only_tf.untransform_point(nil, out) }.to raise_error
     end
 
     it 'returns a length 3 vector' do
