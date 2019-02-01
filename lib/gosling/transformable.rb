@@ -43,14 +43,14 @@ module Gosling
     # Returns the x component of the centerpoint of this Transformable. See Transformable#center.
     #
     def center_x
-      @center.x
+      @center[0]
     end
 
     ##
     # Returns the y component of the centerpoint of this Transformable. See Transformable#center.
     #
     def center_y
-      @center.y
+      @center[1]
     end
 
     ##
@@ -64,14 +64,14 @@ module Gosling
     # Returns the x component of the scaling of this Transformable. See Transformable#scale.
     #
     def scale_x
-      @scale.x
+      @scale[0]
     end
 
     ##
     # Returns the y component of the scaling of this Transformable. See Transformable#scale.
     #
     def scale_y
-      @scale.y
+      @scale[1]
     end
 
     ##
@@ -86,14 +86,14 @@ module Gosling
     # Returns this Transformable's x position in relative space. See Transformable#translation.
     #
     def x
-      @translation.x
+      @translation[0]
     end
 
     ##
     # Returns this Transformable's y position in relative space. See Transformable#translation.
     #
     def y
-      @translation.y
+      @translation[1]
     end
 
     ##
@@ -125,13 +125,13 @@ module Gosling
       when Array
         self.center = args[0][0], args[0][1]
       when Snow::Vec2, Snow::Vec3, Snow::Vec4
-        @center.x = args[0].x
-        @center.y = args[0].y
+        @center[0] = args[0][0]
+        @center[1] = args[0][1]
       when Numeric
         raise ArgumentError.new("Cannot set center from #{args.inspect}: numeric array requires at least two arguments!") unless args.length >= 2
         args.each { |arg| type_check(arg, Numeric) }
-        @center.x = args[0]
-        @center.y = args[1]
+        @center[0] = args[0]
+        @center[1] = args[1]
       else
         raise ArgumentError.new("Cannot set center from #{args.inspect}: bad type!")
       end
@@ -144,7 +144,7 @@ module Gosling
     #
     def center_x=(val)
       type_check(val, Numeric)
-      @center.x = val
+      @center[0] = val
       @center_is_dirty = @is_dirty = true
     end
 
@@ -153,7 +153,7 @@ module Gosling
     #
     def center_y=(val)
       type_check(val, Numeric)
-      @center.y = val
+      @center[1] = val
       @center_is_dirty = @is_dirty = true
     end
 
@@ -176,8 +176,8 @@ module Gosling
         case args[0]
         when Numeric
           args.each { |arg| type_check(arg, Numeric) }
-          @scale.x = args[0]
-          @scale.y = args[1]
+          @scale[0] = args[0]
+          @scale[1] = args[1]
         else
           raise ArgumentError.new("Bad combination of arguments: #{args.inspect}! Please supply a Snow::Vec2, an Array of Numerics, or a single scalar.")
         end
@@ -186,7 +186,7 @@ module Gosling
         when Array
           self.set_scale(*(args[0]))
         when Snow::Vec2
-          self.set_scale(args[0].x, args[0].y)
+          self.set_scale(args[0][0], args[0][1])
         when Numeric
           self.set_scale(args[0], args[0])
         else
@@ -204,7 +204,7 @@ module Gosling
     #
     def scale_x=(val)
       type_check(val, Numeric)
-      @scale.x = val
+      @scale[0] = val
       @scale_is_dirty = @is_dirty = true
     end
 
@@ -213,7 +213,7 @@ module Gosling
     #
     def scale_y=(val)
       type_check(val, Numeric)
-      @scale.y = val
+      @scale[1] = val
       @scale_is_dirty = @is_dirty = true
     end
 
@@ -252,13 +252,13 @@ module Gosling
       when Array
         self.translation = args[0][0], args[0][1]
       when Snow::Vec2, Snow::Vec3, Snow::Vec4
-        @translation.x = args[0].x
-        @translation.y = args[0].y
+        @translation[0] = args[0][0]
+        @translation[1] = args[0][1]
       when Numeric
         raise ArgumentError.new("Cannot set translation from #{args.inspect}: numeric array requires at least two arguments!") unless args.length >= 2
         args.each { |arg| type_check(arg, Numeric) }
-        @translation.x = args[0]
-        @translation.y = args[1]
+        @translation[0] = args[0]
+        @translation[1] = args[1]
       else
         raise ArgumentError.new("Cannot set translation from #{args.inspect}: bad type!")
       end
@@ -272,7 +272,7 @@ module Gosling
     #
     def x=(val)
       type_check(val, Numeric)
-      @translation.x = val
+      @translation[0] = val
       @translate_is_dirty = @is_dirty = true
     end
 
@@ -281,7 +281,7 @@ module Gosling
     #
     def y=(val)
       type_check(val, Numeric)
-      @translation.y = val
+      @translation[1] = val
       @translate_is_dirty = @is_dirty = true
     end
 
@@ -318,11 +318,11 @@ module Gosling
     @@transformable_point
     def self.transform_point(mat, point, out = nil)
       @@transformable_point ||= Snow::Vec3.new
-      @@transformable_point.set(point.x, point.y, 1)
+      @@transformable_point.set(point[0], point[1], 1)
 
       out ||= Snow::Vec3.new
       mat.multiply(@@transformable_point, out)
-      out.z = 0
+      out[2] = 0
       out
     end
 
@@ -359,8 +359,8 @@ module Gosling
     def update_center_matrix
       return unless @center_is_dirty || @center_mat.nil?
       @center_mat ||= Snow::Mat3.new
-      @center_mat[2] = -@center.x
-      @center_mat[5] = -@center.y
+      @center_mat[2] = -@center[0]
+      @center_mat[5] = -@center[1]
       @center_is_dirty = false
     end
 
@@ -384,8 +384,8 @@ module Gosling
     def update_translate_matrix
       return unless @translate_is_dirty || @translate_mat.nil?
       @translate_mat ||= Snow::Mat3.new
-      @translate_mat[2] = @translation.x
-      @translate_mat[5] = @translation.y
+      @translate_mat[2] = @translation[0]
+      @translate_mat[5] = @translation[1]
       @translate_is_dirty = false
     end
   end

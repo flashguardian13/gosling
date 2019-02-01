@@ -128,7 +128,7 @@ module Gosling
         end
         centers_axis = VectorCache.instance.get
         point.subtract(@@global_position_cache.fetch(shape, global_pos), centers_axis)
-        separation_axes.push(centers_axis) if centers_axis && (centers_axis.x != 0 || centers_axis.y != 0)
+        separation_axes.push(centers_axis) if centers_axis && (centers_axis[0] != 0 || centers_axis[1] != 0)
       else
         unless @@global_vertices_cache.key?(shape)
           global_vertices = Array.new(shape.get_vertices.length) { VectorCache.instance.get }
@@ -295,9 +295,9 @@ module Gosling
     end
 
     def self.get_normal(vector, out = nil)
-      raise ArgumentError.new("Cannot determine normal of zero-length vector") if vector.x == 0 && vector.y == 0
+      raise ArgumentError.new("Cannot determine normal of zero-length vector") if vector[0] == 0 && vector[1] == 0
       out ||= Snow::Vec3.new
-      out.set(-vector.y, vector.x, 0)
+      out.set(-vector[1], vector[0], 0)
     end
 
     def self.get_polygon_separation_axes(vertices, axes = nil)
@@ -305,7 +305,7 @@ module Gosling
       vertices.each_index do |i|
         axis = VectorCache.instance.get
         vertices[i].subtract(vertices[i - 1], axis)
-        axes.push(get_normal(axis, axis).normalize!) if axis.x != 0 || axis.y != 0
+        axes.push(get_normal(axis, axis).normalize!) if axis[0] != 0 || axis[1] != 0
       end
       axes
     end
@@ -325,7 +325,7 @@ module Gosling
 
       out ||= Snow::Vec3.new
       @@global_position_cache.fetch(circleB, global_pos_b).subtract(@@global_position_cache.fetch(circleA, global_pos_a), out)
-      (out.x != 0 || out.y != 0) ? out.normalize! : nil
+      (out[0] != 0 || out[1] != 0) ? out.normalize! : nil
     ensure
       VectorCache.instance.recycle(global_pos_a) if global_pos_a
       VectorCache.instance.recycle(global_pos_b) if global_pos_b
@@ -374,7 +374,7 @@ module Gosling
         end
       end
 
-      separation_axes.each { |v| v.negate! if v.x < 0 }
+      separation_axes.each { |v| v.negate! if v[0] < 0 }
       all_axes = separation_axes.dup
       duplicate_axes = all_axes - (separation_axes.uniq! { |x| x.to_s } || separation_axes)
       separation_axes
@@ -403,7 +403,7 @@ module Gosling
           end
 
           zero_z_axis = VectorCache.instance.get
-          zero_z_axis.set(axis.x, axis.y, 0)
+          zero_z_axis.set(axis[0], axis[1], 0)
 
           global_tf_inverse = MatrixCache.instance.get
           @@global_transform_cache.fetch(shape, global_tf).inverse(global_tf_inverse)
@@ -413,7 +413,7 @@ module Gosling
 
           intersection = VectorCache.instance.get
           # TODO: is this a wasted effort? a roundabout way of normalizing?
-          shape.get_point_at_angle(Math.atan2(local_axis.y, local_axis.x), intersection)
+          shape.get_point_at_angle(Math.atan2(local_axis[1], local_axis[0]), intersection)
 
           vertex = VectorCache.instance.get
           # TODO: Are we transforming points more than once?

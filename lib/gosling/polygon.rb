@@ -55,9 +55,9 @@ module Gosling
       end
 
       vertices.each_index do |i|
-        @vertices[i].x = vertices[i][0]
-        @vertices[i].y = vertices[i][1]
-        @vertices[i].z = 0
+        @vertices[i][0] = vertices[i][0]
+        @vertices[i][1] = vertices[i][1]
+        @vertices[i][2] = 0
       end
     end
 
