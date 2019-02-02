@@ -309,35 +309,39 @@ module Gosling
       @@separation_axes[0...@@separation_axis_count]
     end
 
+    @@gpsa_axis = Snow::Vec3.new
     def self.get_polygon_separation_axes(vertices)
       vertices.each_index do |i|
-        axis = VectorCache.instance.get
-        vertices[i].subtract(vertices[i - 1], axis)
-        get_normal(axis, axis).normalize(next_separation_axis) if axis[0] != 0 || axis[1] != 0
+        vertices[i].subtract(vertices[i - 1], @@gpsa_axis)
+        if @@gpsa_axis[0] != 0 || @@gpsa_axis[1] != 0
+          get_normal(@@gpsa_axis, @@gpsa_axis).normalize(next_separation_axis)
+        end
       end
       nil
     end
 
+    @@global_pos_a = nil
+    @@global_pos_b = nil
+    @@gcsa_axis = nil
     def self.get_circle_separation_axis(circleA, circleB)
-      global_pos_a = nil
       unless @@global_position_cache.key?(circleA)
-        global_pos_a = VectorCache.instance.get
-        circleA.get_global_position(global_pos_a)
+        @@global_pos_a ||= Snow::Vec3.new
+        circleA.get_global_position(@@global_pos_a)
       end
 
-      global_pos_b = nil
       unless @@global_position_cache.key?(circleB)
-        global_pos_b = VectorCache.instance.get
-        circleB.get_global_position(global_pos_b)
+        @@global_pos_b ||= Snow::Vec3.new
+        circleB.get_global_position(@@global_pos_b)
       end
 
-      out ||= Snow::Vec3.new
-      @@global_position_cache.fetch(circleB, global_pos_b).subtract(@@global_position_cache.fetch(circleA, global_pos_a), out)
-      (out[0] != 0 || out[1] != 0) ? out.normalize(next_separation_axis) : nil
+      @@gcsa_axis ||= Snow::Vec3.new
+      @@global_pos_a = @@global_position_cache.fetch(circleA, @@global_pos_a)
+      @@global_pos_b = @@global_position_cache.fetch(circleB, @@global_pos_b)
+      @@global_pos_b.subtract(@@global_pos_a, @@gcsa_axis)
+      if @@gcsa_axis[0] != 0 || @@gcsa_axis[1] != 0
+        @@gcsa_axis.normalize(next_separation_axis)
+      end
       nil
-    ensure
-      VectorCache.instance.recycle(global_pos_a) if global_pos_a
-      VectorCache.instance.recycle(global_pos_b) if global_pos_b
     end
 
     def self.get_separation_axes(shapeA, shapeB)
