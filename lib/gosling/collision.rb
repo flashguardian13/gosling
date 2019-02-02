@@ -415,40 +415,45 @@ module Gosling
     @@poa_intersection = nil
     @@poa_global_tf = nil
     @@poa_global_tf_inverse = nil
+    def self.get_circle_vertices_by_axis(shape, axis)
+      global_vertices = []
+
+      unless @@global_transform_cache.key?(shape)
+        @@poa_global_tf ||= Snow::Mat3.new
+        shape.get_global_transform(@@poa_global_tf)
+      end
+
+      @@poa_zero_z_axis ||= Snow::Vec3.new
+      @@poa_zero_z_axis.set(axis[0], axis[1], 0)
+
+      @@poa_global_tf_inverse ||= Snow::Mat3.new
+      @@global_transform_cache.fetch(shape, @@poa_global_tf).inverse(@@poa_global_tf_inverse)
+
+      @@poa_local_axis ||= Snow::Vec3.new
+      @@poa_global_tf_inverse.multiply(@@poa_zero_z_axis, @@poa_local_axis)
+
+      @@poa_intersection ||= Snow::Vec3.new
+      shape.get_point_at_angle(Math.atan2(@@poa_local_axis[1], @@poa_local_axis[0]), @@poa_intersection)
+
+      vertex = VectorCache.instance.get
+      # TODO: Are we transforming points more than once?
+      Transformable.transform_point(@@global_transform_cache.fetch(shape, @@poa_global_tf), @@poa_intersection, vertex)
+      global_vertices.push(vertex)
+
+      vertex = VectorCache.instance.get
+      @@poa_intersection.negate!
+      Transformable.transform_point(@@global_transform_cache.fetch(shape, @@poa_global_tf), @@poa_intersection, vertex)
+      global_vertices.push(vertex)
+
+      global_vertices
+    end
+
     def self.project_onto_axis(shape, axis, out = nil)
       global_vertices = nil
 
       unless @@global_vertices_cache.key?(shape)
         if shape.instance_of?(Circle)
-          global_vertices = []
-
-          unless @@global_transform_cache.key?(shape)
-            @@poa_global_tf ||= Snow::Mat3.new
-            shape.get_global_transform(@@poa_global_tf)
-          end
-
-          @@poa_zero_z_axis ||= Snow::Vec3.new
-          @@poa_zero_z_axis.set(axis[0], axis[1], 0)
-
-          @@poa_global_tf_inverse ||= Snow::Mat3.new
-          @@global_transform_cache.fetch(shape, @@poa_global_tf).inverse(@@poa_global_tf_inverse)
-
-          @@poa_local_axis ||= Snow::Vec3.new
-          @@poa_global_tf_inverse.multiply(@@poa_zero_z_axis, @@poa_local_axis)
-
-          @@poa_intersection ||= Snow::Vec3.new
-          # TODO: is this a wasted effort? a roundabout way of normalizing?
-          shape.get_point_at_angle(Math.atan2(@@poa_local_axis[1], @@poa_local_axis[0]), @@poa_intersection)
-
-          vertex = VectorCache.instance.get
-          # TODO: Are we transforming points more than once?
-          Transformable.transform_point(@@global_transform_cache.fetch(shape, @@poa_global_tf), @@poa_intersection, vertex)
-          global_vertices.push(vertex)
-
-          vertex = VectorCache.instance.get
-          @@poa_intersection.negate!
-          Transformable.transform_point(@@global_transform_cache.fetch(shape, @@poa_global_tf), @@poa_intersection, vertex)
-          global_vertices.push(vertex)
+          global_vertices = get_circle_vertices_by_axis(shape, axis)
         else
           global_vertices = Array.new(shape.get_vertices.length) { VectorCache.instance.get }
           shape.get_global_vertices(global_vertices)
