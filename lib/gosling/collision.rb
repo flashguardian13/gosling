@@ -416,8 +416,6 @@ module Gosling
     @@poa_global_tf = nil
     @@poa_global_tf_inverse = nil
     def self.get_circle_vertices_by_axis(shape, axis)
-      global_vertices = []
-
       unless @@global_transform_cache.key?(shape)
         @@poa_global_tf ||= Snow::Mat3.new
         shape.get_global_transform(@@poa_global_tf)
@@ -435,34 +433,41 @@ module Gosling
       @@poa_intersection ||= Snow::Vec3.new
       shape.get_point_at_angle(Math.atan2(@@poa_local_axis[1], @@poa_local_axis[0]), @@poa_intersection)
 
-      vertex = VectorCache.instance.get
       # TODO: Are we transforming points more than once?
-      Transformable.transform_point(@@global_transform_cache.fetch(shape, @@poa_global_tf), @@poa_intersection, vertex)
-      global_vertices.push(vertex)
+      Transformable.transform_point(@@global_transform_cache.fetch(shape, @@poa_global_tf), @@poa_intersection, next_global_vertex)
 
-      vertex = VectorCache.instance.get
       @@poa_intersection.negate!
-      Transformable.transform_point(@@global_transform_cache.fetch(shape, @@poa_global_tf), @@poa_intersection, vertex)
-      global_vertices.push(vertex)
+      Transformable.transform_point(@@global_transform_cache.fetch(shape, @@poa_global_tf), @@poa_intersection, next_global_vertex)
+    end
 
-      global_vertices
+    @@global_vertices = nil
+    @@global_vertices_count = 0
+
+    def self.reset_global_vertices
+      @@global_vertices ||= []
+      @@global_vertices_count = 0
+    end
+
+    def self.next_global_vertex
+      vertex = @@global_vertices[@@global_vertices_count] ||= Snow::Vec3.new
+      @@global_vertices_count += 1
+      vertex
     end
 
     def self.project_onto_axis(shape, axis, out = nil)
-      global_vertices = nil
-
       unless @@global_vertices_cache.key?(shape)
+        reset_global_vertices
         if shape.instance_of?(Circle)
-          global_vertices = get_circle_vertices_by_axis(shape, axis)
+          get_circle_vertices_by_axis(shape, axis)
         else
-          global_vertices = Array.new(shape.get_vertices.length) { VectorCache.instance.get }
-          shape.get_global_vertices(global_vertices)
+          shape.get_global_vertices(@@global_vertices)
+          @@global_vertices_count = shape.get_vertices.length
         end
       end
 
       min = nil
       max = nil
-      @@global_vertices_cache.fetch(shape, global_vertices).each do |vertex|
+      @@global_vertices_cache.fetch(shape, @@global_vertices[0...@@global_vertices_count]).each do |vertex|
         projection = vertex.dot_product(axis)
         min = projection if min.nil? || projection < min
         max = projection if max.nil? || projection > max
@@ -471,8 +476,6 @@ module Gosling
       out[1] = max
       out[0] = min
       out
-    ensure
-      global_vertices.each { |v| VectorCache.instance.recycle(v) } if global_vertices
     end
 
     def self.projections_overlap?(a, b)
