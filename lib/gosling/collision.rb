@@ -344,6 +344,27 @@ module Gosling
       nil
     end
 
+    def self.remove_duplicate_axes
+      (0...@@separation_axis_count).each do |i|
+        v = @@separation_axes[i]
+        v.negate! if v[0] < 0
+      end
+
+      i = 0
+      unique_hash = {}
+      while i < @@separation_axis_count
+        v = @@separation_axes[i]
+        key = v.to_s
+        if unique_hash.key?(key)
+          @@separation_axes.push(@@separation_axes.slice!(i))
+          @@separation_axis_count -= 1
+        else
+          unique_hash[key] = nil
+          i += 1
+        end
+      end
+    end
+
     def self.get_separation_axes(shapeA, shapeB)
       unless shapeA.is_a?(Actor) && !shapeA.instance_of?(Actor)
         raise ArgumentError.new("Expected a child of the Actor class, but received #{shapeA.inspect}!")
@@ -382,24 +403,7 @@ module Gosling
         get_circle_separation_axis(shapeA, shapeB)
       end
 
-      (0...@@separation_axis_count).each do |i|
-        v = @@separation_axes[i]
-        v.negate! if v[0] < 0
-      end
-
-      i = 0
-      unique_hash = {}
-      while i < @@separation_axis_count
-        v = @@separation_axes[i]
-        key = v.to_s
-        if unique_hash.key?(key)
-          @@separation_axes.push(@@separation_axes.slice!(i))
-          @@separation_axis_count -= 1
-        else
-          unique_hash[key] = nil
-          i += 1
-        end
-      end
+      remove_duplicate_axes
 
       nil
     ensure
