@@ -469,8 +469,13 @@ module Gosling
       max = nil
       @@global_vertices_cache.fetch(shape, @@global_vertices[0...@@global_vertices_count]).each do |vertex|
         projection = vertex.dot_product(axis)
-        min = projection if min.nil? || projection < min
-        max = projection if max.nil? || projection > max
+        if min.nil?
+          min = projection
+          max = projection
+        else
+          min = projection if projection < min
+          max = projection if projection > max
+        end
       end
       out ||= []
       out[1] = max
