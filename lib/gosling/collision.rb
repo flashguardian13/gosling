@@ -35,7 +35,9 @@ module Gosling
 
       get_separation_axes(shapeA, shapeB)
 
+      reset_projection_axis_tracking
       separation_axes.each do |axis|
+        next if axis_already_projected?(axis)
         projectionA = project_onto_axis(shapeA, axis)
         projectionB = project_onto_axis(shapeB, axis)
         return false unless projections_overlap?(projectionA, projectionB)
@@ -75,7 +77,9 @@ module Gosling
 
       smallest_overlap = nil
       smallest_axis = nil
+      reset_projection_axis_tracking
       separation_axes.each do |axis|
+        next if axis_already_projected?(axis)
         projectionA = project_onto_axis(shapeA, axis)
         projectionB = project_onto_axis(shapeB, axis)
         overlap = get_overlap(projectionA, projectionB)
@@ -130,7 +134,9 @@ module Gosling
         get_polygon_separation_axes(@@global_vertices_cache.fetch(shape, global_vertices))
       end
 
+      reset_projection_axis_tracking
       separation_axes.each do |axis|
+        next if axis_already_projected?(axis)
         shape_projection = project_onto_axis(shape, axis)
         point_projection = point.dot_product(axis)
         return false unless shape_projection.first <= point_projection && point_projection <= shape_projection.last
@@ -344,24 +350,10 @@ module Gosling
       nil
     end
 
-    def self.remove_duplicate_axes
+    def self.fold_separation_axes_over_y_axis
       (0...@@separation_axis_count).each do |i|
         v = @@separation_axes[i]
         v.negate! if v[0] < 0
-      end
-
-      i = 0
-      unique_hash = {}
-      while i < @@separation_axis_count
-        v = @@separation_axes[i]
-        key = v.to_s
-        if unique_hash.key?(key)
-          @@separation_axes.push(@@separation_axes.slice!(i))
-          @@separation_axis_count -= 1
-        else
-          unique_hash[key] = nil
-          i += 1
-        end
       end
     end
 
@@ -403,7 +395,7 @@ module Gosling
         get_circle_separation_axis(shapeA, shapeB)
       end
 
-      remove_duplicate_axes
+      fold_separation_axes_over_y_axis
 
       nil
     ensure
@@ -452,6 +444,19 @@ module Gosling
       vertex = @@global_vertices[@@global_vertices_count] ||= Snow::Vec3.new
       @@global_vertices_count += 1
       vertex
+    end
+
+    @@projected_axes = nil
+
+    def self.reset_projection_axis_tracking
+      @@projected_axes ||= {}
+      @@projected_axes.clear
+    end
+
+    def self.axis_already_projected?(axis)
+      key = axis.to_s
+      return true if @@projected_axes.key?(key)
+      @@projected_axes[key] = nil
     end
 
     def self.project_onto_axis(shape, axis, out = nil)
