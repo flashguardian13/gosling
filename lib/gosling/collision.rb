@@ -33,8 +33,7 @@ module Gosling
 
       return false if shapeA === shapeB
 
-      separation_axes = []
-      get_separation_axes(shapeA, shapeB, separation_axes)
+      get_separation_axes(shapeA, shapeB)
 
       separation_axes.each do |axis|
         projectionA = project_onto_axis(shapeA, axis)
@@ -43,8 +42,6 @@ module Gosling
       end
 
       return true
-    ensure
-      separation_axes.each { |axis| VectorCache.instance.recycle(axis) } if separation_axes
     end
 
     ##
@@ -73,8 +70,7 @@ module Gosling
 
       return info if shapeA === shapeB
 
-      separation_axes = []
-      get_separation_axes(shapeA, shapeB, separation_axes)
+      get_separation_axes(shapeA, shapeB)
       return info if separation_axes.empty?
 
       smallest_overlap = nil
@@ -97,8 +93,6 @@ module Gosling
       info[:penetration] = smallest_axis.normalize * smallest_overlap
 
       info
-    ensure
-      separation_axes.each { |axis| VectorCache.instance.recycle(axis) } if separation_axes
     end
 
     ##
@@ -120,7 +114,6 @@ module Gosling
       global_pos = nil
       centers_axis = nil
       global_vertices = nil
-      separation_axes = []
       if shape.instance_of?(Circle)
         unless @@global_position_cache.key?(shape)
           global_pos = VectorCache.instance.get
@@ -128,13 +121,13 @@ module Gosling
         end
         centers_axis = VectorCache.instance.get
         point.subtract(@@global_position_cache.fetch(shape, global_pos), centers_axis)
-        separation_axes.push(centers_axis) if centers_axis && (centers_axis[0] != 0 || centers_axis[1] != 0)
+        next_separation_axis.set(centers_axis) if centers_axis && (centers_axis[0] != 0 || centers_axis[1] != 0)
       else
         unless @@global_vertices_cache.key?(shape)
           global_vertices = Array.new(shape.get_vertices.length) { VectorCache.instance.get }
           shape.get_global_vertices(global_vertices)
         end
-        get_polygon_separation_axes(@@global_vertices_cache.fetch(shape, global_vertices), separation_axes)
+        get_polygon_separation_axes(@@global_vertices_cache.fetch(shape, global_vertices))
       end
 
       separation_axes.each do |axis|
@@ -148,7 +141,6 @@ module Gosling
       VectorCache.instance.recycle(global_pos) if global_pos
       VectorCache.instance.recycle(centers_axis) if centers_axis
       global_vertices.each { |v| VectorCache.instance.recycle(v) } if global_vertices
-      separation_axes.each { |v| VectorCache.instance.recycle(v) } if separation_axes
     end
 
     @@collision_buffer = []
@@ -300,17 +292,33 @@ module Gosling
       out.set(-vector[1], vector[0], 0)
     end
 
-    def self.get_polygon_separation_axes(vertices, axes = nil)
-      axes ||= []
+    @@separation_axes = []
+    @@separation_axis_count = 0
+
+    def self.reset_separation_axes
+      @@separation_axis_count = 0
+    end
+
+    def self.next_separation_axis
+      axis = @@separation_axes[@@separation_axis_count] ||= Snow::Vec3.new
+      @@separation_axis_count += 1
+      axis
+    end
+
+    def self.separation_axes
+      @@separation_axes[0...@@separation_axis_count]
+    end
+
+    def self.get_polygon_separation_axes(vertices)
       vertices.each_index do |i|
         axis = VectorCache.instance.get
         vertices[i].subtract(vertices[i - 1], axis)
-        axes.push(get_normal(axis, axis).normalize!) if axis[0] != 0 || axis[1] != 0
+        get_normal(axis, axis).normalize(next_separation_axis) if axis[0] != 0 || axis[1] != 0
       end
-      axes
+      nil
     end
 
-    def self.get_circle_separation_axis(circleA, circleB, out = nil)
+    def self.get_circle_separation_axis(circleA, circleB)
       global_pos_a = nil
       unless @@global_position_cache.key?(circleA)
         global_pos_a = VectorCache.instance.get
@@ -325,13 +333,14 @@ module Gosling
 
       out ||= Snow::Vec3.new
       @@global_position_cache.fetch(circleB, global_pos_b).subtract(@@global_position_cache.fetch(circleA, global_pos_a), out)
-      (out[0] != 0 || out[1] != 0) ? out.normalize! : nil
+      (out[0] != 0 || out[1] != 0) ? out.normalize(next_separation_axis) : nil
+      nil
     ensure
       VectorCache.instance.recycle(global_pos_a) if global_pos_a
       VectorCache.instance.recycle(global_pos_b) if global_pos_b
     end
 
-    def self.get_separation_axes(shapeA, shapeB, separation_axes = nil)
+    def self.get_separation_axes(shapeA, shapeB)
       unless shapeA.is_a?(Actor) && !shapeA.instance_of?(Actor)
         raise ArgumentError.new("Expected a child of the Actor class, but received #{shapeA.inspect}!")
       end
@@ -340,7 +349,7 @@ module Gosling
         raise ArgumentError.new("Expected a child of the Actor class, but received #{shapeB.inspect}!")
       end
 
-      separation_axes ||= []
+      reset_separation_axes
       global_vertices = nil
 
       unless shapeA.instance_of?(Circle)
@@ -348,7 +357,7 @@ module Gosling
           global_vertices = Array.new(shapeA.get_vertices.length) { VectorCache.instance.get }
           shapeA.get_global_vertices(global_vertices)
         end
-        get_polygon_separation_axes(@@global_vertices_cache.fetch(shapeA, global_vertices), separation_axes)
+        get_polygon_separation_axes(@@global_vertices_cache.fetch(shapeA, global_vertices))
       end
 
       unless shapeB.instance_of?(Circle)
@@ -362,24 +371,34 @@ module Gosling
           end
           shapeB.get_global_vertices(global_vertices)
         end
-        get_polygon_separation_axes(@@global_vertices_cache.fetch(shapeB, global_vertices), separation_axes)
+        get_polygon_separation_axes(@@global_vertices_cache.fetch(shapeB, global_vertices))
       end
 
       if shapeA.instance_of?(Circle) || shapeB.instance_of?(Circle)
-        axis = VectorCache.instance.get
-        if get_circle_separation_axis(shapeA, shapeB, axis)
-          separation_axes.push(axis)
+        get_circle_separation_axis(shapeA, shapeB)
+      end
+
+      (0...@@separation_axis_count).each do |i|
+        v = @@separation_axes[i]
+        v.negate! if v[0] < 0
+      end
+
+      i = 0
+      unique_hash = {}
+      while i < @@separation_axis_count
+        v = @@separation_axes[i]
+        key = v.to_s
+        if unique_hash.key?(key)
+          @@separation_axes.push(@@separation_axes.slice!(i))
+          @@separation_axis_count -= 1
         else
-          VectorCache.instance.recycle(axis)
+          unique_hash[key] = nil
+          i += 1
         end
       end
 
-      separation_axes.each { |v| v.negate! if v[0] < 0 }
-      all_axes = separation_axes.dup
-      duplicate_axes = all_axes - (separation_axes.uniq! { |x| x.to_s } || separation_axes)
-      separation_axes
+      nil
     ensure
-      duplicate_axes.each { |v| VectorCache.instance.recycle(v) } if duplicate_axes
       global_vertices.each { |v| VectorCache.instance.recycle(v) } if global_vertices
     end
 

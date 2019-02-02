@@ -17,6 +17,8 @@ module Gosling
     def self.global_transform_cache
       @@global_transform_cache
     end
+
+    public_class_method :reset_separation_axes, :separation_axes
   end
 end
 
@@ -135,6 +137,10 @@ describe Gosling::Collision do
     @translate_actor.y = 256
 
     @angles = (0...ANGLE_COUNT).map { |i| Math::PI * 2 * i / ANGLE_COUNT }
+  end
+
+  before do
+    Gosling::Collision.reset_separation_axes
   end
 
   context 'any actor vs. itself' do
@@ -890,7 +896,8 @@ describe Gosling::Collision do
         Snow::Vec3[1, 4, 0],
         Snow::Vec3[2, 5, 0]
       ]
-      result = Gosling::Collision.get_polygon_separation_axes(vertices)
+      Gosling::Collision.get_polygon_separation_axes(vertices)
+      result = Gosling::Collision.separation_axes
       expect(result).to be_instance_of(Array)
       expect(result.reject { |v| v.is_a?(Snow::Vec3) }).to be_empty
     end
@@ -903,7 +910,8 @@ describe Gosling::Collision do
         Snow::Vec3[2, 2, 0],
         Snow::Vec3[2, 2, 0]
       ]
-      result = Gosling::Collision.get_polygon_separation_axes(vertices)
+      Gosling::Collision.get_polygon_separation_axes(vertices)
+      result = Gosling::Collision.separation_axes
       expect(result.length).to be == 3
     end
 
@@ -915,7 +923,8 @@ describe Gosling::Collision do
         Snow::Vec3[-1, -1, 0],
         Snow::Vec3[-1,  2, 0]
       ]
-      result = Gosling::Collision.get_polygon_separation_axes(vertices)
+      Gosling::Collision.get_polygon_separation_axes(vertices)
+      result = Gosling::Collision.separation_axes
       expect(result).to match_array([
                           Snow::Vec3[ 1,  3, 0].normalize,
                           Snow::Vec3[ 2, -1, 0].normalize,
@@ -936,8 +945,8 @@ describe Gosling::Collision do
       expect { Gosling::Collision.get_circle_separation_axis(@circle1, @circle2) }.not_to raise_error
       expect { Gosling::Collision.get_circle_separation_axis(@circle1, @polygon1) }.not_to raise_error
       expect { Gosling::Collision.get_circle_separation_axis(@rect1, @circle2) }.not_to raise_error
-      expect { Gosling::Collision.get_circle_separation_axis(@circle1, @circle2, Snow::Vec3.new) }.not_to raise_error
 
+      expect { Gosling::Collision.get_circle_separation_axis(@circle1, @circle2, Snow::Vec3.new) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.get_circle_separation_axis(:foo, @circle2) }.to raise_error
       expect { Gosling::Collision.get_circle_separation_axis(@circle1) }.to raise_error(ArgumentError)
       expect { Gosling::Collision.get_circle_separation_axis() }.to raise_error(ArgumentError)
@@ -951,8 +960,10 @@ describe Gosling::Collision do
       @circle2.x = 10
       @circle2.y = -5
 
-      result = Gosling::Collision.get_circle_separation_axis(@circle1, @circle2)
-      expect(result).to be_instance_of(Snow::Vec3)
+      Gosling::Collision.get_circle_separation_axis(@circle1, @circle2)
+      result = Gosling::Collision.separation_axes
+      expect(result.length).to eq(1)
+      expect(result.first).to be_instance_of(Snow::Vec3)
     end
 
     it "returns nil if distance beween shape centers is 0" do
@@ -973,8 +984,10 @@ describe Gosling::Collision do
       @circle2.x = 10
       @circle2.y = -5
 
-      result = Gosling::Collision.get_circle_separation_axis(@circle1, @circle2)
-      expect(result).to be == Snow::Vec3[1, 1, 0].normalize
+      Gosling::Collision.get_circle_separation_axis(@circle1, @circle2)
+      result = Gosling::Collision.separation_axes
+      expect(result.length).to eq(1)
+      expect(result.first).to be == Snow::Vec3[1, 1, 0].normalize
     end
   end
 
@@ -995,13 +1008,15 @@ describe Gosling::Collision do
     end
 
     it 'returns an array of 3d vectors' do
-      result = Gosling::Collision.get_separation_axes(@polygon1, @polygon2)
+      Gosling::Collision.get_separation_axes(@polygon1, @polygon2)
+      result = Gosling::Collision.separation_axes
       expect(result).to be_instance_of(Array)
       expect(result.reject { |v| v.is_a?(Snow::Vec3) }).to be_empty
     end
 
     it 'returns only unit vectors' do
-      result = Gosling::Collision.get_separation_axes(@polygon1, @circle1)
+      Gosling::Collision.get_separation_axes(@polygon1, @circle1)
+      result = Gosling::Collision.separation_axes
       expect(result).to be_instance_of(Array)
       result.each do |v|
         expect(v).to be_instance_of(Snow::Vec3)
@@ -1010,21 +1025,25 @@ describe Gosling::Collision do
     end
 
     it 'returns only right-facing (positive x direction) vectors' do
-      result = Gosling::Collision.get_separation_axes(@rect2, @polygon1)
+      Gosling::Collision.get_separation_axes(@rect2, @polygon1)
+      result = Gosling::Collision.separation_axes
       expect(result).to be_instance_of(Array)
       expect(result.reject { |v| v.is_a?(Snow::Vec3) && v[0] >= 0 }).to be_empty
     end
 
     it 'returns only unique vectors' do
-      result = Gosling::Collision.get_separation_axes(@rect2, @polygon2)
+      Gosling::Collision.get_separation_axes(@rect2, @polygon2)
+      result = Gosling::Collision.separation_axes
       expect(result).to be_instance_of(Array)
       expect(result.uniq.length).to be == result.length
     end
 
     it 'is commutative' do
-      result1 = Gosling::Collision.get_separation_axes(@rect2, @polygon2)
-      result2 = Gosling::Collision.get_separation_axes(@polygon2, @rect2)
-      expect(result1.map { |x| x.to_s }.sort).to be == result2.map { |x| x.to_s }.sort
+      Gosling::Collision.get_separation_axes(@rect2, @polygon2)
+      result1 = Gosling::Collision.separation_axes.dup
+      Gosling::Collision.get_separation_axes(@polygon2, @rect2)
+      result2 = Gosling::Collision.separation_axes.dup
+      expect(result1.map { |v| v.to_s }).to match_array(result2.map { |v| v.to_s })
     end
 
     it 'respects centering' do
@@ -1034,7 +1053,8 @@ describe Gosling::Collision do
 
       clean_shape(@circle1)
 
-      result = Gosling::Collision.get_separation_axes(@polygon1, @circle1)
+      Gosling::Collision.get_separation_axes(@polygon1, @circle1)
+      result = Gosling::Collision.separation_axes
       expect(result).to match_array([
                           Snow::Vec3[10, 5, 0].normalize,
                           Snow::Vec3[0, -10, 0].normalize,
@@ -1049,7 +1069,8 @@ describe Gosling::Collision do
 
       clean_shape(@circle1)
 
-      result = Gosling::Collision.get_separation_axes(@polygon1, @circle1)
+      Gosling::Collision.get_separation_axes(@polygon1, @circle1)
+      result = Gosling::Collision.separation_axes
       expect(result).to match_array([
                           Snow::Vec3[20, 15, 0].normalize,
                           Snow::Vec3[0, -30, 0].normalize,
@@ -1060,7 +1081,8 @@ describe Gosling::Collision do
     it 'respects rotation' do
       clean_shape(@polygon1)
       @polygon1.rotation = Math::PI / 2
-      result = Gosling::Collision.get_separation_axes(@polygon1, @circle1)
+      Gosling::Collision.get_separation_axes(@polygon1, @circle1)
+      result = Gosling::Collision.separation_axes
 
       clean_shape(@circle1)
 
@@ -1078,7 +1100,8 @@ describe Gosling::Collision do
 
       clean_shape(@circle1)
 
-      result = Gosling::Collision.get_separation_axes(@polygon1, @circle1)
+      Gosling::Collision.get_separation_axes(@polygon1, @circle1)
+      result = Gosling::Collision.separation_axes
       expect(result).to match_array([
                           Snow::Vec3[10, 5, 0].normalize,
                           Snow::Vec3[0, -10, 0].normalize,
@@ -1106,7 +1129,8 @@ describe Gosling::Collision do
           [@rect2, @sprite2],
           [@sprite1, @sprite2]
         ].each do |shapes|
-          result = Gosling::Collision.get_separation_axes(*shapes)
+          Gosling::Collision.get_separation_axes(*shapes)
+          result = Gosling::Collision.separation_axes
           vertex_count = 0
           shapes.each { |s| vertex_count += s.get_vertices.length }
           expect(result.length).to be_between(2, vertex_count).inclusive
@@ -1121,7 +1145,8 @@ describe Gosling::Collision do
           @circle1.y = 0
           @circle2.x = 0
           @circle2.y = 0
-          result = Gosling::Collision.get_separation_axes(@circle1, @circle2)
+          Gosling::Collision.get_separation_axes(@circle1, @circle2)
+          result = Gosling::Collision.separation_axes
           expect(result).to be_instance_of(Array)
           expect(result).to be_empty
         end
@@ -1132,7 +1157,8 @@ describe Gosling::Collision do
         @circle1.y = 0
         @circle2.x = 17
         @circle2.y = -5
-        result = Gosling::Collision.get_separation_axes(@circle1, @circle2)
+        Gosling::Collision.get_separation_axes(@circle1, @circle2)
+        result = Gosling::Collision.separation_axes
         expect(result).to be_instance_of(Array)
         expect(result.length).to be == 1
       end
@@ -1148,7 +1174,8 @@ describe Gosling::Collision do
           [@circle1, @sprite1],
           [@circle2, @sprite2]
         ].each do |shapes|
-          result = Gosling::Collision.get_separation_axes(*shapes)
+          Gosling::Collision.get_separation_axes(*shapes)
+          result = Gosling::Collision.separation_axes
           vertex_count = shapes[1].get_vertices.length
           expect(result.length).to be_between(2, vertex_count + 1).inclusive
         end
