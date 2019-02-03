@@ -425,7 +425,6 @@ module Gosling
       @@poa_intersection ||= Snow::Vec3.new
       shape.get_point_at_angle(Math.atan2(@@poa_local_axis[1], @@poa_local_axis[0]), @@poa_intersection)
 
-      # TODO: Are we transforming points more than once?
       Transformable.transform_point(@@global_transform_cache.fetch(shape, @@poa_global_tf), @@poa_intersection, next_global_vertex)
 
       @@poa_intersection.negate!
