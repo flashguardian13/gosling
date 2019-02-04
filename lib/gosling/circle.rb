@@ -57,18 +57,8 @@ module Gosling
         get_point_at_angle(Math::PI * 2 * i / RENDER_VERTEX_COUNT)
       end
       global_vertices = local_vertices.map { |v| Transformable.transform_point(matrix, v) }
-      i = 2
-      while i < global_vertices.length
-        v0 = global_vertices[0]
-        v1 = global_vertices[i-1]
-        v2 = global_vertices[i]
-        @window.draw_triangle(
-          v0[0].to_f, v0[1].to_f, @color,
-          v1[0].to_f, v1[1].to_f, @color,
-          v2[0].to_f, v2[1].to_f, @color,
-        )
-        i += 1
-      end
+
+      fill_polygon(global_vertices)
     end
   end
 end

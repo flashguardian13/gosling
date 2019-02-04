@@ -298,7 +298,18 @@ module Gosling
     def render(matrix)
     end
 
-    # TODO: add fill_polygon()
+    def fill_polygon(vertices)
+      (2...vertices.length).each do |i|
+        v0 = vertices[0]
+        v1 = vertices[i - 1]
+        v2 = vertices[i]
+        @window.draw_triangle(
+          v0[0].to_f, v0[1].to_f, @color,
+          v1[0].to_f, v1[1].to_f, @color,
+          v2[0].to_f, v2[1].to_f, @color,
+        )
+      end
+    end
 
     ##
     # Internal use only. See #add_child and #remove_child.
