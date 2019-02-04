@@ -119,21 +119,26 @@ module Gosling
     # - transform.center = Snow::Vec2[x, y]
     # - transform.center = Snow::Vec3[x, y, z]
     # - transform.center = Snow::Vec4[x, y, z, c]
+    # - transform.set_center { |c| c.add(-sprite.pos, c) }
     #
-    def center=(args)
-      case args[0]
-      when Array
-        self.center = args[0][0], args[0][1]
-      when Snow::Vec2, Snow::Vec3, Snow::Vec4
-        @center[0] = args[0][0]
-        @center[1] = args[0][1]
-      when Numeric
-        raise ArgumentError.new("Cannot set center from #{args.inspect}: numeric array requires at least two arguments!") unless args.length >= 2
-        args.each { |arg| type_check(arg, Numeric) }
-        @center[0] = args[0]
-        @center[1] = args[1]
+    def center=(args = nil)
+      if block_given?
+        yield(@center)
       else
-        raise ArgumentError.new("Cannot set center from #{args.inspect}: bad type!")
+        case args[0]
+        when Array
+          self.center = args[0][0], args[0][1]
+        when Snow::Vec2, Snow::Vec3, Snow::Vec4
+          @center[0] = args[0][0]
+          @center[1] = args[0][1]
+        when Numeric
+          raise ArgumentError.new("Cannot set center from #{args.inspect}: numeric array requires at least two arguments!") unless args.length >= 2
+          args.each { |arg| type_check(arg, Numeric) }
+          @center[0] = args[0]
+          @center[1] = args[1]
+        else
+          raise ArgumentError.new("Cannot set center from #{args.inspect}: bad type!")
+        end
       end
       @center_is_dirty = @is_dirty = true
     end
@@ -170,30 +175,35 @@ module Gosling
     # - transform.scale = Snow::Vec2[x, y]
     # - transform.scale = Snow::Vec3[x, y, z]
     # - transform.scale = Snow::Vec4[x, y, z, c]
+    # - transform.set_scale { |s| s.multiply(0.5, s) }
     #
     def scale=(*args)
-      if args.length >= 2
-        case args[0]
-        when Numeric
-          args.each { |arg| type_check(arg, Numeric) }
-          @scale[0] = args[0]
-          @scale[1] = args[1]
-        else
-          raise ArgumentError.new("Bad combination of arguments: #{args.inspect}! Please supply a Snow::Vec2, an Array of Numerics, or a single scalar.")
-        end
-      elsif args.length == 1
-        case args[0]
-        when Array
-          self.set_scale(*(args[0]))
-        when Snow::Vec2
-          self.set_scale(args[0][0], args[0][1])
-        when Numeric
-          self.set_scale(args[0], args[0])
-        else
-          raise ArgumentError.new("Bad combination of arguments: #{args.inspect}! Please supply a Snow::Vec2, an Array of Numerics, or a single scalar.")
-        end
+      if block_given?
+        yield(@scale)
       else
-        raise ArgumentError.new("Bad combination of arguments: #{args.inspect}! Please supply a Snow::Vec2, an Array of Numerics, or a single scalar.")
+        if args.length >= 2
+          case args[0]
+          when Numeric
+            args.each { |arg| type_check(arg, Numeric) }
+            @scale[0] = args[0]
+            @scale[1] = args[1]
+          else
+            raise ArgumentError.new("Bad combination of arguments: #{args.inspect}! Please supply a Snow::Vec2, an Array of Numerics, or a single scalar.")
+          end
+        elsif args.length == 1
+          case args[0]
+          when Array
+            self.set_scale(*(args[0]))
+          when Snow::Vec2
+            self.set_scale(args[0][0], args[0][1])
+          when Numeric
+            self.set_scale(args[0], args[0])
+          else
+            raise ArgumentError.new("Bad combination of arguments: #{args.inspect}! Please supply a Snow::Vec2, an Array of Numerics, or a single scalar.")
+          end
+        else
+          raise ArgumentError.new("Bad combination of arguments: #{args.inspect}! Please supply a Snow::Vec2, an Array of Numerics, or a single scalar.")
+        end
       end
       @scale_is_dirty = @is_dirty = true
     end
@@ -240,27 +250,38 @@ module Gosling
     #
     # If passed more than two numeric arguments, only the first two are used.
     #
+    # Optionally, this method can be passed a block and no arguments. A reference to this Transformable's translation
+    # will be passed to the block as the first parameter, allowing direct manipulation using all of snow-math's Vec3
+    # methods. This is particularly useful when optimizing methods that MUST be as fast as possible, such as animation
+    # and game physics, since the result of your mathematics can be written directly to this Transformable's translation
+    # without having to instantiate an interim Vector during every physics step.
+    #
     # Usage:
     # - transform.translation = x, y
     # - transform.translation = [x, y]
     # - transform.translation = Snow::Vec2[x, y]
     # - transform.translation = Snow::Vec3[x, y, z]
     # - transform.translation = Snow::Vec4[x, y, z, c]
+    # - transform.set_translation { |t| t.add(velocity * elapsed, t) }
     #
-    def translation=(args)
-      case args[0]
-      when Array
-        self.translation = args[0][0], args[0][1]
-      when Snow::Vec2, Snow::Vec3, Snow::Vec4
-        @translation[0] = args[0][0]
-        @translation[1] = args[0][1]
-      when Numeric
-        raise ArgumentError.new("Cannot set translation from #{args.inspect}: numeric array requires at least two arguments!") unless args.length >= 2
-        args.each { |arg| type_check(arg, Numeric) }
-        @translation[0] = args[0]
-        @translation[1] = args[1]
+    def translation=(args = nil)
+      if block_given?
+        yield(@translation)
       else
-        raise ArgumentError.new("Cannot set translation from #{args.inspect}: bad type!")
+        case args[0]
+        when Array
+          self.translation = args[0][0], args[0][1]
+        when Snow::Vec2, Snow::Vec3, Snow::Vec4
+          @translation[0] = args[0][0]
+          @translation[1] = args[0][1]
+        when Numeric
+          raise ArgumentError.new("Cannot set translation from #{args.inspect}: numeric array requires at least two arguments!") unless args.length >= 2
+          args.each { |arg| type_check(arg, Numeric) }
+          @translation[0] = args[0]
+          @translation[1] = args[1]
+        else
+          raise ArgumentError.new("Cannot set translation from #{args.inspect}: bad type!")
+        end
       end
       @translate_is_dirty = @is_dirty = true
     end

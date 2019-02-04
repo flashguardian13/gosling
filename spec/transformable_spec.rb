@@ -1,5 +1,10 @@
 class TransformableThing
   include Gosling::Transformable
+
+  attr_reader :is_dirty
+  attr_reader :translation, :translate_is_dirty
+  attr_reader :center, :center_is_dirty
+  attr_reader :scale, :scale_is_dirty
 end
 
 describe Gosling::Transformable do
@@ -98,6 +103,29 @@ describe Gosling::Transformable do
         expect(tf.center[2]).to be == 1
       end
     end
+
+    context 'when given a block' do
+      it 'yields the center vector directly to the block' do
+        tf = TransformableThing.new
+        tf.center = [3, -7]
+
+        center_ref = nil
+        area = nil
+        tf.set_center do |c|
+          center_ref = c
+          area = c.x * c.y
+        end
+        expect(center_ref).to be_equal(tf.center)
+        expect(area).to eq(-21)
+      end
+
+      it 'marks the transformation as dirty' do
+        tf = TransformableThing.new
+        tf.set_center { |t| area = t.x * t.y }
+        expect(tf.center_is_dirty).to be true
+        expect(tf.is_dirty).to be true
+      end
+    end
   end
 
   describe '#set_scale' do
@@ -125,6 +153,29 @@ describe Gosling::Transformable do
         tf.scale = 2.7
         expect(tf.scale.x).to eq(2.7)
         expect(tf.scale.y).to eq(2.7)
+      end
+    end
+
+    context 'when given a block' do
+      it 'yields the scaling vector directly to the block' do
+        tf = TransformableThing.new
+        tf.scale = [3, 2]
+
+        scale_ref = nil
+        area = nil
+        tf.set_scale do |s|
+          scale_ref = s
+          area = s.x * s.y
+        end
+        expect(scale_ref).to be_equal(tf.scale)
+        expect(area).to eq(6)
+      end
+
+      it 'marks the transformation as dirty' do
+        tf = TransformableThing.new
+        tf.set_scale { |s| area = s.x * s.y }
+        expect(tf.scale_is_dirty).to be true
+        expect(tf.is_dirty).to be true
       end
     end
   end
@@ -171,6 +222,29 @@ describe Gosling::Transformable do
       ].each do |v|
         tf.translation = v
         expect(tf.translation[2]).to be == 1
+      end
+    end
+
+    context 'when given a block' do
+      it 'yields the transform vector directly to the block' do
+        tf = TransformableThing.new
+        tf.translation = [7, 11]
+
+        translation_ref = nil
+        area = nil
+        tf.set_translation do |t|
+          translation_ref = t
+          area = t.x * t.y
+        end
+        expect(translation_ref).to be_equal(tf.translation)
+        expect(area).to eq(77)
+      end
+
+      it 'marks the transformation as dirty' do
+        tf = TransformableThing.new
+        tf.set_translation { |t| area = t.x * t.y }
+        expect(tf.translate_is_dirty).to be true
+        expect(tf.is_dirty).to be true
       end
     end
   end
