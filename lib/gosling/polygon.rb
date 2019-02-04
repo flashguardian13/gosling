@@ -54,11 +54,7 @@ module Gosling
         @vertices.pop(@vertices.length - vertices.length)
       end
 
-      vertices.each_index do |i|
-        @vertices[i][0] = vertices[i][0]
-        @vertices[i][1] = vertices[i][1]
-        @vertices[i][2] = 0
-      end
+      vertices.each_index { |i| @vertices[i].set(vertices[i][0], vertices[i][1], 0) }
     end
 
     ##
