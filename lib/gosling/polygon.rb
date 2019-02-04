@@ -58,6 +58,25 @@ module Gosling
     end
 
     ##
+    # Sets this polygon to a rectangular shape with the given width and height, with its upper left at local [0, 0].
+    #
+    def set_vertices_rect(width, height)
+      raise ArgumentError.new("Expected positive non-zero integer, but received #{width.inspect}!") unless width > 0
+      raise ArgumentError.new("Expected positive non-zero integer, but received #{height.inspect}!") unless height > 0
+
+      if @vertices.length < 4
+        @vertices.concat(Array.new(4 - @vertices.length) { Snow::Vec3.new })
+      elsif @vertices.length > 4
+        @vertices.pop(@vertices.length - 4)
+      end
+
+      @vertices[0].set(    0,      0, 0)
+      @vertices[1].set(width,      0, 0)
+      @vertices[2].set(width, height, 0)
+      @vertices[3].set(    0, height, 0)
+    end
+
+    ##
     # Returns an array containing all of our local vertices transformed to global-space. (See Actor#get_global_transform.)
     #
     def get_global_vertices(out = nil)
