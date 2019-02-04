@@ -49,13 +49,14 @@ module Gosling
 
     private
 
-    # TODO: add local_vertices
+    # TODO: keep a cached, class-level list of local vertices that can be re-used during rendering
 
     def render(matrix)
-      # TODO: optimize and refactor
+      # TODO: store these vertices in a cached, class-level array (see above)
       local_vertices = (0...RENDER_VERTEX_COUNT).map do |i|
         get_point_at_angle(Math::PI * 2 * i / RENDER_VERTEX_COUNT)
       end
+      # TODO: retain an array of vertices in memory; write transformed vertices to this array
       global_vertices = local_vertices.map { |v| Transformable.transform_point(matrix, v) }
 
       fill_polygon(global_vertices)

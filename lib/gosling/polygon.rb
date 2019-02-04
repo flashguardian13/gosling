@@ -93,7 +93,7 @@ module Gosling
     private
 
     def render(matrix)
-      # TODO: optimize and refactor
+      # TODO: write transformed vertices to a reserved list of vertices retained in memory each time
       type_check(matrix, Snow::Mat3)
       global_vertices = @vertices.map { |v| Transformable.transform_point(matrix, v) }
 
