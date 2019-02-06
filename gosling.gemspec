@@ -6,9 +6,12 @@ require 'gosling/version'
 Gem::Specification.new do |spec|
   spec.name        = 'gosling'
   spec.version     = Gosling::VERSION
-  spec.date        = "2019-01-23"
-  spec.summary     = "Ruby 2D app creation"
-  spec.description = "A lightweight library for creating 2D apps in Ruby."
+  spec.date        = "2019-02-05"
+  spec.summary     = "A library for creating 2D apps"
+  spec.description = <<-EOF
+    A 2D app creation library. Includes basic collision testing, actor inheritance,
+    and easy-to-use, intuitive animation transforms. Powered by Gosu and SnowMath.
+  EOF
   spec.authors     = ['Ben Amos']
   spec.email       = ['flashguardian13@gmail.com']
   spec.homepage    = 'https://github.com/flashguardian13/gosling'
