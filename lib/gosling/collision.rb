@@ -133,7 +133,6 @@ module Gosling
         end
         get_polygon_separation_axes(@@global_vertices_cache.fetch(shape, global_vertices))
       end
-      fold_separation_axes_over_y_axis
 
       reset_projection_axis_tracking
       separation_axes.each do |axis|
@@ -318,6 +317,7 @@ module Gosling
 
     @@gpsa_axis = Snow::Vec3.new
     def self.get_polygon_separation_axes(vertices)
+      # TODO: special case for Rects - only return two axes to avoid duplicitous math
       vertices.each_index do |i|
         vertices[i].subtract(vertices[i - 1], @@gpsa_axis)
         if @@gpsa_axis[0] != 0 || @@gpsa_axis[1] != 0
@@ -349,16 +349,6 @@ module Gosling
         @@gcsa_axis.normalize(next_separation_axis)
       end
       nil
-    end
-
-    def self.fold_separation_axes_over_y_axis
-      (0...@@separation_axis_count).each do |i|
-        v = @@separation_axes[i]
-        v.negate! if v[0] < 0
-        v[0] = 0 if v[0] == 0
-        v[1] = 0 if v[1] == 0
-        v[2] = 0 if v[2] == 0
-      end
     end
 
     def self.get_separation_axes(shapeA, shapeB)
@@ -398,8 +388,6 @@ module Gosling
       if shapeA.instance_of?(Circle) || shapeB.instance_of?(Circle)
         get_circle_separation_axis(shapeA, shapeB)
       end
-
-      fold_separation_axes_over_y_axis
 
       nil
     ensure
