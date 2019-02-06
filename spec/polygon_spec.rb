@@ -111,6 +111,33 @@ describe Gosling::Polygon do
     end
   end
 
+  describe '#set_vertices_rect' do
+    it 'accepts two positive integers, width and height' do
+      polygon = Gosling::Polygon.new(@window)
+
+      expect { polygon.set_vertices_rect(1, 1) }.not_to raise_error
+      expect { polygon.set_vertices_rect(2, 3) }.not_to raise_error
+      expect { polygon.set_vertices_rect(5, 8) }.not_to raise_error
+      expect { polygon.set_vertices_rect(100000, 100000) }.not_to raise_error
+
+      expect { polygon.set_vertices_rect('two', 2) }.to raise_error(ArgumentError)
+      expect { polygon.set_vertices_rect(3, :three) }.to raise_error(ArgumentError)
+      expect { polygon.set_vertices_rect(-1, 1) }.to raise_error(ArgumentError)
+      expect { polygon.set_vertices_rect(1, 0) }.to raise_error(ArgumentError)
+    end
+
+    it 'sets the vertices to form a square with the given width and height' do
+      polygon = Gosling::Polygon.new(@window)
+      polygon.set_vertices_rect(13, 21)
+      expect(polygon.get_vertices).to match_array([
+        Snow::Vec3[0, 0, 0],
+        Snow::Vec3[13, 0, 0],
+        Snow::Vec3[13, 21, 0],
+        Snow::Vec3[0, 21, 0]
+      ])
+    end
+  end
+
   describe '#get_global_vertices' do
     before(:all) do
       @global_polygon = Gosling::Polygon.new(@window)

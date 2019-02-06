@@ -5,8 +5,7 @@ class MatrixCache
   include ObjectCache
 
   def initialize
-    @cache = []
-    @size = 0
+    @cache = {}
   end
 
   protected

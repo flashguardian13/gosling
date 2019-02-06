@@ -54,11 +54,26 @@ module Gosling
         @vertices.pop(@vertices.length - vertices.length)
       end
 
-      vertices.each_index do |i|
-        @vertices[i].x = vertices[i][0]
-        @vertices[i].y = vertices[i][1]
-        @vertices[i].z = 0
+      vertices.each_index { |i| @vertices[i].set(vertices[i][0], vertices[i][1], 0) }
+    end
+
+    ##
+    # Sets this polygon to a rectangular shape with the given width and height, with its upper left at local [0, 0].
+    #
+    def set_vertices_rect(width, height)
+      raise ArgumentError.new("Expected positive non-zero integer, but received #{width.inspect}!") unless width > 0
+      raise ArgumentError.new("Expected positive non-zero integer, but received #{height.inspect}!") unless height > 0
+
+      if @vertices.length < 4
+        @vertices.concat(Array.new(4 - @vertices.length) { Snow::Vec3.new })
+      elsif @vertices.length > 4
+        @vertices.pop(@vertices.length - 4)
       end
+
+      @vertices[0].set(    0,      0, 0)
+      @vertices[1].set(width,      0, 0)
+      @vertices[2].set(width, height, 0)
+      @vertices[3].set(    0, height, 0)
     end
 
     ##
@@ -66,9 +81,6 @@ module Gosling
     #
     def get_global_vertices(out = nil)
       type_check(out, Array) unless out.nil?
-      if out.is_a?(Array)
-        raise ArgumentError.new("Array passed in has too many vertices in it! Expected #{@vertices.length}, found #{out.length}. #{out.inspect}") if out.length > @vertices.length
-      end
 
       tf = MatrixCache.instance.get
       get_global_transform(tf)
@@ -100,21 +112,11 @@ module Gosling
     private
 
     def render(matrix)
-      # TODO: optimize and refactor
+      # TODO: write transformed vertices to a reserved list of vertices retained in memory each time
       type_check(matrix, Snow::Mat3)
       global_vertices = @vertices.map { |v| Transformable.transform_point(matrix, v) }
-      i = 2
-      while i < global_vertices.length
-        v0 = global_vertices[0]
-        v1 = global_vertices[i-1]
-        v2 = global_vertices[i]
-        @window.draw_triangle(
-          v0[0].to_f, v0[1].to_f, @color,
-          v1[0].to_f, v1[1].to_f, @color,
-          v2[0].to_f, v2[1].to_f, @color,
-        )
-        i += 1
-      end
+
+      fill_polygon(global_vertices)
     end
   end
 end

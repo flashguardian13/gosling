@@ -33,18 +33,17 @@ module Gosling
 
       return false if shapeA === shapeB
 
-      separation_axes = []
-      get_separation_axes(shapeA, shapeB, separation_axes)
+      get_separation_axes(shapeA, shapeB)
 
+      reset_projection_axis_tracking
       separation_axes.each do |axis|
+        next if axis_already_projected?(axis)
         projectionA = project_onto_axis(shapeA, axis)
         projectionB = project_onto_axis(shapeB, axis)
         return false unless projections_overlap?(projectionA, projectionB)
       end
 
       return true
-    ensure
-      separation_axes.each { |axis| VectorCache.instance.recycle(axis) } if separation_axes
     end
 
     ##
@@ -73,13 +72,14 @@ module Gosling
 
       return info if shapeA === shapeB
 
-      separation_axes = []
-      get_separation_axes(shapeA, shapeB, separation_axes)
+      get_separation_axes(shapeA, shapeB)
       return info if separation_axes.empty?
 
       smallest_overlap = nil
       smallest_axis = nil
+      reset_projection_axis_tracking
       separation_axes.each do |axis|
+        next if axis_already_projected?(axis)
         projectionA = project_onto_axis(shapeA, axis)
         projectionB = project_onto_axis(shapeB, axis)
         overlap = get_overlap(projectionA, projectionB)
@@ -97,8 +97,6 @@ module Gosling
       info[:penetration] = smallest_axis.normalize * smallest_overlap
 
       info
-    ensure
-      separation_axes.each { |axis| VectorCache.instance.recycle(axis) } if separation_axes
     end
 
     ##
@@ -120,7 +118,6 @@ module Gosling
       global_pos = nil
       centers_axis = nil
       global_vertices = nil
-      separation_axes = []
       if shape.instance_of?(Circle)
         unless @@global_position_cache.key?(shape)
           global_pos = VectorCache.instance.get
@@ -128,16 +125,18 @@ module Gosling
         end
         centers_axis = VectorCache.instance.get
         point.subtract(@@global_position_cache.fetch(shape, global_pos), centers_axis)
-        separation_axes.push(centers_axis) if centers_axis && (centers_axis.x != 0 || centers_axis.y != 0)
+        next_separation_axis.set(centers_axis) if centers_axis && (centers_axis[0] != 0 || centers_axis[1] != 0)
       else
         unless @@global_vertices_cache.key?(shape)
           global_vertices = Array.new(shape.get_vertices.length) { VectorCache.instance.get }
           shape.get_global_vertices(global_vertices)
         end
-        get_polygon_separation_axes(@@global_vertices_cache.fetch(shape, global_vertices), separation_axes)
+        get_polygon_separation_axes(@@global_vertices_cache.fetch(shape, global_vertices))
       end
 
+      reset_projection_axis_tracking
       separation_axes.each do |axis|
+        next if axis_already_projected?(axis)
         shape_projection = project_onto_axis(shape, axis)
         point_projection = point.dot_product(axis)
         return false unless shape_projection.first <= point_projection && point_projection <= shape_projection.last
@@ -148,7 +147,6 @@ module Gosling
       VectorCache.instance.recycle(global_pos) if global_pos
       VectorCache.instance.recycle(centers_axis) if centers_axis
       global_vertices.each { |v| VectorCache.instance.recycle(v) } if global_vertices
-      separation_axes.each { |v| VectorCache.instance.recycle(v) } if separation_axes
     end
 
     @@collision_buffer = []
@@ -295,51 +293,65 @@ module Gosling
     end
 
     def self.get_normal(vector, out = nil)
-      type_check(vector, Snow::Vec3)
-      raise ArgumentError.new("Cannot determine normal of zero-length vector") if vector.x == 0 && vector.y == 0
+      raise ArgumentError.new("Cannot determine normal of zero-length vector") if vector[0] == 0 && vector[1] == 0
       out ||= Snow::Vec3.new
-      out.set(-vector.y, vector.x, 0)
+      out.set(-vector[1], vector[0], 0)
     end
 
-    def self.get_polygon_separation_axes(vertices, axes = nil)
-      type_check(vertices, Array)
-      vertices.each { |v| type_check(v, Snow::Vec3) }
-      type_check(axes, Array) unless axes.nil?
+    @@separation_axes = []
+    @@separation_axis_count = 0
 
-      axes ||= []
+    def self.reset_separation_axes
+      @@separation_axis_count = 0
+    end
+
+    def self.next_separation_axis
+      axis = @@separation_axes[@@separation_axis_count] ||= Snow::Vec3.new
+      @@separation_axis_count += 1
+      axis
+    end
+
+    def self.separation_axes
+      @@separation_axes[0...@@separation_axis_count]
+    end
+
+    @@gpsa_axis = Snow::Vec3.new
+    def self.get_polygon_separation_axes(vertices)
+      # TODO: special case for Rects - only return two axes to avoid duplicitous math
       vertices.each_index do |i|
-        axis = VectorCache.instance.get
-        vertices[i].subtract(vertices[i - 1], axis)
-        axes.push(get_normal(axis, axis).normalize!) if axis.x != 0 || axis.y != 0
+        vertices[i].subtract(vertices[i - 1], @@gpsa_axis)
+        if @@gpsa_axis[0] != 0 || @@gpsa_axis[1] != 0
+          get_normal(@@gpsa_axis, @@gpsa_axis).normalize(next_separation_axis)
+        end
       end
-      axes
+      nil
     end
 
-    def self.get_circle_separation_axis(circleA, circleB, out = nil)
-      type_check(circleA, Actor)
-      type_check(circleB, Actor)
-
-      global_pos_a = nil
+    @@global_pos_a = nil
+    @@global_pos_b = nil
+    @@gcsa_axis = nil
+    def self.get_circle_separation_axis(circleA, circleB)
       unless @@global_position_cache.key?(circleA)
-        global_pos_a = VectorCache.instance.get
-        circleA.get_global_position(global_pos_a)
+        @@global_pos_a ||= Snow::Vec3.new
+        circleA.get_global_position(@@global_pos_a)
       end
 
-      global_pos_b = nil
       unless @@global_position_cache.key?(circleB)
-        global_pos_b = VectorCache.instance.get
-        circleB.get_global_position(global_pos_b)
+        @@global_pos_b ||= Snow::Vec3.new
+        circleB.get_global_position(@@global_pos_b)
       end
 
-      out ||= Snow::Vec3.new
-      @@global_position_cache.fetch(circleB, global_pos_b).subtract(@@global_position_cache.fetch(circleA, global_pos_a), out)
-      (out.x != 0 || out.y != 0) ? out.normalize! : nil
-    ensure
-      VectorCache.instance.recycle(global_pos_a) if global_pos_a
-      VectorCache.instance.recycle(global_pos_b) if global_pos_b
+      @@gcsa_axis ||= Snow::Vec3.new
+      @@global_pos_a = @@global_position_cache.fetch(circleA, @@global_pos_a)
+      @@global_pos_b = @@global_position_cache.fetch(circleB, @@global_pos_b)
+      @@global_pos_b.subtract(@@global_pos_a, @@gcsa_axis)
+      if @@gcsa_axis[0] != 0 || @@gcsa_axis[1] != 0
+        @@gcsa_axis.normalize(next_separation_axis)
+      end
+      nil
     end
 
-    def self.get_separation_axes(shapeA, shapeB, separation_axes = nil)
+    def self.get_separation_axes(shapeA, shapeB)
       unless shapeA.is_a?(Actor) && !shapeA.instance_of?(Actor)
         raise ArgumentError.new("Expected a child of the Actor class, but received #{shapeA.inspect}!")
       end
@@ -348,9 +360,7 @@ module Gosling
         raise ArgumentError.new("Expected a child of the Actor class, but received #{shapeB.inspect}!")
       end
 
-      type_check(separation_axes, Array) unless separation_axes.nil?
-
-      separation_axes ||= []
+      reset_separation_axes
       global_vertices = nil
 
       unless shapeA.instance_of?(Circle)
@@ -358,7 +368,7 @@ module Gosling
           global_vertices = Array.new(shapeA.get_vertices.length) { VectorCache.instance.get }
           shapeA.get_global_vertices(global_vertices)
         end
-        get_polygon_separation_axes(@@global_vertices_cache.fetch(shapeA, global_vertices), separation_axes)
+        get_polygon_separation_axes(@@global_vertices_cache.fetch(shapeA, global_vertices))
       end
 
       unless shapeB.instance_of?(Circle)
@@ -372,98 +382,101 @@ module Gosling
           end
           shapeB.get_global_vertices(global_vertices)
         end
-        get_polygon_separation_axes(@@global_vertices_cache.fetch(shapeB, global_vertices), separation_axes)
+        get_polygon_separation_axes(@@global_vertices_cache.fetch(shapeB, global_vertices))
       end
 
       if shapeA.instance_of?(Circle) || shapeB.instance_of?(Circle)
-        axis = VectorCache.instance.get
-        if get_circle_separation_axis(shapeA, shapeB, axis)
-          separation_axes.push(axis)
-        else
-          VectorCache.instance.recycle(axis)
-        end
+        get_circle_separation_axis(shapeA, shapeB)
       end
 
-      separation_axes.each { |v| v.negate! if v.x < 0 }
-      all_axes = separation_axes.dup
-      duplicate_axes = all_axes - (separation_axes.uniq! { |x| x.to_s } || separation_axes)
-      separation_axes
+      nil
     ensure
-      duplicate_axes.each { |v| VectorCache.instance.recycle(v) } if duplicate_axes
       global_vertices.each { |v| VectorCache.instance.recycle(v) } if global_vertices
     end
 
+    @@poa_zero_z_axis = nil
+    @@poa_local_axis = nil
+    @@poa_intersection = nil
+    @@poa_global_tf = nil
+    @@poa_global_tf_inverse = nil
+    def self.get_circle_vertices_by_axis(shape, axis)
+      unless @@global_transform_cache.key?(shape)
+        @@poa_global_tf ||= Snow::Mat3.new
+        shape.get_global_transform(@@poa_global_tf)
+      end
+
+      @@poa_zero_z_axis ||= Snow::Vec3.new
+      @@poa_zero_z_axis.set(axis[0], axis[1], 0)
+
+      @@poa_global_tf_inverse ||= Snow::Mat3.new
+      @@global_transform_cache.fetch(shape, @@poa_global_tf).inverse(@@poa_global_tf_inverse)
+
+      @@poa_local_axis ||= Snow::Vec3.new
+      @@poa_global_tf_inverse.multiply(@@poa_zero_z_axis, @@poa_local_axis)
+
+      @@poa_intersection ||= Snow::Vec3.new
+      shape.get_point_at_angle(Math.atan2(@@poa_local_axis[1], @@poa_local_axis[0]), @@poa_intersection)
+
+      Transformable.transform_point(@@global_transform_cache.fetch(shape, @@poa_global_tf), @@poa_intersection, next_global_vertex)
+
+      @@poa_intersection.negate!
+      Transformable.transform_point(@@global_transform_cache.fetch(shape, @@poa_global_tf), @@poa_intersection, next_global_vertex)
+    end
+
+    @@global_vertices = nil
+    @@global_vertices_count = 0
+
+    def self.reset_global_vertices
+      @@global_vertices ||= []
+      @@global_vertices_count = 0
+    end
+
+    def self.next_global_vertex
+      vertex = @@global_vertices[@@global_vertices_count] ||= Snow::Vec3.new
+      @@global_vertices_count += 1
+      vertex
+    end
+
+    @@projected_axes = nil
+
+    def self.reset_projection_axis_tracking
+      @@projected_axes ||= {}
+      @@projected_axes.clear
+    end
+
+    def self.axis_already_projected?(axis)
+      key = axis.to_s
+      return true if @@projected_axes.key?(key)
+      @@projected_axes[key] = nil
+    end
+
     def self.project_onto_axis(shape, axis, out = nil)
-      type_check(shape, Actor)
-      type_check(axis, Snow::Vec3)
-      type_check(out, Array) unless out.nil?
-
-      global_vertices = nil
-
-      global_tf = nil
-      global_tf_inverse = nil
-
-      zero_z_axis = nil
-      local_axis = nil
-      intersection = nil
-
       unless @@global_vertices_cache.key?(shape)
+        reset_global_vertices
         if shape.instance_of?(Circle)
-          global_vertices = []
-
-          unless @@global_transform_cache.key?(shape)
-            global_tf = MatrixCache.instance.get
-            shape.get_global_transform(global_tf)
-          end
-
-          zero_z_axis = VectorCache.instance.get
-          zero_z_axis.set(axis.x, axis.y, 0)
-
-          global_tf_inverse = MatrixCache.instance.get
-          @@global_transform_cache.fetch(shape, global_tf).inverse(global_tf_inverse)
-
-          local_axis = VectorCache.instance.get
-          global_tf_inverse.multiply(zero_z_axis, local_axis)
-
-          intersection = VectorCache.instance.get
-          # TODO: is this a wasted effort? a roundabout way of normalizing?
-          shape.get_point_at_angle(Math.atan2(local_axis.y, local_axis.x), intersection)
-
-          vertex = VectorCache.instance.get
-          # TODO: Are we transforming points more than once?
-          Transformable.transform_point(@@global_transform_cache.fetch(shape, global_tf), intersection, vertex)
-          global_vertices.push(vertex)
-
-          vertex = VectorCache.instance.get
-          intersection.negate!
-          Transformable.transform_point(@@global_transform_cache.fetch(shape, global_tf), intersection, vertex)
-          global_vertices.push(vertex)
+          get_circle_vertices_by_axis(shape, axis)
         else
-          global_vertices = Array.new(shape.get_vertices.length) { VectorCache.instance.get }
-          shape.get_global_vertices(global_vertices)
+          shape.get_global_vertices(@@global_vertices)
+          @@global_vertices_count = shape.get_vertices.length
         end
       end
 
       min = nil
       max = nil
-      @@global_vertices_cache.fetch(shape, global_vertices).each do |vertex|
+      @@global_vertices_cache.fetch(shape, @@global_vertices[0...@@global_vertices_count]).each do |vertex|
         projection = vertex.dot_product(axis)
-        min = projection if min.nil? || projection < min
-        max = projection if max.nil? || projection > max
+        if min.nil?
+          min = projection
+          max = projection
+        else
+          min = projection if projection < min
+          max = projection if projection > max
+        end
       end
       out ||= []
       out[1] = max
       out[0] = min
       out
-    ensure
-      MatrixCache.instance.recycle(global_tf) if global_tf
-      MatrixCache.instance.recycle(global_tf_inverse) if global_tf_inverse
-
-      VectorCache.instance.recycle(zero_z_axis) if zero_z_axis
-      VectorCache.instance.recycle(local_axis) if local_axis
-      VectorCache.instance.recycle(intersection) if intersection
-
-      global_vertices.each { |v| VectorCache.instance.recycle(v) } if global_vertices
     end
 
     def self.projections_overlap?(a, b)
@@ -472,12 +485,8 @@ module Gosling
     end
 
     def self.get_overlap(a, b)
-      type_check(a, Array)
-      type_check(b, Array)
-      a.each { |x| type_check(x, Numeric) }
-      b.each { |x| type_check(x, Numeric) }
-      raise ArgumentError.new("Expected two arrays of length 2, but received #{a.inspect} and #{b.inspect}!") unless a.length == 2 && b.length == 2
-
+      raise ArgumentError.new("Projection array must be length 2, not #{a.inspect}!") unless a.length == 2
+      raise ArgumentError.new("Projection array must be length 2, not #{b.inspect}!") unless b.length == 2
       a.sort! if a[0] > a[1]
       b.sort! if b[0] > b[1]
       return b[1] - b[0] if a[0] <= b[0] && b[1] <= a[1]

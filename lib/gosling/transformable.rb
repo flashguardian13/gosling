@@ -43,14 +43,14 @@ module Gosling
     # Returns the x component of the centerpoint of this Transformable. See Transformable#center.
     #
     def center_x
-      @center.x
+      @center[0]
     end
 
     ##
     # Returns the y component of the centerpoint of this Transformable. See Transformable#center.
     #
     def center_y
-      @center.y
+      @center[1]
     end
 
     ##
@@ -64,14 +64,14 @@ module Gosling
     # Returns the x component of the scaling of this Transformable. See Transformable#scale.
     #
     def scale_x
-      @scale.x
+      @scale[0]
     end
 
     ##
     # Returns the y component of the scaling of this Transformable. See Transformable#scale.
     #
     def scale_y
-      @scale.y
+      @scale[1]
     end
 
     ##
@@ -86,14 +86,14 @@ module Gosling
     # Returns this Transformable's x position in relative space. See Transformable#translation.
     #
     def x
-      @translation.x
+      @translation[0]
     end
 
     ##
     # Returns this Transformable's y position in relative space. See Transformable#translation.
     #
     def y
-      @translation.y
+      @translation[1]
     end
 
     ##
@@ -119,21 +119,26 @@ module Gosling
     # - transform.center = Snow::Vec2[x, y]
     # - transform.center = Snow::Vec3[x, y, z]
     # - transform.center = Snow::Vec4[x, y, z, c]
+    # - transform.set_center { |c| c.add(-sprite.pos, c) }
     #
-    def center=(args)
-      case args[0]
-      when Array
-        self.center = args[0][0], args[0][1]
-      when Snow::Vec2, Snow::Vec3, Snow::Vec4
-        @center.x = args[0].x
-        @center.y = args[0].y
-      when Numeric
-        raise ArgumentError.new("Cannot set center from #{args.inspect}: numeric array requires at least two arguments!") unless args.length >= 2
-        args.each { |arg| type_check(arg, Numeric) }
-        @center.x = args[0]
-        @center.y = args[1]
+    def center=(args = nil)
+      if block_given?
+        yield(@center)
       else
-        raise ArgumentError.new("Cannot set center from #{args.inspect}: bad type!")
+        case args[0]
+        when Array
+          self.center = args[0][0], args[0][1]
+        when Snow::Vec2, Snow::Vec3, Snow::Vec4
+          @center[0] = args[0][0]
+          @center[1] = args[0][1]
+        when Numeric
+          raise ArgumentError.new("Cannot set center from #{args.inspect}: numeric array requires at least two arguments!") unless args.length >= 2
+          args.each { |arg| type_check(arg, Numeric) }
+          @center[0] = args[0]
+          @center[1] = args[1]
+        else
+          raise ArgumentError.new("Cannot set center from #{args.inspect}: bad type!")
+        end
       end
       @center_is_dirty = @is_dirty = true
     end
@@ -144,7 +149,7 @@ module Gosling
     #
     def center_x=(val)
       type_check(val, Numeric)
-      @center.x = val
+      @center[0] = val
       @center_is_dirty = @is_dirty = true
     end
 
@@ -153,7 +158,7 @@ module Gosling
     #
     def center_y=(val)
       type_check(val, Numeric)
-      @center.y = val
+      @center[1] = val
       @center_is_dirty = @is_dirty = true
     end
 
@@ -170,30 +175,35 @@ module Gosling
     # - transform.scale = Snow::Vec2[x, y]
     # - transform.scale = Snow::Vec3[x, y, z]
     # - transform.scale = Snow::Vec4[x, y, z, c]
+    # - transform.set_scale { |s| s.multiply(0.5, s) }
     #
     def scale=(*args)
-      if args.length >= 2
-        case args[0]
-        when Numeric
-          args.each { |arg| type_check(arg, Numeric) }
-          @scale.x = args[0]
-          @scale.y = args[1]
-        else
-          raise ArgumentError.new("Bad combination of arguments: #{args.inspect}! Please supply a Snow::Vec2, an Array of Numerics, or a single scalar.")
-        end
-      elsif args.length == 1
-        case args[0]
-        when Array
-          self.set_scale(*(args[0]))
-        when Snow::Vec2
-          self.set_scale(args[0].x, args[0].y)
-        when Numeric
-          self.set_scale(args[0], args[0])
-        else
-          raise ArgumentError.new("Bad combination of arguments: #{args.inspect}! Please supply a Snow::Vec2, an Array of Numerics, or a single scalar.")
-        end
+      if block_given?
+        yield(@scale)
       else
-        raise ArgumentError.new("Bad combination of arguments: #{args.inspect}! Please supply a Snow::Vec2, an Array of Numerics, or a single scalar.")
+        if args.length >= 2
+          case args[0]
+          when Numeric
+            args.each { |arg| type_check(arg, Numeric) }
+            @scale[0] = args[0]
+            @scale[1] = args[1]
+          else
+            raise ArgumentError.new("Bad combination of arguments: #{args.inspect}! Please supply a Snow::Vec2, an Array of Numerics, or a single scalar.")
+          end
+        elsif args.length == 1
+          case args[0]
+          when Array
+            self.set_scale(*(args[0]))
+          when Snow::Vec2
+            self.set_scale(args[0][0], args[0][1])
+          when Numeric
+            self.set_scale(args[0], args[0])
+          else
+            raise ArgumentError.new("Bad combination of arguments: #{args.inspect}! Please supply a Snow::Vec2, an Array of Numerics, or a single scalar.")
+          end
+        else
+          raise ArgumentError.new("Bad combination of arguments: #{args.inspect}! Please supply a Snow::Vec2, an Array of Numerics, or a single scalar.")
+        end
       end
       @scale_is_dirty = @is_dirty = true
     end
@@ -204,7 +214,7 @@ module Gosling
     #
     def scale_x=(val)
       type_check(val, Numeric)
-      @scale.x = val
+      @scale[0] = val
       @scale_is_dirty = @is_dirty = true
     end
 
@@ -213,7 +223,7 @@ module Gosling
     #
     def scale_y=(val)
       type_check(val, Numeric)
-      @scale.y = val
+      @scale[1] = val
       @scale_is_dirty = @is_dirty = true
     end
 
@@ -240,27 +250,38 @@ module Gosling
     #
     # If passed more than two numeric arguments, only the first two are used.
     #
+    # Optionally, this method can be passed a block and no arguments. A reference to this Transformable's translation
+    # will be passed to the block as the first parameter, allowing direct manipulation using all of snow-math's Vec3
+    # methods. This is particularly useful when optimizing methods that MUST be as fast as possible, such as animation
+    # and game physics, since the result of your mathematics can be written directly to this Transformable's translation
+    # without having to instantiate an interim Vector during every physics step.
+    #
     # Usage:
     # - transform.translation = x, y
     # - transform.translation = [x, y]
     # - transform.translation = Snow::Vec2[x, y]
     # - transform.translation = Snow::Vec3[x, y, z]
     # - transform.translation = Snow::Vec4[x, y, z, c]
+    # - transform.set_translation { |t| t.add(velocity * elapsed, t) }
     #
-    def translation=(args)
-      case args[0]
-      when Array
-        self.translation = args[0][0], args[0][1]
-      when Snow::Vec2, Snow::Vec3, Snow::Vec4
-        @translation.x = args[0].x
-        @translation.y = args[0].y
-      when Numeric
-        raise ArgumentError.new("Cannot set translation from #{args.inspect}: numeric array requires at least two arguments!") unless args.length >= 2
-        args.each { |arg| type_check(arg, Numeric) }
-        @translation.x = args[0]
-        @translation.y = args[1]
+    def translation=(args = nil)
+      if block_given?
+        yield(@translation)
       else
-        raise ArgumentError.new("Cannot set translation from #{args.inspect}: bad type!")
+        case args[0]
+        when Array
+          self.translation = args[0][0], args[0][1]
+        when Snow::Vec2, Snow::Vec3, Snow::Vec4
+          @translation[0] = args[0][0]
+          @translation[1] = args[0][1]
+        when Numeric
+          raise ArgumentError.new("Cannot set translation from #{args.inspect}: numeric array requires at least two arguments!") unless args.length >= 2
+          args.each { |arg| type_check(arg, Numeric) }
+          @translation[0] = args[0]
+          @translation[1] = args[1]
+        else
+          raise ArgumentError.new("Cannot set translation from #{args.inspect}: bad type!")
+        end
       end
       @translate_is_dirty = @is_dirty = true
     end
@@ -272,7 +293,7 @@ module Gosling
     #
     def x=(val)
       type_check(val, Numeric)
-      @translation.x = val
+      @translation[0] = val
       @translate_is_dirty = @is_dirty = true
     end
 
@@ -281,7 +302,7 @@ module Gosling
     #
     def y=(val)
       type_check(val, Numeric)
-      @translation.y = val
+      @translation[1] = val
       @translate_is_dirty = @is_dirty = true
     end
 
@@ -315,21 +336,15 @@ module Gosling
     # Transforms a Vec3 using the provided Mat3 transform and returns the result as a new Vec3. This is the
     # opposite of Transformable.untransform_point.
     #
+    @@transformable_point
     def self.transform_point(mat, point, out = nil)
-      type_check(mat, Snow::Mat3)
-      type_check(point, Snow::Vec3)
-      type_check(out, Snow::Vec3) unless out.nil?
-      raise "Output vector is temporarily required!" unless out
-
-      transformable_point = VectorCache.instance.get
-      transformable_point.set(point.x, point.y, 1)
+      @@transformable_point ||= Snow::Vec3.new
+      @@transformable_point.set(point[0], point[1], 1)
 
       out ||= Snow::Vec3.new
-      mat.multiply(transformable_point, out)
-      out.z = 0
+      mat.multiply(@@transformable_point, out)
+      out[2] = 0
       out
-    ensure
-      VectorCache.instance.recycle(transformable_point) if transformable_point
     end
 
     ##
@@ -365,8 +380,8 @@ module Gosling
     def update_center_matrix
       return unless @center_is_dirty || @center_mat.nil?
       @center_mat ||= Snow::Mat3.new
-      @center_mat[2] = -@center.x
-      @center_mat[5] = -@center.y
+      @center_mat[2] = -@center[0]
+      @center_mat[5] = -@center[1]
       @center_is_dirty = false
     end
 
@@ -390,8 +405,8 @@ module Gosling
     def update_translate_matrix
       return unless @translate_is_dirty || @translate_mat.nil?
       @translate_mat ||= Snow::Mat3.new
-      @translate_mat[2] = @translation.x
-      @translate_mat[5] = @translation.y
+      @translate_mat[2] = @translation[0]
+      @translate_mat[5] = @translation[1]
       @translate_is_dirty = false
     end
   end
