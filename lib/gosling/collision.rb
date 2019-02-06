@@ -133,6 +133,7 @@ module Gosling
         end
         get_polygon_separation_axes(@@global_vertices_cache.fetch(shape, global_vertices))
       end
+      fold_separation_axes_over_y_axis
 
       reset_projection_axis_tracking
       separation_axes.each do |axis|
@@ -354,6 +355,9 @@ module Gosling
       (0...@@separation_axis_count).each do |i|
         v = @@separation_axes[i]
         v.negate! if v[0] < 0
+        v[0] = 0 if v[0] == 0
+        v[1] = 0 if v[1] == 0
+        v[2] = 0 if v[2] == 0
       end
     end
 

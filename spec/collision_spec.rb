@@ -618,6 +618,40 @@ describe Gosling::Collision do
     end
   end
 
+  describe '.test' do
+    it 'does not test repeated axes more than once' do
+      diamond = Gosling::Rect.new(@window)
+      diamond.width = 10
+      diamond.height = 10
+      diamond.center_x = 5
+      diamond.center_y = 5
+      diamond.rotation = Math::PI / 4
+
+      circle = Gosling::Circle.new(@window)
+      circle.radius = 5
+
+      expect(Gosling::Collision).not_to receive(:project_onto_axis).at_most(4).times.and_call_original
+      Gosling::Collision.test(diamond, circle)
+    end
+  end
+
+  describe '.get_collision_info' do
+    it 'does not test repeated axes more than once' do
+      diamond = Gosling::Rect.new(@window)
+      diamond.width = 10
+      diamond.height = 10
+      diamond.center_x = 5
+      diamond.center_y = 5
+      diamond.rotation = Math::PI / 4
+
+      circle = Gosling::Circle.new(@window)
+      circle.radius = 5
+
+      expect(Gosling::Collision).not_to receive(:project_onto_axis).at_most(4).times.and_call_original
+      Gosling::Collision.get_collision_info(diamond, circle)
+    end
+  end
+
   describe '.is_point_in_shape?' do
     it 'expects a point and an actor' do
       expect { Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 0, 0], @actor1) }.not_to raise_error
@@ -802,6 +836,18 @@ describe Gosling::Collision do
           expect(Gosling::Collision.is_point_in_shape?(Snow::Vec3[-9, 0, 0], @sprite1)).to be false
         end
       end
+    end
+
+    it 'does not test repeated axes more than once' do
+      diamond = Gosling::Rect.new(@window)
+      diamond.width = 10
+      diamond.height = 10
+      diamond.center_x = 5
+      diamond.center_y = 5
+      diamond.rotation = Math::PI / 4
+
+      expect(Gosling::Collision).not_to receive(:project_onto_axis).at_most(2).times.and_call_original
+      Gosling::Collision.is_point_in_shape?(Snow::Vec3[0, 0, 0], diamond)
     end
   end
 
