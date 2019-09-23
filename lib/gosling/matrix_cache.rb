@@ -1,3 +1,5 @@
+require 'singleton'
+
 require_relative 'object_cache.rb'
 
 class MatrixCache
