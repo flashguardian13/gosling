@@ -236,8 +236,8 @@ describe Gosling::Collision do
       @circle1.y = 0
 
       clean_shape(@polygon1)
-      @polygon1.x = 5
-      @polygon1.y = 5
+      @polygon1.x = 0
+      @polygon1.y = 6
     end
 
     it 'collides if the shapes are close enough' do
@@ -245,8 +245,8 @@ describe Gosling::Collision do
       result = Gosling::Collision.get_collision_info(@circle1, @polygon1)
       expect(result[:actors]).to include(@circle1, @polygon1)
       expect(result[:colliding]).to be true
-      expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(5)
-      expect(result[:penetration]).to eq(Snow::Vec3[1, 1, 0].normalize * result[:overlap])
+      expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(4)
+      expect(result[:penetration]).to eq(Snow::Vec3[0, 1, 0].normalize * result[:overlap])
     end
 
     it 'returns a vector that separates the shapes' do
@@ -275,8 +275,8 @@ describe Gosling::Collision do
       @circle1.y = 0
 
       clean_rect(@rect1)
-      @rect1.x = 5
-      @rect1.y = 5
+      @rect1.x = 6
+      @rect1.y = 6
     end
 
     it 'collides if the shapes are close enough' do
@@ -284,7 +284,7 @@ describe Gosling::Collision do
       result = Gosling::Collision.get_collision_info(@circle1, @rect1)
       expect(result[:actors]).to include(@circle1, @rect1)
       expect(result[:colliding]).to be true
-      expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(5)
+      expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(3.585786437626905)
       expect(result[:penetration]).to eq(Snow::Vec3[1, 1, 0].normalize * result[:overlap])
     end
 
@@ -314,8 +314,8 @@ describe Gosling::Collision do
       @circle1.y = 0
 
       clean_sprite(@sprite1)
-      @sprite1.x = 8
-      @sprite1.y = 8
+      @sprite1.x = 9
+      @sprite1.y = 9
     end
 
     it 'collides if the shapes are close enough' do
@@ -323,7 +323,7 @@ describe Gosling::Collision do
       result = Gosling::Collision.get_collision_info(@circle1, @sprite1)
       expect(result[:actors]).to include(@circle1, @sprite1)
       expect(result[:colliding]).to be true
-      expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(5)
+      expect(result[:overlap]).to be_within(FLOAT_TOLERANCE).of(3.585786437626905)
       expect(result[:penetration]).to eq(Snow::Vec3[1, 1, 0].normalize * result[:overlap])
     end
 
