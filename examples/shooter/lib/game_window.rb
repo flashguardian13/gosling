@@ -54,7 +54,7 @@ class GameWindow < Gosu::Window
     super(width, height, fullscreen, update_interval)
     self.caption = caption
 
-    @cursor = Gosling::ImageLibrary.get('images/cursor.png')
+    @cursor = Gosling::ImageLibrary.get(File.expand_path('../images/cursor.png', File.dirname(__FILE__)))
     @cursor_x = width / 2
     @cursor_y = height / 2
 
